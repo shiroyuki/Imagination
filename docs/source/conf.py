@@ -310,6 +310,8 @@ class Mock(object):
             return Mock()
 
 MOCK_MODULES = [
+    'yotsuba',
+    'yotsuba.lib',
     'yotsuba.lib.kotoba'
 ]
 
