@@ -310,14 +310,6 @@ class Mock(object):
             return Mock()
 
 MOCK_MODULES = [
-    'tornado',
-    'tornado.ioloop',
-    'tornado.ioloop.IOLoop',
-    'tornado.web',
-    'tornado.web.Application',
-    'tornado.web.HTTPError',
-    'tornado.web.RedirectHandler',
-    'tornado.web.RequestHandler',
     'yotsuba.lib.kotoba.Kotoba'
 ]
 
