@@ -1,7 +1,7 @@
 '''
 :Author: Juti Noppornpitak
 
-The module contains the package entity used to be an intermediate between :class:`imagination.locator.Loccator`
+The module contains the package entity used to be an intermediate between :class:`imagination.locator.Locator`
 and :class:`imagination.loader.Loader` and simulate the singleton class on the package in the Loader.
 
 .. note::
