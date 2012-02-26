@@ -2,6 +2,27 @@
 :Author: Juti Noppornpitak
 
 The module contains the entity locator used to promote reusability of components.
+
+.. note::
+    Copyright (c) 2012 Juti Noppornpitak
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+    of the Software, and to permit persons to whom the Software is furnished to do
+    so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 '''
 
 from yotsuba.lib.kotoba    import Kotoba
@@ -42,7 +63,7 @@ class Locator(object):
         
             <?xml version="1.0" encoding="utf-8"?>
             <!-- This example simulates how to set up a service with Imagination. -->
-            <locator>
+            <imagination>
                 <entity id="finder" class="tori.common.Finder"></entity>
                 
                 <!-- Example of injecting a class reference. -->
@@ -56,7 +77,7 @@ class Locator(object):
                     <param name="finder" type="id">finder</param>
                     <param name="location">/Users/jnopporn/Documents</param>
                 </entity>
-            </locator>
+            </imagination>
         
         The parameter of type ``class`` is only representing the reference of the class.
         
