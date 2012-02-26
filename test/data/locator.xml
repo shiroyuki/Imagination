@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--doctype imagination public "//shiroyuki//dtd imagination 1.0" "http://dev.shiroyuki.com/dtd/imagination-1.0.dtd"-->
+<imagination>
+    <entity id="poo" class="dummy.core.PlainOldObject"></entity>
+    <entity id="poow-1" class="dummy.core.PlainOldObjectWithParameters">
+        <param name="a" type="int">2</param>
+        <param name="b" type="float">3</param>
+        <param name="do_multiply" type="bool">false</param>
+    </entity>
+    <entity id="poow-2" class="dummy.core.PlainOldObjectWithParameters">
+        <param name="a" type="int">5</param>
+        <param name="b" type="int">7</param>
+    </entity>
+    <entity id="dioc" class="dummy.core.DependencyInjectableObjectWithClass">
+        <param name="reference" type="class">dummy.core.PlainOldObject</param>
+    </entity>
+    <entity id="dioe" class="dummy.core.DependencyInjectableObjectWithEntity">
+        <param name="entity" type="entity">poow-1</param>
+    </entity>
+</imagination>
