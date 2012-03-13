@@ -1,9 +1,14 @@
 ''' Testing bootstrap '''
 
-import os
-import sys
+from os.path import abspath, dirname, join
+from sys     import path
 
-testing_base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'testcase')
-module_base_path  = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+app_path          = dirname(abspath(__file__))
+testing_base_path = join(app_path, 'testcase')
 
-sys.path.append(module_base_path)
+required_modules = ['Imagination', 'Kotoba']
+base_mod_path    = abspath(join(app_path, '..', '..'))
+
+for required_module in required_modules:
+    mod_path = join(base_mod_path, required_module)
+    path.append(mod_path)

@@ -26,6 +26,7 @@ The module contains the entity locator used to promote reusability of components
 '''
 
 from yotsuba.lib.kotoba    import Kotoba
+from kotoba                import load_from_file
 from imagination.entity    import Entity
 from imagination.exception import IncompatibleBlockError, UnknownEntityError, UnknownFileError
 from imagination.loader    import Loader
@@ -82,16 +83,15 @@ class Locator(object):
         The parameter of type ``class`` is only representing the reference of the class.
         
         '''
-        xml      = Kotoba(file_path)
-        selector = 'imagination > entity'
+        xml = load_from_file(file_path)
         
         # Register additional services first.
-        for block in xml.get(selector):
+        for block in xml.children():
             self._validate_block(block)
             
-            entity_id = block.attrs['id']
+            entity_id = block.attribute('id')
             
-            reference = block.attrs['class']
+            reference = block.attribute('class')
             kwargs    = self._retrieve_params_from_block(block)
             
             loader    = Loader(reference)
@@ -99,32 +99,29 @@ class Locator(object):
             
             self.set(entity_id, entity)
     
-    def _dict_get_key(self, dictionary, key):
-        return dictionary.attrs.has_key(key) and dictionary.attrs[key]
-    
     def _validate_block(self, block):
-        if not self._dict_get_key(block, 'id'):
+        if not block.attribute('id'):
             raise IncompatibleBlockError, 'What is the identifier of the entity?'
             
-        if not self._dict_get_key(block, 'class'):
+        if not block.attribute('class'):
             raise IncompatibleBlockError, 'What is the name of the class of the entity?'
     
     def _retrieve_params_from_block(self, block):
         kwargs = {}
             
-        for param in block.get('param'):
+        for param in block.children('param'):
             param_name, param_data = self._analyze_param(param)
             kwargs[param_name]     = param_data
         
         return kwargs
     
     def _analyze_param(self, param):
-        if not self._dict_get_key(param, 'name'):
+        if not param.attribute('name'):
             raise IncompatibleBlockError, 'What is the name of the parameter?'
                 
-        param_name = param.attrs['name']
+        param_name = param.attribute('name')
         param_data = param.data()
-        param_type = self._dict_get_key(param, 'type') or None
+        param_type = param.attribute('type')
         
         # Automatically convert data type.
         if param_type == 'entity':
