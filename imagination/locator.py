@@ -25,7 +25,6 @@ The module contains the entity locator used to promote reusability of components
 
 '''
 
-from yotsuba.lib.kotoba    import Kotoba
 from kotoba                import load_from_file
 from imagination.entity    import Entity
 from imagination.exception import IncompatibleBlockError, UnknownEntityError, UnknownFileError
