@@ -310,9 +310,8 @@ class Mock(object):
             return Mock()
 
 MOCK_MODULES = [
-    'yotsuba',
-    'yotsuba.lib',
-    'yotsuba.lib.kotoba'
+    'kotoba',
+    'kotoba.load_from_file'
 ]
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'

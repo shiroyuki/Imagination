@@ -58,6 +58,8 @@ class Entity(object):
         self._args     = args
         self._kwargs   = kwargs
         self._instance = None
+        self._tags     = None
+        self._locked   = False
     
     def id(self):
         ''' Get the entity ID. '''
@@ -75,6 +77,12 @@ class Entity(object):
         ''' Get the argument dictionary. '''
         return self._kwargs
     
+    def lock(self):
+        self._locked = True
+    
+    def locked(self):
+        return self._locked
+    
     def activated(self):
         '''
         Check if the entity is already activated.
@@ -82,6 +90,17 @@ class Entity(object):
         This will also inspects if the entity already loads a singleton instance into the memory.
         '''
         return self._instance is not None
+    
+    def tags(self, new_tags=None):
+        '''
+        Get the entity tags.
+        
+        :param `tags`: new tags as replacements
+        '''
+        if isinstance(new_tags, list) and not self.locked():
+            self._tags = new_tags
+        
+        return self._tags or []
     
     def instance(self):
         ''' Get the singleton instance of the class referred in the loader. '''

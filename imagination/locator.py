@@ -25,7 +25,9 @@ The module contains the entity locator used to promote reusability of components
 
 '''
 
-from kotoba                import load_from_file
+from re     import split
+from kotoba import load_from_file
+
 from imagination.entity    import Entity
 from imagination.exception import IncompatibleBlockError, UnknownEntityError, UnknownFileError
 from imagination.loader    import Loader
@@ -35,13 +37,32 @@ class Locator(object):
     
     def __init__(self):
         self._entities = {}
+        self._tag_to_entity_ids = {}
     
     def get(self, id):
-        ''' Get the entity by *id*. '''
+        '''
+        Get the entity by *id*.
+        
+        :param `id`: entity identifier
+        '''
         try:
             return self._entities[id].instance()
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+    
+    def getListByTag(self, tag_label):
+        '''
+        Get entities by *tag_label*.
+        
+        :param `tag_label`: tag label
+        '''
+        
+        # First, get the entity identifiers.
+        if tag_label not in self._tag_to_entity_ids:
+            return []
+        
+        # Then, get references to entities.
+        return [self.get(entity_id) for entity_id in self._tag_to_entity_ids[tag_label]]
     
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
@@ -49,7 +70,15 @@ class Locator(object):
         if not isinstance(entity, Entity):
             raise UnknownEntityError, 'The type of the given entity named "%s" is not excepted.' % id
         
+        entity.lock()
+        
         self._entities[id] = entity
+        
+        for tag in entity.tags():
+            if not self._tag_to_entity_ids.has_key(tag):
+                self._tag_to_entity_ids[tag] = []
+            
+            self._tag_to_entity_ids[tag].append(entity.id())
     
     def has(self, id):
         ''' Check if the entity with *id* is already registered. '''
@@ -88,13 +117,18 @@ class Locator(object):
         for block in xml.children():
             self._validate_block(block)
             
-            entity_id = block.attribute('id')
+            entity_id    = block.attribute('id')
+            reference    = block.attribute('class')
+            args, kwargs = self._retrieve_params_from_block(block)
+            loader       = Loader(reference)
             
-            reference = block.attribute('class')
-            kwargs    = self._retrieve_params_from_block(block)
+            tags = block.attribute('tags')
+            if tags:
+                tags = tags.strip()
+                tags = tags and split(' ', tags) or []
             
-            loader    = Loader(reference)
-            entity    = Entity(entity_id, loader, **kwargs)
+            entity = Entity(entity_id, loader, **kwargs)
+            entity.tags(tags)
             
             self.set(entity_id, entity)
     
@@ -106,13 +140,14 @@ class Locator(object):
             raise IncompatibleBlockError, 'What is the name of the class of the entity?'
     
     def _retrieve_params_from_block(self, block):
+        args   = []
         kwargs = {}
-            
+        
         for param in block.children('param'):
             param_name, param_data = self._analyze_param(param)
             kwargs[param_name]     = param_data
         
-        return kwargs
+        return args, kwargs
     
     def _analyze_param(self, param):
         if not param.attribute('name'):
