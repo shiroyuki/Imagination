@@ -19,12 +19,30 @@ class TestEntity(TestCase):
         del self.paramLoader
         del self.falseLoader
     
+    def test_fork(self):
+        e = Entity('test-object', self.plainLoader)
+        
+        a = e.fork()
+        b = e.fork()
+        
+        self.assertTrue(a is not None)
+        self.assertTrue(b is not None)
+        self.assertNotEquals(a, b);
+        self.assertFalse(e.activated())
+    
     def test_initialization_with_no_args(self):
         e = Entity('test-object', self.plainLoader)
         
         self.assertFalse(e.activated())
         self.assertEquals(e.instance().method(), 0)
         self.assertTrue(e.activated())
+        
+        a = e.instance()
+        b = e.instance()
+        
+        self.assertTrue(a is not None)
+        self.assertTrue(b is not None)
+        self.assertEquals(a, b);
     
     def test_with_only_list_args(self):
         e = Entity('test-object', self.paramLoader, 2, 3)
