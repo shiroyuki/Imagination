@@ -34,139 +34,149 @@ from imagination.loader    import Loader
 
 class Locator(object):
     ''' Entity locator '''
-    
+
     def __init__(self):
         self._entities = {}
         self._tag_to_entity_ids = {}
-    
+
     def get(self, id):
         '''
         Get the entity by *id*.
-        
+
         :param `id`: entity identifier
         '''
         try:
             return self._entities[id].instance()
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
-    
-    def getListByTag(self, tag_label):
+
+    def get_list_by_tag(self, tag_label):
         '''
         Get entities by *tag_label*.
-        
+
         :param `tag_label`: tag label
         '''
-        
+
         # First, get the entity identifiers.
         if tag_label not in self._tag_to_entity_ids:
             return []
-        
+
         # Then, get references to entities.
         return [self.get(entity_id) for entity_id in self._tag_to_entity_ids[tag_label]]
-    
+
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
-        
+
         if not isinstance(entity, Entity):
             raise UnknownEntityError, 'The type of the given entity named "%s" is not excepted.' % id
-        
+
         entity.lock()
-        
+
         self._entities[id] = entity
-        
+
         for tag in entity.tags():
             if not self._tag_to_entity_ids.has_key(tag):
                 self._tag_to_entity_ids[tag] = []
-            
+
             self._tag_to_entity_ids[tag].append(entity.id())
-    
+
     def has(self, id):
         ''' Check if the entity with *id* is already registered. '''
         return id in self._entities
-    
+
     def load_xml(self, file_path):
         '''
         Load the entities from a XML configuration file at *file_path*.
-        
+
         .. code-block:: xml
-        
+
             <?xml version="1.0" encoding="utf-8"?>
             <!-- This example simulates how to set up a service with Imagination. -->
             <imagination>
                 <entity id="finder" class="tori.common.Finder"></entity>
-                
+
                 <!-- Example of injecting a class reference. -->
                 <entity id="db" class="tori.service.rdb.EntityService">
                     <param name="url">sqlite:///:memory:</param>
                     <param name="entity_type" type="class">core.model.Log</param>
                 </entity>
-                
+
                 <!-- Example of injecting a service. -->
                 <entity id="markdown-doc" class="app.note.service.MDDocumentService">
                     <param name="finder" type="id">finder</param>
                     <param name="location">/Users/jnopporn/Documents</param>
                 </entity>
             </imagination>
-        
+
         The parameter of type ``class`` is only representing the reference of the class.
-        
+
         '''
         xml = load_from_file(file_path)
-        
+
         # Register additional services first.
         for block in xml.children():
             self._validate_block(block)
-            
+
             entity_id    = block.attribute('id')
             reference    = block.attribute('class')
             args, kwargs = self._retrieve_params_from_block(block)
             loader       = Loader(reference)
-            
+
             tags = block.attribute('tags')
             if tags:
                 tags = tags.strip()
                 tags = tags and split(' ', tags) or []
-            
+
             entity = Entity(entity_id, loader, **kwargs)
             entity.tags(tags)
-            
+
             self.set(entity_id, entity)
-    
+
+    def transform_data(self, data, kind):
+        '''
+        Transform the given data to the given kind.
+
+        :param `data`: the data to be transform
+        :param `kind`: the kind of data of the transformed data.
+        :returns: the data of the given kind.
+        '''
+
+        if kind == 'entity':
+            data = self.get(data)
+        elif kind == 'class':
+            data = Loader(data).package()
+        elif kind == 'int':
+            data = int(data)
+        elif kind == 'float':
+            data = float(data)
+        elif kind == 'bool':
+            data = unicode(data).capitalize() == 'True'
+
+        return data
+
     def _validate_block(self, block):
         if not block.attribute('id'):
             raise IncompatibleBlockError, 'What is the identifier of the entity?'
-            
+
         if not block.attribute('class'):
             raise IncompatibleBlockError, 'What is the name of the class of the entity?'
-    
+
     def _retrieve_params_from_block(self, block):
         args   = []
         kwargs = {}
-        
+
         for param in block.children('param'):
-            param_name, param_data = self._analyze_param(param)
-            kwargs[param_name]     = param_data
-        
+            kwargs.update(self.transform_param(param))
+
         return args, kwargs
-    
-    def _analyze_param(self, param):
+
+    def transform_param(self, param):
         if not param.attribute('name'):
             raise IncompatibleBlockError, 'What is the name of the parameter?'
-                
-        param_name = param.attribute('name')
-        param_data = param.data()
-        param_type = param.attribute('type')
-        
-        # Automatically convert data type.
-        if param_type == 'entity':
-            param_data = self.get(param_data)
-        elif param_type == 'class':
-            param_data = Loader(param_data).package()
-        elif param_type == 'int':
-            param_data = int(param_data)
-        elif param_type == 'float':
-            param_data = float(param_data)
-        elif param_type == 'bool':
-            param_data = unicode(param_data).capitalize() == 'True'
-        
-        return (param_name, param_data)
+
+        return {
+            param.attribute('name'): self.transform_data(
+                param.data(),
+                param.attribute('type')
+            )
+        }
