@@ -6,8 +6,7 @@ from imagination.loader    import Loader
 from imagination.locator   import Locator
 
 # For reference.
-from dummy.core            import PlainOldObject
-from dummy.core            import PlainOldObjectWithParameters
+from dummy.lazy_action import *
 
 class TestLazyAction(TestCase):
     def setUp(self):
@@ -21,5 +20,15 @@ class TestLazyAction(TestCase):
     def tearDown(self):
         del self.locator
 
-    def test_initialization(self):
-        pass
+    def test_lazy_initialization(self):
+        self.assertIsInstance(self.locator.get('alpha').call_accompany(), Beta)
+        self.assertIsInstance(self.locator.get('beta'), Beta)
+
+        self.assertEquals(self.locator.get('alpha').call_accompany(), self.locator.get('beta'))
+
+    def test_actions(self):
+        self.locator.get('charlie').cook()
+
+        #print
+        #print '\n'.join(Conversation.logs)
+        #print

@@ -3,11 +3,16 @@ class Conversation(object):
 
     @staticmethod
     def log(actor, context):
-        logs.append('%s: %s' % (actor.__class__.__name__, context))
+        Conversation.logs.append('%s: %s' % (actor.__class__.__name__, context))
 
 class Alpha(object):
     def __init__(self, accompany):
         self.accompany = accompany
+
+    def call_accompany(self):
+        self.accompany.acknowledge()
+        
+        return self.accompany
 
     def order(self, item):
         Conversation.log(self, 'order "%s"' % item)

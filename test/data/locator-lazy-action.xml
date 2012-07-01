@@ -23,7 +23,7 @@ super lazy loaders allowing any arbitery order of entity declaration.
     <entity id="charlie" class="dummy.lazy_action.Charlie">
         <after action="order" by="alpha" do="repeat">
             <!-- Type "feedback" is a feedback from the action. -->
-            <param type="feedback" name="context"></param>
+            <!-- <param type="feedback" name="context"></param> -->
             <param type="unicode" name="response">wilco</param>
         </after>
     </entity>

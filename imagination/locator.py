@@ -28,7 +28,7 @@ The module contains the entity locator used to promote reusability of components
 from re     import split
 from kotoba import load_from_file
 
-from imagination.entity    import Entity
+from imagination.entity    import Entity, Proxy
 from imagination.exception import IncompatibleBlockError, UnknownEntityError, UnknownFileError
 from imagination.loader    import Loader
 
@@ -55,9 +55,12 @@ class Locator(object):
         Retrieve the entity identified by ``id``.
 
         :param `id`: entity identifier
+        :returns: the requested entity
         '''
         try:
-            return self._entities[id].instance()
+            entity = self._entities[id]
+
+            return isinstance(entity, Entity) and entity.instance() or entity
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
 
@@ -78,12 +81,16 @@ class Locator(object):
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
 
-        if not isinstance(entity, Entity):
+        if not isinstance(entity, Entity) and not isinstance(entity, Proxy):
             raise UnknownEntityError, 'The type of the given entity named "%s" is not excepted.' % id
 
-        entity.lock()
+        if isinstance(entity, Entity):
+            entity.lock()
 
         self._entities[id] = entity
+
+        if isinstance(entity, Proxy):
+            return
 
         for tag in entity.tags():
             if not self._tag_to_entity_ids.has_key(tag):
@@ -124,13 +131,22 @@ class Locator(object):
         '''
         xml = load_from_file(file_path)
 
-        # Register additional services first.
+        # First, register entities as proxies (for lazy initialization).
+        for block in xml.children():
+            self._validate_block(block)
+
+            entity_id = block.attribute('id')
+            proxy     = Proxy(self, entity_id)
+
+            self.set(entity_id, proxy)
+
+        # Then, register entities with loaders.
         for block in xml.children():
             self._validate_block(block)
 
             entity_id    = block.attribute('id')
             reference    = block.attribute('class')
-            args, kwargs = self._retrieve_params_from_block(block)
+            args, kwargs = self._retrieve_params(block)
             loader       = Loader(reference)
 
             tags = block.attribute('tags')
@@ -172,7 +188,7 @@ class Locator(object):
         if not block.attribute('class'):
             raise IncompatibleBlockError, 'Invalid entity configuration. No class type specified.'
 
-    def _retrieve_params_from_block(self, block):
+    def _retrieve_params(self, block):
         args   = []
         kwargs = {}
 

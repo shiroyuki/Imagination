@@ -49,7 +49,6 @@ class Loader(object):
         self._module       = None
         self._package_name = self._access_path[-1]
         self._package      = None
-        self._locator      = None
 
     def name(self):
         ''' Get the name of the package. '''
@@ -66,9 +65,6 @@ class Loader(object):
     def filename(self):
         ''' Get the path to the package. '''
         return self.module().__file__
-
-    def locator(self):
-        return self._locator
 
     def _retrieve_module(self):
         ''' Retrieve a module by the module path. '''
