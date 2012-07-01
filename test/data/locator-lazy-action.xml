@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This is specific for the test of dependency injection on actionable events and
+super lazy loaders allowing any arbitery order of entity declaration.
+-->
+<imagination>
+    <entity id="alpha" class="dummy.lazy_action.Alpha">
+        <param type="entity" name="accompany">beta</param>
+        <before action="cook" by="charlie" do="order">
+            <param type="unicode" name="item">egg and becon</param>
+        </before>
+        <before action="serve" by="charlie" do="speak_to_accompany">
+            <param type="str" name="context">watch your hand</param>
+        </before>
+        <before action="serve" by="charlie" do="wash_hands"></before>
+        <after action="eat" by="self" do="speak">
+            <param type="str" name="context">merci</param>
+        </after>
+    </entity>
+    <entity id="beta" class="dummy.lazy_action.Beta">
+        <after action="speak_to_accompany" by="alpha" do="acknowledge"></after>
+    </entity>
+    <entity id="charlie" class="dummy.lazy_action.Charlie">
+        <after action="order" by="alpha" do="repeat">
+            <!-- Type "feedback" is a feedback from the action. -->
+            <param type="feedback" name="context"></param>
+            <param type="unicode" name="response">wilco</param>
+        </after>
+    </entity>
+</imagination>
