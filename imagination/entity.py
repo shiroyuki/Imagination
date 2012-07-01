@@ -103,8 +103,12 @@ class Entity(object):
         return self._tags or []
     
     def instance(self):
-        ''' Get the singleton instance of the class referred in the loader. '''
+        ''' Get the singleton instance of the class defined for the loader. '''
         if not self._instance:
-            self._instance = self._loader.package()(*self._args, **self._kwargs)
+            self._instance = self.fork()
         
         return self._instance
+    
+    def fork(self):
+        ''' Fork an instance of the class defined for the loader. '''
+        return self._loader.package()(*self._args, **self._kwargs)

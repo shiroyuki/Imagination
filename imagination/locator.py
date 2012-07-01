@@ -39,9 +39,20 @@ class Locator(object):
         self._entities = {}
         self._tag_to_entity_ids = {}
 
+    def fork(self, id):
+        '''
+        Fork the entity identified by ``id``.
+
+        :param `id`: entity identifier
+        '''
+        try:
+            return self._entities[id].fork()
+        except KeyError:
+            raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+
     def get(self, id):
         '''
-        Get the entity by *id*.
+        Retrieve the entity identified by ``id``.
 
         :param `id`: entity identifier
         '''
@@ -52,7 +63,7 @@ class Locator(object):
 
     def get_list_by_tag(self, tag_label):
         '''
-        Get entities by *tag_label*.
+        Retrieve entities by *tag_label*.
 
         :param `tag_label`: tag label
         '''
@@ -156,10 +167,10 @@ class Locator(object):
 
     def _validate_block(self, block):
         if not block.attribute('id'):
-            raise IncompatibleBlockError, 'What is the identifier of the entity?'
+            raise IncompatibleBlockError, 'Invalid entity configuration. No ID specified.'
 
         if not block.attribute('class'):
-            raise IncompatibleBlockError, 'What is the name of the class of the entity?'
+            raise IncompatibleBlockError, 'Invalid entity configuration. No class type specified.'
 
     def _retrieve_params_from_block(self, block):
         args   = []
