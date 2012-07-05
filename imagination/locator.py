@@ -142,8 +142,6 @@ class Locator(object):
 
         # Then, register entities with loaders.
         for block in xml.children():
-            self._validate_block(block)
-
             entity_id    = block.attribute('id')
             reference    = block.attribute('class')
             args, kwargs = self._retrieve_params(block)

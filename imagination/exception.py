@@ -1,3 +1,6 @@
+class DuplicateKeyWarning(Warning):
+    ''' Warning thrown when an internal dictionary detects an attempt of re-assignment to the direction by the existed key. '''
+
 class IncompatibleBlockError(Exception):
     ''' Exception thrown when :meth:`imagination.locator.Locator.load_xml` cannot process the entity block. '''
     

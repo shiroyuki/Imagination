@@ -6,25 +6,26 @@ super lazy loaders allowing any arbitery order of entity declaration.
 <imagination>
     <entity id="alpha" class="dummy.lazy_action.Alpha">
         <param type="entity" name="accompany">beta</param>
-        <before action="cook" by="charlie" do="order">
+        <action on="charlie" before="cook" do="order">
             <param type="unicode" name="item">egg and becon</param>
-        </before>
-        <before action="serve" by="charlie" do="speak_to_accompany">
+        </action>
+        <action on="charlie" intercept="repeat" do="confirm"/>
+        <action on="charlie" before="serve" do="speak_to_accompany">
             <param type="str" name="context">watch your hand</param>
-        </before>
-        <before action="serve" by="charlie" do="wash_hands"></before>
-        <after action="eat" by="self" do="speak">
+        </action>
+        <action on="charlie" before="serve" do="wash_hands"/>
+        <action on="me" after="eat" do="speak">
             <param type="str" name="context">merci</param>
-        </after>
+        </action>
     </entity>
     <entity id="beta" class="dummy.lazy_action.Beta">
-        <after action="speak_to_accompany" by="alpha" do="acknowledge"></after>
+        <action on="alpha" after="speak_to_accompany" do="acknowledge"/>
     </entity>
     <entity id="charlie" class="dummy.lazy_action.Charlie">
-        <after action="order" by="alpha" do="repeat">
-            <!-- Type "feedback" is a feedback from the action. -->
-            <!-- <param type="feedback" name="context"></param> -->
+        <action on="alpha" follow="order" do="repeat"/>
+        <action on="beta" follow="order" do="repeat"/>
+        <action on="alpha" after="order" do="respond">
             <param type="unicode" name="response">wilco</param>
-        </after>
+        </action>
     </entity>
 </imagination>

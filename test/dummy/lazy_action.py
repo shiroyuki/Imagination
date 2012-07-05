@@ -11,7 +11,7 @@ class Alpha(object):
 
     def call_accompany(self):
         self.accompany.acknowledge()
-        
+
         return self.accompany
 
     def order(self, item):
@@ -38,5 +38,8 @@ class Charlie(object):
     def serve(self):
         Conversation.log(self, 'serve')
 
-    def repeat(self, context, response):
+    def respond(self, response):
+        Conversation.log(self, 'repeat "%s" then "%s"' % (context, response))
+
+    def repeat(self, feedback):
         Conversation.log(self, 'repeat "%s" then "%s"' % (context, response))
