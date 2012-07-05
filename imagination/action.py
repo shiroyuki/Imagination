@@ -39,7 +39,7 @@ class Action(object):
     def __call__(self):
         self.__run_pre_events()
 
-        feedback = self.f()
+        feedback = self.f
 
         self.__run_post_events()
 

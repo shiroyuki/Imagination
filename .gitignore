@@ -1,2 +1,9 @@
 .DS_Store
+._*
 *.pyc
+.project
+.pydevproject
+*.komodoproject
+MANIFEST
+dist/
+docs/build/
