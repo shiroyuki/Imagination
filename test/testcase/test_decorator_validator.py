@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from imagination.decorator.validator import *
+from imagination.exception import MisplacedValidatorError
 
 class TestLazyAction(TestCase):
     def test_method_permitive_good(self):
@@ -11,7 +12,7 @@ class TestLazyAction(TestCase):
     def test_method_permitive_bad(self):
         try:
             foo(2.0)
-        except AssertionError, e:
+        except TypeError, e:
             self.assertEqual('int', e.message)
 
     def test_method_instance(self):
@@ -19,22 +20,19 @@ class TestLazyAction(TestCase):
 
         bar(f)
 
-    def test_class_method_good(self):
-        b = Bar(2)
-
-    def test_class_method_bad(self):
+    def test_class_constructor_exception(self):
         try:
-            b = Bar(2.0)
-        except AssertionError, e:
-            self.assertEqual('int', e.message)
+            @allowed_type(int)
+            class Bar(object):
+                def __init__(self, b):
+                    b = b
+            
+            this.assertTrue(False)
+        except MisplacedValidatorError, e:
+            pass
 
 class Foo(object):
     a = 1
-
-@allowed_type(int)
-class Bar(object):
-    def __init__(self, b):
-        b = b
 
 @allowed_type(int)
 def foo(a):
