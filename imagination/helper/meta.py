@@ -70,6 +70,9 @@ class Transformer(object):
 
         return data
 
+    def locator(self):
+        return self.__locator
+
 class ParameterPackage(object):
     '''
     Parameter Package represents the parameter of arguments as

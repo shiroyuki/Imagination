@@ -25,6 +25,8 @@ The module contains reusable input validators.
 
 '''
 
+import inspect
+
 from imagination.exception import MisplacedValidatorError
 
 def allowed_type(*allowed_list, **allowed_dictionary):
@@ -32,9 +34,14 @@ def allowed_type(*allowed_list, **allowed_dictionary):
     The method decorator to validate the input given to the reference.
     '''
     def inner_decorator(reference):
+        try:
+            print inspect.getclasstree(reference)
+        except TypeError:
+            pass
+
         if isinstance(reference, type) or not callable(reference):
             raise MisplacedValidatorError, 'Can only be used with callable objects, e.g., functions, class methods, instance methods and static methods.'
-        
+
         return StrictTypedCallableObject(reference, *allowed_list, **allowed_dictionary)
 
     return inner_decorator
@@ -44,7 +51,11 @@ class SpecialType(object):
 
 class StrictTypedCallableObject(object):
     def __init__(self, function, *allowed_list, **allowed_dictionary):
-        self.function     = function
+        #print inspect.getargspec(function)
+        self.function = function
+        self.params   = inspect.getargspec(function).args
+        self.is_class = self.params and self.params[0] == 'self'
+
         self.allowed_list = allowed_list
         self.allowed_dictionary = allowed_dictionary
 
@@ -67,5 +78,7 @@ class StrictTypedCallableObject(object):
                 assert isinstance(kwargs[key], kind), kind.__name__
         except AssertionError, e:
             raise TypeError, e.message
+
+        #print 'AV', largs, kwargs
 
         return self.function(*largs, **kwargs)

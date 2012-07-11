@@ -27,9 +27,13 @@ and register to a particular locator.
 '''
 
 from kotoba.kotoba import Kotoba
+from kotoba        import load_from_file
 
 from imagination.decorator.validator import allowed_type
-from imagination.helper.meta import *
+from imagination.entity      import Entity, Proxy
+from imagination.exception   import IncompatibleBlockError, UnknownEntityError, UnknownFileError
+from imagination.loader      import Loader
+from imagination.helper.meta import Transformer
 
 class Assembler(object):
     '''
@@ -37,32 +41,68 @@ class Assembler(object):
     '''
     def __init__(self, transformer):
         try:
-            assert isinstance(transformer, Transformer), 'imagination.helper.meta.Transformer'
+            assert isinstance(transformer, Transformer)
         except AssertionError, e:
-            raise ValueError, 'Expected an instance of %s' % e.message
+            raise TypeError, 'Expected an instance of %s, given %s.'\
+                % (Transformer, transformer.__class__)
 
-        self.transformer = transformer
+        self.__transformer = transformer
+        self.__locator   = None
+
+    def load(self, filepath):
+        xml = load_from_file(filepath)
+
+        # First, register proxies to entities (for lazy initialization).
+        for node in xml.children():
+            self.__register_proxy(node)
+
+        # Then, register loaders for entities.
+        for node in xml.children():
+            self.__register_loader(node)
+
+    def locator(self):
+        if not self.__locator:
+            self.__locator = self.__transformer.locator()
+
+        return self.__locator
+
+    def __validate_node(self, node):
+        if not node.attribute('id'):
+            raise IncompatibleBlockError, 'Invalid entity configuration. No ID specified.'
+
+        if not node.attribute('class'):
+            raise IncompatibleBlockError, 'Invalid entity configuration. No class type specified.'
 
     @allowed_type(Kotoba)
-    def get_entity(self, node):
-        '''
-        :param `node`: an instance of :class:`kotoba.kotoba.Kotoba`
-        '''
-        try:
-            assert isinstance(node, Kotoba), 'kotoba.kotoba.Kotoba'
-        except AssertionError, e:
-            raise ValueError, 'Expected an instance of %s' % e.message
+    def __register_proxy(self, node):
+        self.__validate_node(node)
 
+        id      = node.attribute('id')
+        proxy   = Proxy(self.locator(), id)
 
-    def get_param(self, node):
-        '''
-        :param `node`: an instance of :class:`kotoba.kotoba.Kotoba`
-        '''
-        try:
-            assert isinstance(node, Kotoba), 'kotoba.kotoba.Kotoba'
-        except AssertionError, e:
-            raise ValueError, 'Expected an instance of %s' % e.message
+        self.locator().set(id, proxy)
 
+    @allowed_type(Kotoba)
+    def __register_loader(self, node):
+        id     = node.attribute('id')
+        kind   = node.attribute('class')
+        params = self.__get_params(node)
+        tags   = self.__get_tags(node)
+        loader = Loader(kind)
+        entity = Entity(id, loader, **kwargs)
+
+        entity.tags(tags)
+
+        self.locator().set(id, entity)
+
+    @allowed_type(Kotoba)
+    def __get_tags(self, node):
+        tags = node.attribute('tags').strip()
+
+        return tags and split(' ', tags) or []
+
+    @allowed_type(Kotoba)
+    def __get_params(self, node):
         package = ParameterPackage(node)
 
         index = 0
@@ -81,7 +121,7 @@ class Assembler(object):
             if package.kwargs.has_key(name):
                 raise DuplicateKeyWarning, 'There is a paramenter with that name already registered.'
 
-            package.kwargs[name] = transformer.cast(
+            package.kwargs[name] = self.__transformer.cast(
                 param.data(),
                 param.attribute('type')
             )

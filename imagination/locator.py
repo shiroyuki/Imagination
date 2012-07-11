@@ -128,6 +128,8 @@ class Locator(object):
 
         The parameter of type ``class`` is only representing the reference of the class.
 
+        :Status: Deprecated in 1.5
+
         '''
         xml = load_from_file(file_path)
 

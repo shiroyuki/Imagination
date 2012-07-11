@@ -20,6 +20,10 @@ class TestLazyAction(TestCase):
 
         bar(f)
 
+    def test_class_method(self):
+        f = Foo()
+        f.b(1)
+
     def test_class_constructor_exception(self):
         try:
             @allowed_type(int)
@@ -33,6 +37,10 @@ class TestLazyAction(TestCase):
 
 class Foo(object):
     a = 1
+
+    @allowed_type(int)
+    def b(self, b):
+        return b
 
 @allowed_type(int)
 def foo(a):
