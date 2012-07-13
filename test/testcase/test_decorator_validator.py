@@ -12,8 +12,9 @@ class TestLazyAction(TestCase):
     def test_method_permitive_bad(self):
         try:
             foo(2.0)
+            self.assertTrue(False)
         except TypeError, e:
-            self.assertEqual('int', e.message)
+            self.assertEqual('Excepted int, given float.', e.message)
 
     def test_method_instance(self):
         f = Foo()
@@ -26,11 +27,11 @@ class TestLazyAction(TestCase):
 
     def test_class_constructor_exception(self):
         try:
-            @allowed_type(int)
+            @restrict_type(int)
             class Bar(object):
                 def __init__(self, b):
                     b = b
-            
+
             this.assertTrue(False)
         except MisplacedValidatorError, e:
             pass
@@ -38,18 +39,18 @@ class TestLazyAction(TestCase):
 class Foo(object):
     a = 1
 
-    @allowed_type(int)
+    @restrict_type(int)
     def b(self, b):
         return b
 
-@allowed_type(int)
+@restrict_type(int)
 def foo(a):
     return a
 
-@allowed_type(Foo)
+@restrict_type(Foo)
 def bar(b):
     return b
 
-@allowed_type(None, unicode, type)
+@restrict_type(None, unicode, type)
 def goo(*args):
     pass

@@ -1,8 +1,8 @@
 '''
 :Author: Juti Noppornpitak
 
-The module contains the data structures for analysis and construction of the loaders
-and entities based on the configuration.
+The module contains the data structures to aid the analysis and construction of
+the loaders and entities based on the configuration.
 
 .. note::
     Copyright (c) 2012 Juti Noppornpitak
@@ -28,7 +28,7 @@ and entities based on the configuration.
 
 from kotoba.kotoba import Kotoba
 
-from imagination.decorator.validator import allowed_type
+from imagination.decorator.validator import restrict_type
 from imagination.exception import *
 from imagination.loader import Loader
 from imagination.locator import Locator
@@ -44,7 +44,7 @@ class Transformer(object):
 
         self.__locator = locator
 
-    def cast(data, kind):
+    def cast(self, data, kind):
         '''
         Transform the given data to the given kind.
 
@@ -73,6 +73,33 @@ class Transformer(object):
     def locator(self):
         return self.__locator
 
+class Interception(object):
+    def __init__(self, event, actor, intercepted_action, handler, handling_action):
+        self.actor   = actor
+        self.event   = event
+        self.handler = handler
+
+        self.intercepted_action = intercepted_action
+        self.handling_action    = handling_action
+
+    def __str__(self):
+        return '(%s: %s %s) %s %s' % (
+            self.event,
+            self.actor,
+            self.intercepted_action,
+            self.handler,
+            self.handling_action
+        )
+
+    def __unicode__(self):
+        return u'(%s: %s %s) %s %s' % (
+            self.event,
+            self.actor,
+            self.intercepted_action,
+            self.handler,
+            self.handling_action
+        )
+
 class ParameterPackage(object):
     '''
     Parameter Package represents the parameter of arguments as
@@ -83,38 +110,5 @@ class ParameterPackage(object):
     :param `kwargs`: a dictionary of arguments
     '''
     def __init__(self, largs=[], kwargs={}):
-        try:
-            assert isinstance(node, Kotoba), 'kotoba.kotoba.Kotoba'
-        except AssertionError, e:
-            raise ValueError, 'Expecting a node of %s' % e.message
-
         self.largs  = largs
         self.kwargs = kwargs
-
-class TagPackage(list):
-    def __init__(self, node):
-        pass
-
-class Entity(object):
-    '''
-    Meta data for Entity
-
-    :param `node`:        an instance of :class:`kotoba.kotoba.Kotoba`
-    '''
-
-    def __init__(self, node):
-        try:
-            assert isinstance(node, Kotoba), 'Kotoba'
-        except AssertionError, e:
-            raise ValueError, 'Both parameters must be of types imagination.helper.meta.Transformer and kotoba.kotoba.Kotoba respectively. (Original message: %s)' % e.message
-
-        try:
-            assert node.attribute('id') and node.attribute('class'),\
-                'The meta data of this entity does not have an identifier (ID) or class.'
-        except AssertionError, e:
-            raise IncompatibleBlockError, e.message
-
-        self.id         = node.attribute('id')
-        self.kind       = node.attribute('class')
-        self.parameters = ParameterPackage(transformer, node)
-        self.tags

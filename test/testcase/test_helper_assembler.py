@@ -15,16 +15,26 @@ class TestHelperAssembler(TestCase):
         self.transformer = Transformer(self.locator)
 
         self.filename = 'locator-lazy-action.xml'
-        self.filepath = abspath(join(dirname(__file__), '..', 'data', self.filename))
+        self.filepath = self.__filepath(self.filename)
 
-        #self.locator.load_xml(filepath)
+    def __filepath(self, where):
+        return abspath(join(dirname(__file__), '..', 'data', where))
 
     def tearDown(self):
         del self.locator
         del self.transformer
 
-    def test_initialization(self):
+    def test_initialization_good(self):
         assembler = Assembler(self.transformer)
+
+    def test_initialization_failed_on_multiple_events(self):
+        assembler = Assembler(self.transformer)
+
+        try:
+            assembler.load(self.__filepath('locator-lazy-action-malform.xml'))
+            self.assertTrue(False, 'Passed where it should have failed.')
+        except MultipleInterceptingEventsWarning:
+            self.assertTrue(True)
 
     def test_only_loading(self):
         assembler = Assembler(self.transformer)

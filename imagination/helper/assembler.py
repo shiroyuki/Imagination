@@ -29,26 +29,24 @@ and register to a particular locator.
 from kotoba.kotoba import Kotoba
 from kotoba        import load_from_file
 
-from imagination.decorator.validator import allowed_type
+from imagination.decorator.validator import restrict_type
 from imagination.entity      import Entity, Proxy
 from imagination.exception   import IncompatibleBlockError, UnknownEntityError, UnknownFileError
 from imagination.loader      import Loader
-from imagination.helper.meta import Transformer
+from imagination.helper.meta import *
 
 class Assembler(object):
     '''
     :param `transformer`: an instance of :class:`imagination.helper.meta.Transformer`
     '''
+
+    __known_interceptable_events = ['before', 'pre', 'post', 'after']
+
+    @restrict_type(Transformer)
     def __init__(self, transformer):
-        try:
-            assert isinstance(transformer, Transformer)
-        except AssertionError, e:
-            raise TypeError, 'Expected an instance of %s, given %s.'\
-                % (Transformer, transformer.__class__)
-
         self.__transformer = transformer
-        self.__locator   = None
 
+    @restrict_type(unicode)
     def load(self, filepath):
         xml = load_from_file(filepath)
 
@@ -61,11 +59,9 @@ class Assembler(object):
             self.__register_loader(node)
 
     def locator(self):
-        if not self.__locator:
-            self.__locator = self.__transformer.locator()
+        return self.__transformer.locator()
 
-        return self.__locator
-
+    @restrict_type(Kotoba)
     def __validate_node(self, node):
         if not node.attribute('id'):
             raise IncompatibleBlockError, 'Invalid entity configuration. No ID specified.'
@@ -73,44 +69,84 @@ class Assembler(object):
         if not node.attribute('class'):
             raise IncompatibleBlockError, 'Invalid entity configuration. No class type specified.'
 
-    @allowed_type(Kotoba)
+    @restrict_type(Kotoba)
     def __register_proxy(self, node):
         self.__validate_node(node)
 
-        id      = node.attribute('id')
-        proxy   = Proxy(self.locator(), id)
+        id    = node.attribute('id')
+        proxy = Proxy(self.locator(), id)
 
         self.locator().set(id, proxy)
 
-    @allowed_type(Kotoba)
+    @restrict_type(Kotoba)
     def __register_loader(self, node):
+        interceptions = self.__get_interceptions(node)
+
         id     = node.attribute('id')
         kind   = node.attribute('class')
         params = self.__get_params(node)
         tags   = self.__get_tags(node)
-        loader = Loader(kind)
-        entity = Entity(id, loader, **kwargs)
 
+        loader = Loader(kind)
+
+        entity = Entity(id, loader, *params.largs, **params.kwargs)
         entity.tags(tags)
 
         self.locator().set(id, entity)
 
-    @allowed_type(Kotoba)
+    @restrict_type(Kotoba)
     def __get_tags(self, node):
-        tags = node.attribute('tags').strip()
+        tags = node.attribute('tags')
 
-        return tags and split(' ', tags) or []
+        return tags and split(' ', tags.strip()) or []
 
-    @allowed_type(Kotoba)
+    @restrict_type(Kotoba)
+    def __get_interceptions(self, node):
+        interceptions = []
+
+        for sub_node in node.children('interception'):
+            interceptions.append(self.__get_interception(sub_node))
+
+        return interceptions
+
+    @restrict_type(Kotoba)
+    def __get_interception(self, node):
+        actor = None
+        event = None
+
+        intercepted_action = None
+        handling_action    = None
+
+        for given_event in self.__known_interceptable_events:
+            given_actor = node.attribute(given_event)
+
+            if given_actor and not event:
+                actor = given_actor
+                event = given_event
+            elif given_actor and event:
+                raise MultipleInterceptingEventsWarning, given_event
+
+            intercepted_action = node.attribute('do')
+            handling_action    = node.attribute('with')
+
+        return Interception(
+            event,
+            actor,
+            intercepted_action,
+            node.parent().attribute('id'),
+            handling_action
+        )
+
+    @restrict_type(Kotoba)
     def __get_params(self, node):
-        package = ParameterPackage(node)
+        package = ParameterPackage()
 
         index = 0
 
         for param in node.children('param'):
             try:
-                assert not param.attribute('name')\
-                    or not param.attribute('type'),\
+                assert param.attribute('name')\
+                    or param.attribute('type'),\
                     'The parameter #%d does not have either name or type.' % index
             except AssertionError, e:
                 raise IncompatibleBlockError, e.message

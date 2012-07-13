@@ -2,30 +2,60 @@
 <!--
 This is specific for the test of dependency injection on actionable events and
 super lazy loaders allowing any arbitery order of entity declaration.
+
+Schema::
+
+    EVENT=(before|pre|post|after)
+
+    <interception
+        EVENT=REFERENCE_ENTITY_IDENTIFIER
+        do=REFERENCE_ENTITY_METHOD
+        with=THIS_ENTITY_METHOD
+    >
+        PARAMETERS
+    </interception>
+
+where:
+* REFERENCE_ENTITY_IDENTIFIER is the reference's entity identifier
+* REFERENCE_ENTITY_METHOD is the reference's method name
+* THIS_ENTITY_METHOD is this entity's method name
+* EVENT is where the REFERENCE_ENTITY_METHOD is intercepted.
+  * 'before' is an event before the execution of the method of the reference
+    (reference method) regardless to the given arguments to the reference
+    method.
+  * 'pre' is an event on pre-contact of the reference method and concerning
+    about the arguments given to the reference method. The method of the entity
+    (the intercepting method) takes the same paramenter as the reference method.
+  * 'post' is an event on post-contact of the reference method and concerning
+    about the result returned by the reference method. The intercepting method
+    for this event takes only one parameter which is the result from the
+    reference method or any previous post-contact interceptors.
+  * 'after' is an event after the execution of the reference method regardless
+    to the result reterned by the reference method.
 -->
 <imagination>
     <entity id="alpha" class="dummy.lazy_action.Alpha">
         <param type="entity" name="accompany">beta</param>
-        <action on="charlie" before="cook" do="order">
+        <interception before="charlie" do="cook" with="order">
             <param type="unicode" name="item">egg and becon</param>
-        </action>
-        <action on="charlie" intercept="repeat" do="confirm"/>
-        <action on="charlie" before="serve" do="speak_to_accompany">
+        </interception>
+        <interception pre="charlie" do="repeat" with="confirm"/>
+        <interception before="charlie" do="serve" with="speak_to_accompany">
             <param type="str" name="context">watch your hand</param>
-        </action>
-        <action on="charlie" before="serve" do="wash_hands"/>
-        <action on="me" after="eat" do="speak">
+        </interception>
+        <interception before="charlie" do="serve" with="wash_hands"/>
+        <interception after="me" do="eat" with="speak">
             <param type="str" name="context">merci</param>
-        </action>
+        </interception>
     </entity>
     <entity id="beta" class="dummy.lazy_action.Beta">
-        <action on="alpha" after="speak_to_accompany" do="acknowledge"/>
+        <interception after="alpha" do="speak_to_accompany" with="acknowledge"/>
     </entity>
     <entity id="charlie" class="dummy.lazy_action.Charlie">
-        <action on="alpha" follow="order" do="repeat"/>
-        <action on="beta" follow="order" do="repeat"/>
-        <action on="alpha" after="order" do="respond">
+        <interception post="alpha" do="order" with="repeat"/>
+        <interception post="beta" do="order" with="repeat"/>
+        <interception after="alpha" do="order" with="respond">
             <param type="unicode" name="response">wilco</param>
-        </action>
+        </interception>
     </entity>
 </imagination>

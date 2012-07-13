@@ -26,9 +26,9 @@ and :class:`imagination.loader.Loader` and simulate the singleton class on the p
 
 '''
 
-from imagination.action    import Action
-from imagination.loader    import Loader
-from imagination.exception import UnknownLoaderError
+from imagination.action              import Action
+from imagination.decorator.validator import restrict_type
+from imagination.loader              import Loader
 
 class Proxy(object):
     '''
@@ -71,10 +71,8 @@ class Entity(object):
         instance of the reference.
     '''
 
+    @restrict_type(None, Loader)
     def __init__(self, id, loader, *args, **kwargs):
-        if not isinstance(loader, Loader):
-            raise UnknownLoaderError, 'Expected a service loader.'
-
         self._id       = id
         self._loader   = loader
         self._args     = args
@@ -82,6 +80,7 @@ class Entity(object):
         self._instance = None
         self._tags     = None
         self._locked   = False
+        self._interceptions = []
 
     def id(self):
         ''' Get the entity ID. '''
@@ -123,6 +122,9 @@ class Entity(object):
             self._tags = new_tags
 
         return self._tags or []
+
+    def interceptions(self, new_interceptions=None):
+        pass
 
     def instance(self):
         ''' Get the singleton instance of the class defined for the loader. '''
