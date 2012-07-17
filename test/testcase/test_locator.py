@@ -1,22 +1,33 @@
-from os.path               import abspath, dirname, join
-from unittest              import TestCase
+from os.path  import abspath, dirname, join
+from unittest import TestCase
+
+from imagination.helper.assembler import Assembler
+from imagination.helper.meta      import Transformer
+
 from imagination.entity    import Entity
 from imagination.exception import UnknownEntityError
 from imagination.loader    import Loader
 from imagination.locator   import Locator
 
 # For reference.
-from dummy.core            import PlainOldObject
-from dummy.core            import PlainOldObjectWithParameters
+from dummy.core import PlainOldObject
+from dummy.core import PlainOldObjectWithParameters
 
 class TestLocator(TestCase):
+    '''
+    Test the locator via the assembler.
+    '''
     class UnknownEntity(object): pass
 
     def setUp(self):
-        self.locator = Locator()
+        self.locator     = Locator()
+        self.transformer = Transformer(self.locator)
+        self.assembler   = Assembler(self.transformer)
 
     def tearDown(self):
         del self.locator
+        del self.transformer
+        del self.assembler
 
     def __make_good_entity(self):
         return Entity(
@@ -51,7 +62,7 @@ class TestLocator(TestCase):
     def __prepare_good_locator_from_xml(self):
         test_file = self.__get_data_path('locator.xml')
 
-        self.locator.load_xml(test_file)
+        self.assembler.load(test_file)
 
     def test_good_locator_xml_on_entity_registration(self):
         self.__prepare_good_locator_from_xml()

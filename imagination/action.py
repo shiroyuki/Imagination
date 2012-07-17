@@ -45,6 +45,9 @@ class Action(object):
 
         return feedback
 
+    def register_with_meta_interception(self):
+        pass
+
     def register_pre_action(self, callback, *args, **kwargs):
         self.__pre_actions.append((callback, args, kwargs))
 
@@ -56,3 +59,27 @@ class Action(object):
 
     def __run_post_events(self):
         pass
+
+class Interceptor(object):
+    '''
+    Action Interceptor
+
+    This class contains information about the callback, parameters used by
+    the callback and the action configuration (:class:`Configuration`).
+    '''
+    def __init__(self, callback, parameter_package):
+        self.callback          = callback
+        self.parameter_package = parameter_package
+
+class EventType(object):
+    # event before the execution that doesn't care about the input given to the action.
+    pre_action     = 'pre:before'
+
+    # event before the execution that only concerns about the input given to the action.
+    pre_condition  = 'pre:condition'
+
+    # event after the execution that only concerns about the returned value from the action.
+    post_condition = 'post:condition'
+
+    # event after the execution that doesn't care about the returned value from the action.
+    post_action    = 'post:action'

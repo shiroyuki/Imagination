@@ -39,6 +39,7 @@ class Transformer(object):
 
     :param `locator`: the entity locator (as an instance of :class:`imagination.locator.Locator`)
     '''
+    @restrict_type(Locator)
     def __init__(self, locator):
         assert isinstance(locator, Locator), "Expecting an instance of imagination.locator.Locator, one of %s was given instead." % (type(locator).__name__)
 
@@ -74,8 +75,10 @@ class Transformer(object):
         return self.__locator
 
 class Interception(object):
+    __self_reference_keyword = 'me'
+
     def __init__(self, event, actor, intercepted_action, handler, handling_action):
-        self.actor   = actor
+        self.actor   = actor == self.__self_reference_keyword and handler or actor
         self.event   = event
         self.handler = handler
 
@@ -83,7 +86,7 @@ class Interception(object):
         self.handling_action    = handling_action
 
     def __str__(self):
-        return '(%s: %s %s) %s %s' % (
+        return 'Interception: %s %s.%s, %s.%s' % (
             self.event,
             self.actor,
             self.intercepted_action,
@@ -92,7 +95,7 @@ class Interception(object):
         )
 
     def __unicode__(self):
-        return u'(%s: %s %s) %s %s' % (
+        return u'Interception: %s %s.%s, %s.%s' % (
             self.event,
             self.actor,
             self.intercepted_action,
@@ -109,6 +112,6 @@ class ParameterPackage(object):
     :param `largs`:  a list of arguments
     :param `kwargs`: a dictionary of arguments
     '''
-    def __init__(self, largs=[], kwargs={}):
-        self.largs  = largs
-        self.kwargs = kwargs
+    def __init__(self, largs=None, kwargs=None):
+        self.largs  = largs  or []
+        self.kwargs = kwargs or {}

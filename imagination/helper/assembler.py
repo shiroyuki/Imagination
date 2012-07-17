@@ -26,6 +26,8 @@ and register to a particular locator.
 
 '''
 
+from re import split
+
 from kotoba.kotoba import Kotoba
 from kotoba        import load_from_file
 
@@ -44,7 +46,8 @@ class Assembler(object):
 
     @restrict_type(Transformer)
     def __init__(self, transformer):
-        self.__transformer = transformer
+        self.__interceptions = []
+        self.__transformer   = transformer
 
     @restrict_type(unicode)
     def load(self, filepath):
@@ -52,11 +55,19 @@ class Assembler(object):
 
         # First, register proxies to entities (for lazy initialization).
         for node in xml.children():
+            self.__validate_node(node)
+            self.__get_interceptions(node)
             self.__register_proxy(node)
 
         # Then, register loaders for entities.
         for node in xml.children():
             self.__register_loader(node)
+
+        # Then, declare interceptions to target entities.
+        for interception in self.__interceptions:
+            self.locator()\
+                .get_wrapper(interception.actor)\
+                .register_interception(interception)
 
     def locator(self):
         return self.__transformer.locator()
@@ -71,8 +82,6 @@ class Assembler(object):
 
     @restrict_type(Kotoba)
     def __register_proxy(self, node):
-        self.__validate_node(node)
-
         id    = node.attribute('id')
         proxy = Proxy(self.locator(), id)
 
@@ -80,8 +89,6 @@ class Assembler(object):
 
     @restrict_type(Kotoba)
     def __register_loader(self, node):
-        interceptions = self.__get_interceptions(node)
-
         id     = node.attribute('id')
         kind   = node.attribute('class')
         params = self.__get_params(node)
@@ -102,12 +109,8 @@ class Assembler(object):
 
     @restrict_type(Kotoba)
     def __get_interceptions(self, node):
-        interceptions = []
-
         for sub_node in node.children('interception'):
-            interceptions.append(self.__get_interception(sub_node))
-
-        return interceptions
+            self.__interceptions.append(self.__get_interception(sub_node))
 
     @restrict_type(Kotoba)
     def __get_interception(self, node):
@@ -155,7 +158,8 @@ class Assembler(object):
             name   = param.attribute('name')
 
             if package.kwargs.has_key(name):
-                raise DuplicateKeyWarning, 'There is a paramenter with that name already registered.'
+                raise DuplicateKeyWarning, 'There is a parameter name "%s" with that name already registered.' % name
+                pass
 
             package.kwargs[name] = self.__transformer.cast(
                 param.data(),

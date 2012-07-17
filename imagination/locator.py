@@ -29,8 +29,7 @@ from re     import split
 from kotoba import load_from_file
 
 from imagination.entity    import Entity, Proxy
-from imagination.exception import IncompatibleBlockError, UnknownEntityError, UnknownFileError
-from imagination.loader    import Loader
+from imagination.exception import *
 
 class Locator(object):
     ''' Entity locator '''
@@ -46,9 +45,16 @@ class Locator(object):
         :param `id`: entity identifier
         '''
         try:
+            if isinstance(entity, Proxy):
+                raise ForbiddenForkError
+
             return self._entities[id].fork()
+
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+
+    def entity_identifiers(self):
+        return self._entities.keys()
 
     def get(self, id):
         '''
@@ -61,10 +67,24 @@ class Locator(object):
             entity = self._entities[id]
 
             return isinstance(entity, Entity) and entity.instance() or entity
+
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
 
-    def get_list_by_tag(self, tag_label):
+    def get_wrapper(self, id):
+        '''
+        Retrieve the entity wrapper identified by ``id``.
+
+        :param `id`: entity identifier
+        :returns: the requested entity wrapper
+        '''
+        try:
+            return self._entities[id]
+
+        except KeyError:
+            raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+
+    def find_by_tag(self, tag_label):
         '''
         Retrieve entities by *tag_label*.
 
@@ -77,6 +97,9 @@ class Locator(object):
 
         # Then, get references to entities.
         return [self.get(entity_id) for entity_id in self._tag_to_entity_ids[tag_label]]
+
+    def has(self, id):
+        return id in self._entities
 
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
@@ -131,79 +154,4 @@ class Locator(object):
         :Status: Deprecated in 1.5
 
         '''
-        xml = load_from_file(file_path)
-
-        # First, register entities as proxies (for lazy initialization).
-        for block in xml.children():
-            self._validate_block(block)
-
-            entity_id = block.attribute('id')
-            proxy     = Proxy(self, entity_id)
-
-            self.set(entity_id, proxy)
-
-        # Then, register entities with loaders.
-        for block in xml.children():
-            entity_id    = block.attribute('id')
-            reference    = block.attribute('class')
-            args, kwargs = self._retrieve_params(block)
-            loader       = Loader(reference)
-
-            tags = block.attribute('tags')
-            if tags:
-                tags = tags.strip()
-                tags = tags and split(' ', tags) or []
-
-            entity = Entity(entity_id, loader, **kwargs)
-            entity.tags(tags)
-
-            self.set(entity_id, entity)
-
-    def transform_data(self, data, kind):
-        '''
-        Transform the given data to the given kind.
-
-        :param `data`: the data to be transform
-        :param `kind`: the kind of data of the transformed data.
-        :returns: the data of the given kind.
-        '''
-
-        if kind == 'entity':
-            data = self.get(data)
-        elif kind == 'class':
-            data = Loader(data).package()
-        elif kind == 'int':
-            data = int(data)
-        elif kind == 'float':
-            data = float(data)
-        elif kind == 'bool':
-            data = unicode(data).capitalize() == 'True'
-
-        return data
-
-    def _validate_block(self, block):
-        if not block.attribute('id'):
-            raise IncompatibleBlockError, 'Invalid entity configuration. No ID specified.'
-
-        if not block.attribute('class'):
-            raise IncompatibleBlockError, 'Invalid entity configuration. No class type specified.'
-
-    def _retrieve_params(self, block):
-        args   = []
-        kwargs = {}
-
-        for param in block.children('param'):
-            kwargs.update(self.transform_param(param))
-
-        return args, kwargs
-
-    def transform_param(self, param):
-        if not param.attribute('name'):
-            raise IncompatibleBlockError, 'What is the name of the parameter?'
-
-        return {
-            param.attribute('name'): self.transform_data(
-                param.data(),
-                param.attribute('type')
-            )
-        }
+        raise DeprecatedAPI, 'Use imagination.helper.assembler.Assembler.load instead.'

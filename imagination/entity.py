@@ -80,6 +80,7 @@ class Entity(object):
         self._instance = None
         self._tags     = None
         self._locked   = False
+        self._prepared = False
         self._interceptions = []
 
     def id(self):
@@ -123,8 +124,14 @@ class Entity(object):
 
         return self._tags or []
 
-    def interceptions(self, new_interceptions=None):
-        pass
+    def interceptions(self, interceptions):
+        if not isinstance(interceptions, list):
+            raise TypeError, 'The list of interceptions must be a list.'
+
+        self._interceptions = interceptions
+
+    def register_interception(self, interception):
+        self._interceptions.append(interception)
 
     def instance(self):
         ''' Get the singleton instance of the class defined for the loader. '''
@@ -152,13 +159,12 @@ class Entity(object):
             if not callable(ref):
                 continue
 
-            ref = instance.__getattribute__(attribute)
             ref = Action(ref)
 
         return instance
 
     def __prepare(self):
-        if self._instance:
+        if self._prepared or self._instance:
             return
 
         args   = []
@@ -175,3 +181,5 @@ class Entity(object):
                 continue
 
             self._kwargs[key] = self._kwargs[key].load()
+
+        self._prepared = True
