@@ -44,9 +44,9 @@ def restrict_type(*restricted_list, **restricted_map):
     is throw.
     
     There are a few exceptions:
-    - If the given type is ``None``, there will be no restriction.
-    - If the given type is ``long``, the value of ``int`` and ``float`` are also valid.
-    - If the given type is ``unicode``, the valud of ``str`` is also valid.
+     * If the given type is ``None``, there will be no restriction.
+     * If the given type is ``long``, the value of ``int`` and ``float`` are also valid.
+     * If the given type is ``unicode``, the valud of ``str`` is also valid.
     
     .. code-block:: python
     
