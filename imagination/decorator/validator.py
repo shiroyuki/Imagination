@@ -39,6 +39,38 @@ def restrict_type(*restricted_list, **restricted_map):
                               to the method.
     :param `restricted_map`:  the map of types to restrict the type of each
                               parameter by name.
+    
+    When the input fails the validation, an exception of type :class:`TypeError`
+    is throw.
+    
+    There are a few exceptions:
+    - If the given type is ``None``, there will be no restriction.
+    - If the given type is ``long``, the value of ``int`` and ``float`` are also valid.
+    - If the given type is ``unicode``, the valud of ``str`` is also valid.
+    
+    .. code-block:: python
+    
+        from imagination.decorator.validator import restrict_type
+        
+        # Example on a function
+        @restrict_type(unicode)
+        def say(context):
+            print context
+            
+        class Person(object):
+            # Example on a constructor
+            @restrict_type(unicode, int)
+            def __init__(self, name, age):
+                self.name = name
+                self.age  = age
+                
+                self.__friends = []
+            
+            # Example on an instance method
+            @restrict_type(Person)
+            def add_friend(self, person):
+                self.__friends.append(person)
+        
     '''
     def inner_decorator(reference):
         if isinstance(reference, type) or not callable(reference):
