@@ -1,5 +1,6 @@
 '''
 :Author: Juti Noppornpitak
+:Availability: 1.5
 
 The module contains reusable input validators.
 
@@ -29,9 +30,15 @@ import inspect
 
 from imagination.exception import MisplacedValidatorError
 
-def restrict_type(*allowed_list, **allowed_dictionary):
+def restrict_type(*restricted_list, **restricted_map):
     '''
-    The method decorator to validate the input given to the reference.
+    The method decorator to validate the type of inputs given to the method.
+    
+    :param `restricted_list`: the list of types to restrict the type of each
+                              parameter in the same order as the parameter given
+                              to the method.
+    :param `restricted_map`:  the map of types to restrict the type of each
+                              parameter by name.
     '''
     def inner_decorator(reference):
         if isinstance(reference, type) or not callable(reference):
@@ -43,12 +50,12 @@ def restrict_type(*allowed_list, **allowed_dictionary):
 
         if is_class:
             def new_reference(self, *args, **kwargs):
-                __validate_type(allowed_list, allowed_dictionary, args, kwargs)
+                __validate_type(restricted_list, restricted_map, args, kwargs)
 
                 return reference(self, *args, **kwargs)
         else:
             def new_reference(*args, **kwargs):
-                __validate_type(allowed_list, allowed_dictionary, args, kwargs)
+                __validate_type(restricted_list, restricted_map, args, kwargs)
 
                 return reference(*args, **kwargs)
 
