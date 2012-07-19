@@ -14,7 +14,7 @@ class TestLazyAction(TestCase):
             foo(2.0)
             self.assertTrue(False)
         except TypeError, e:
-            self.assertEqual('Excepted int, given float.', e.message)
+            self.assertEqual('Argument #0 was excepting int but float has been given.', e.message)
 
     def test_method_instance(self):
         f = Foo()

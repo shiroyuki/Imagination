@@ -28,8 +28,9 @@ The module contains the entity locator used to promote reusability of components
 from re     import split
 from kotoba import load_from_file
 
-from imagination.entity    import Entity, Proxy
+from imagination.entity    import Entity
 from imagination.exception import *
+from imagination.proxy     import Proxy
 
 class Locator(object):
     ''' Entity locator '''

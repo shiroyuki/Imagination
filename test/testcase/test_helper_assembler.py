@@ -7,7 +7,7 @@ from imagination.loader    import Loader
 from imagination.locator   import Locator
 
 from imagination.helper.assembler import Assembler
-from imagination.helper.meta      import Transformer
+from imagination.helper.data      import Transformer
 
 class TestHelperAssembler(TestCase):
     def setUp(self):

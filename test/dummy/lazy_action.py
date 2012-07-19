@@ -8,6 +8,7 @@ class Conversation(object):
 class Alpha(object):
     def __init__(self, accompany):
         self.accompany = accompany
+        self.name      = self.__class__.__name__
 
     def call_accompany(self):
         self.accompany.acknowledge()
@@ -27,11 +28,25 @@ class Alpha(object):
     def speak(self, context):
         Conversation.log(self, 'say, %s' % context)
 
+    def confirm(self):
+        Conversation.log(self, 'confirm')
+
 class Beta(object):
+    def __init__(self):
+        self.name = self.__class__.__name__
+
     def acknowledge(self):
         Conversation.log(self, 'acknowledge')
 
 class Charlie(object):
+    def __init__(self):
+        self.name = self.__class__.__name__
+
+    def introduce(self):
+        Conversation.log(self, 'introduce itself as "%s"' % self.name)
+
+        return self.name
+
     def cook(self):
         Conversation.log(self, 'cook')
 

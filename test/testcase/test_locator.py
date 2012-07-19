@@ -2,7 +2,7 @@ from os.path  import abspath, dirname, join
 from unittest import TestCase
 
 from imagination.helper.assembler import Assembler
-from imagination.helper.meta      import Transformer
+from imagination.helper.data      import Transformer
 
 from imagination.entity    import Entity
 from imagination.exception import UnknownEntityError

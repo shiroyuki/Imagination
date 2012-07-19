@@ -30,47 +30,50 @@ import inspect
 
 from imagination.exception import MisplacedValidatorError
 
+class SpecialType(object):
+    function = 'type:function'
+
 def restrict_type(*restricted_list, **restricted_map):
     '''
     The method decorator to validate the type of inputs given to the method.
-    
+
     :param `restricted_list`: the list of types to restrict the type of each
                               parameter in the same order as the parameter given
                               to the method.
     :param `restricted_map`:  the map of types to restrict the type of each
                               parameter by name.
-    
+
     When the input fails the validation, an exception of type :class:`TypeError`
     is throw.
-    
+
     There are a few exceptions:
      * If the given type is ``None``, there will be no restriction.
      * If the given type is ``long``, the value of ``int`` and ``float`` are also valid.
      * If the given type is ``unicode``, the valud of ``str`` is also valid.
-    
+
     .. code-block:: python
-    
+
         from imagination.decorator.validator import restrict_type
-        
+
         # Example on a function
         @restrict_type(unicode)
         def say(context):
             print context
-            
+
         class Person(object):
             # Example on a constructor
             @restrict_type(unicode, int)
             def __init__(self, name, age):
                 self.name = name
                 self.age  = age
-                
+
                 self.__friends = []
-            
+
             # Example on an instance method
             @restrict_type(Person)
             def add_friend(self, person):
                 self.__friends.append(person)
-        
+
     '''
     def inner_decorator(reference):
         if isinstance(reference, type) or not callable(reference):
@@ -108,7 +111,9 @@ def __validate_type(allowed_list, allowed_dictionary, argument_list, argument_di
                 continue
 
             assert __assert_type(reference, expected_type),\
-                expected_type.__name__
+                expected_type == SpecialType.function\
+                and 'function'\
+                or expected_type.__name__
 
         for key, expected_type in allowed_dictionary.iteritems():
             reference = argument_dictionary[key]
@@ -116,17 +121,30 @@ def __validate_type(allowed_list, allowed_dictionary, argument_list, argument_di
             if key not in argument_dictionary:
                 continue
 
+            if not expected_type:
+                continue
+
             assert __assert_type(reference, expected_type),\
                 expected_type.__name__
 
     except AssertionError, e:
-        raise TypeError, 'Excepted %s, given %s.' % (e.message, type(reference).__name__)
+        raise TypeError, 'Argument #%s was excepting %s but %s has been given.' % (index, e.message, type(reference).__name__)
 
 def __assert_type(instance, expected_type):
-    if not isinstance(expected_type, type):
+    callable_expected = expected_type == SpecialType.function
+    instance_expected = isinstance(expected_type, type)
+
+    if not callable_expected and not instance_expected:
         raise TypeError, 'The expected type must be a type.'
 
     fallback_types = []
+
+    # If the callable is expected, validate if it is callable.
+
+    if callable_expected:
+        return callable(instance)
+
+    # Now, validate the type of INSTANCE.
 
     if expected_type is unicode:
         fallback_types.append(str)

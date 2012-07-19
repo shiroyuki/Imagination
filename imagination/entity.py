@@ -29,23 +29,7 @@ and :class:`imagination.loader.Loader` and simulate the singleton class on the p
 from imagination.action              import Action
 from imagination.decorator.validator import restrict_type
 from imagination.loader              import Loader
-
-class Proxy(object):
-    '''
-    Proxy to a particular entity known by a certain locator.
-
-    :param `locator`: the locator
-    :param `id`: entity identifier
-
-    :Version: 1.5
-    '''
-    def __init__(self, locator, id):
-        self.__locator = locator
-        self.__id      = id
-
-    def load(self):
-        ''' Load the entity. '''
-        return self.__locator.get(self.__id)
+from imagination.proxy               import Proxy
 
 class Entity(object):
     '''
@@ -159,7 +143,12 @@ class Entity(object):
             if not callable(ref):
                 continue
 
-            ref = Action(ref)
+            new_ref = Action(ref)
+
+            for interception in self._interceptions:
+                new_ref.register(interception)
+
+            instance.__setattr__(attribute, new_ref)
 
         return instance
 

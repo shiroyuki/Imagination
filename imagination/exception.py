@@ -21,3 +21,9 @@ class UnknownFileError(Exception):
 
 class UnknownEntityError(Exception):
     ''' Exception thrown when :class:`imagination.locator.Locator` constructor receives an unusable entity. '''
+
+class UnknownProxyError(Exception):
+    ''' Exception thrown when :class:`imagination.helper.assembler.Assembler` could not find the proxy. '''
+
+class NonCallableError(Exception):
+    ''' Exception thrown when :class:`imagination.action.Action` tries to execute a non-callable reference. '''

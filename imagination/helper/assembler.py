@@ -32,14 +32,17 @@ from kotoba.kotoba import Kotoba
 from kotoba        import load_from_file
 
 from imagination.decorator.validator import restrict_type
-from imagination.entity      import Entity, Proxy
-from imagination.exception   import IncompatibleBlockError, UnknownEntityError, UnknownFileError
-from imagination.loader      import Loader
-from imagination.helper.meta import *
+from imagination.entity              import Entity
+from imagination.exception           import *
+from imagination.loader              import Loader
+from imagination.helper.data         import *
+from imagination.meta.interception   import Interception
+from imagination.meta.package        import Parameter
+from imagination.proxy               import Proxy
 
 class Assembler(object):
     '''
-    :param `transformer`: an instance of :class:`imagination.helper.meta.Transformer`
+    :param `transformer`: an instance of :class:`imagination.helper.data.Transformer`
     '''
 
     __known_interceptable_events = ['before', 'pre', 'post', 'after']
@@ -48,6 +51,7 @@ class Assembler(object):
     def __init__(self, transformer):
         self.__interceptions = []
         self.__transformer   = transformer
+        self.__known_proxies = {}
 
     @restrict_type(unicode)
     def load(self, filepath):
@@ -56,17 +60,17 @@ class Assembler(object):
         # First, register proxies to entities (for lazy initialization).
         for node in xml.children():
             self.__validate_node(node)
-            self.__get_interceptions(node)
             self.__register_proxy(node)
 
         # Then, register loaders for entities.
         for node in xml.children():
+            self.__get_interceptions(node)
             self.__register_loader(node)
 
         # Then, declare interceptions to target entities.
         for interception in self.__interceptions:
             self.locator()\
-                .get_wrapper(interception.actor)\
+                .get_wrapper(interception.actor.id())\
                 .register_interception(interception)
 
     def locator(self):
@@ -86,6 +90,9 @@ class Assembler(object):
         proxy = Proxy(self.locator(), id)
 
         self.locator().set(id, proxy)
+
+        # this is for interceptors
+        self.__known_proxies[id] = proxy
 
     @restrict_type(Kotoba)
     def __register_loader(self, node):
@@ -123,26 +130,47 @@ class Assembler(object):
         for given_event in self.__known_interceptable_events:
             given_actor = node.attribute(given_event)
 
-            if given_actor and not event:
-                actor = given_actor
-                event = given_event
-            elif given_actor and event:
+            # If the actor is not defined, continue or if the event is already
+            # set (in the earlier iteration), raise the exception.
+            if not given_actor:
+                continue
+            elif event:
                 raise MultipleInterceptingEventsWarning, given_event
 
-            intercepted_action = node.attribute('do')
-            handling_action    = node.attribute('with')
+            # Initially get the name of the actor and the handler.
+            actor   = given_actor
+            handler = node.parent().attribute('id')
+
+            if actor == Interception.self_reference_keyword():
+                actor = handler
+
+            # If the actor or the handler has no proxies, raise the exception.
+            if actor not in self.__known_proxies:
+                raise UnknownProxyError, 'The target (%s) of the interception is unknown.' % actor
+
+            if handler not in self.__known_proxies:
+                raise UnknownProxyError, 'The handler (%s) of the interception is unknown.' % handler
+
+            actor   = self.__known_proxies[actor]
+            handler = self.__known_proxies[handler]
+            event   = given_event
+
+            intercepted_action  = node.attribute('do')
+            handling_action     = node.attribute('with')
+            handling_parameters = self.__get_params(node)
 
         return Interception(
             event,
             actor,
             intercepted_action,
-            node.parent().attribute('id'),
-            handling_action
+            handler,
+            handling_action,
+            handling_parameters
         )
 
     @restrict_type(Kotoba)
     def __get_params(self, node):
-        package = ParameterPackage()
+        package = Parameter()
 
         index = 0
 

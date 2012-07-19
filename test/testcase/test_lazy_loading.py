@@ -2,8 +2,9 @@ from os.path  import abspath, dirname, join
 from unittest import TestCase
 
 from imagination.helper.assembler import Assembler
-from imagination.helper.meta      import Transformer
+from imagination.helper.data      import Transformer
 
+from imagination.action    import Action
 from imagination.entity    import Entity
 from imagination.exception import UnknownEntityError
 from imagination.loader    import Loader
@@ -12,7 +13,7 @@ from imagination.locator   import Locator
 # For reference.
 from dummy.lazy_action import *
 
-class TestLazyAction(TestCase):
+class TestLazyLoading(TestCase):
     ''' Test concentrating on lazy-loading and actions via the assembler. '''
     def setUp(self):
         self.locator = Locator()
@@ -35,9 +36,11 @@ class TestLazyAction(TestCase):
 
         self.assertEquals(self.locator.get('alpha').call_accompany(), self.locator.get('beta'))
 
+    # Test for actionable events... due to be in a seperate files.
+
+    def test_actions_without_events(self):
+        c = self.locator.get('charlie')
+        self.assertIsInstance(c.introduce, Action, c.introduce.__class__)
+
     def test_actions(self):
         self.locator.get('charlie').cook()
-
-        #print
-        #print '\n'.join(Conversation.logs)
-        #print
