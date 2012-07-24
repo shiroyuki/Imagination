@@ -131,6 +131,8 @@ def __validate_type(allowed_list, allowed_dictionary, argument_list, argument_di
         raise TypeError, 'Argument #%s was excepting %s but %s has been given.' % (index, e.message, type(reference).__name__)
 
 def __assert_type(instance, expected_type):
+    list_types = [list, tuple, set]
+
     callable_expected = expected_type == SpecialType.function
     instance_expected = isinstance(expected_type, type)
 
@@ -151,6 +153,8 @@ def __assert_type(instance, expected_type):
     elif expected_type is long:
         fallback_types.append(float)
         fallback_types.append(int)
+    elif expected_type in list_types:
+        fallback_types.extend(list_types)
 
     if isinstance(instance, expected_type):
         return True

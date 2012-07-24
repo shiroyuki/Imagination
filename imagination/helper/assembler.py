@@ -4,6 +4,83 @@
 The module contains the assembler to constuct loaders and entites based on the configuration
 and register to a particular locator.
 
+The schema is defined as followed::
+
+    # Base
+
+    <imagination>
+        ENTITY*
+    </imagination>
+
+    # Entity
+
+    ENTITY = <entity id=ENTITY_ID class=ENTITY_CLASS [option=ENTITY_OPTIONS]?>
+                 PARAMS*
+                 INTERCEPTION*
+             </entity>
+
+    ENTITY_OPTIONS=(factory-mode|no-interuption)
+    # Event
+
+    EVENT=(before|pre|post|after)
+
+    INTERCEPTION =  <interception
+                        EVENT=REFERENCE_ENTITY_IDENTIFIER
+                        do=REFERENCE_ENTITY_METHOD
+                        with=THIS_ENTITY_METHOD>
+                        PARAMETERS
+                    </interception>
+
+where:
+* ENTITY_ID is the identifier of the entity.
+* ENTITY_CLASS is the fully-qualified class name of the entity. (e.g. ``tori.service.rdb.EntityService``)
+* ``option`` is the option of the entity where ``ENTITY_OPTIONS`` can have one
+  or more of:
+  * ``factory-mode``: always fork the instance of the given class.
+  * ``no-interuption``: any methods of the entity cannot be interrupted.
+* REFERENCE_ENTITY_IDENTIFIER is the reference's entity identifier
+* REFERENCE_ENTITY_METHOD is the reference's method name
+* THIS_ENTITY_METHOD is this entity's method name
+* EVENT is where the REFERENCE_ENTITY_METHOD is intercepted.
+  * 'before' is an event before the execution of the method of the reference
+    (reference method) regardless to the given arguments to the reference
+    method.
+  * 'pre' is an event on pre-contact of the reference method and concerning
+    about the arguments given to the reference method. The method of the entity
+    (the intercepting method) takes the same paramenter as the reference method.
+  * 'post' is an event on post-contact of the reference method and concerning
+    about the result returned by the reference method. The intercepting method
+    for this event takes only one parameter which is the result from the
+    reference method or any previous post-contact interceptors.
+  * 'after' is an event after the execution of the reference method regardless
+    to the result reterned by the reference method.
+
+.. code-block:: xml
+
+    <?xml version="1.0" encoding="utf-8"?>
+    <!--
+    This is specific for the test of dependency injection on actionable events and
+    super lazy loaders allowing any arbitery order of entity declaration.
+    -->
+    <imagination>
+        <entity id="alpha" class="dummy.lazy_action.Alpha">
+            <param type="entity" name="accompany">beta</param>
+            <interception before="charlie" do="cook" with="order">
+                <param type="unicode" name="item">egg and becon</param>
+            </interception>
+            <interception pre="charlie" do="repeat" with="confirm"/>
+            <interception before="charlie" do="serve" with="speak_to_accompany">
+                <param type="str" name="context">watch your hand</param>
+            </interception>
+            <interception before="charlie" do="serve" with="wash_hands"/>
+            <interception after="me" do="eat" with="speak">
+                <param type="str" name="context">merci</param>
+            </interception>
+        </entity>
+        <entity id="beta" class="dummy.lazy_action.Beta"/>
+        <entity id="charlie" class="dummy.lazy_action.Charlie"/>
+    </imagination>
+
 .. note::
     Copyright (c) 2012 Juti Noppornpitak
 

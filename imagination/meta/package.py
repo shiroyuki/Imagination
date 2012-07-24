@@ -29,6 +29,15 @@ and construction of the loaders and entities based on the configuration.
 
 from imagination.decorator.validator import restrict_type
 
+class Interceptor(object):
+    '''
+    The metadata for an interceptor.
+    '''
+    def __init__(self):
+        self._id         = None
+        self._action     = None
+        self._parameters = None
+
 class Parameter(object):
     '''
     Parameter Package represents the parameter of arguments as

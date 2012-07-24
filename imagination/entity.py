@@ -135,17 +135,21 @@ class Entity(object):
         instance = self._loader.package()(*self._args, **self._kwargs)
 
         for attribute in dir(instance):
-            if attribute[0:2] == '__':
+            if attribute[0] == '_':
                 continue
 
             ref = instance.__getattribute__(attribute)
 
-            if not callable(ref):
+            if not ref or not callable(ref):
                 continue
 
             new_ref = Action(ref)
 
             for interception in self._interceptions:
+                if interception.intercepted_action != attribute:
+                    continue
+
+                #print '[REG] %s --> %s' % (attribute, interception)
                 new_ref.register(interception)
 
             instance.__setattr__(attribute, new_ref)

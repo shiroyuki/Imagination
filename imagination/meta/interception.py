@@ -39,8 +39,11 @@ class Interception(object):
         intentional in order to avoid direct circular dependencies.
     '''
 
+    static_guid = 1
+
     @restrict_type(unicode, Proxy, unicode, Proxy, unicode, Parameter)
     def __init__(self, event, actor, intercepted_action, handler, handling_action, handling_parameters):
+        self._guid   = Interception.static_guid
         self.actor   = actor
         self.event   = event
         self.handler = handler
@@ -48,6 +51,8 @@ class Interception(object):
         self.intercepted_action  = intercepted_action
         self.handling_action     = handling_action
         self.handling_parameters = handling_parameters
+
+        Interception.static_guid += 1
 
     @staticmethod
     def self_reference_keyword():

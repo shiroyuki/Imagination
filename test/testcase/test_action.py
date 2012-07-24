@@ -38,11 +38,11 @@ class TestAction(TestCase):
 
     def test_actions(self):
         ''' This is NOT a test. '''
-        #alpha   = self.locator.get('alpha')
+        alpha   = self.locator.get('alpha')
         charlie = self.locator.get('charlie')
 
         charlie.cook()
 
-        #alpha.order('news')
+        alpha.order('news')
 
         #print '\n'.join(Conversation.logs)

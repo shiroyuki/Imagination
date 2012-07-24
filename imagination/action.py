@@ -31,7 +31,9 @@ and :class:`imagination.loader.Loader` and simulate the singleton class on the p
 '''
 
 from inspect import getargspec
+
 from imagination.meta.interception import Interception
+from imagination.meta.package      import Parameter
 
 class EventType(object):
     # event before the execution that doesn't care about the input given to the action.
@@ -48,19 +50,24 @@ class EventType(object):
 
 class Action(object):
     def __init__(self, f):
-        self.executed = False
-        self.referrer = f.im_self
-        self.reference = f
-        self.reference_name = f.__name__
+        self.executed       = False
+        self.reference      = f
+        self.name           = f.__name__
         self.__pre_actions  = []
         self.__post_actions = []
 
     def __call__(self, *args, **kwargs):
-        self.__run_pre_events(*args, **kwargs)
+        parameters = Parameter(args, kwargs)
 
-        feedback = self.reference(*args, **kwargs)
+        #print
 
-        #feedback = self.__run_post_events(feedback)
+        self.__run_pre_events(parameters)
+
+        #print self.name, args, kwargs
+
+        feedback = self.reference(*parameters.largs, **parameters.kwargs)
+
+        feedback = self.__run_post_events(feedback)
 
         return feedback
 
@@ -90,16 +97,18 @@ class Action(object):
 
         return callback
 
-    def __run_pre_events(self, *args, **kwargs):
+    def __run_pre_events(self, parameters):
         for interception in self.__pre_actions:
             callback   = self.__retrieve_callback(interception)
-            parameters = interception.handling_parameters
+            handling_parameters = interception.handling_parameters
+
+            #print '[PRE ] %s.%s --> %s' % (interception.handler.id(), interception.handling_action, callback.name)
 
             if interception.event == EventType.pre_action:
-                callback(*parameters.largs, **parameters.kwargs)
+                callback(*handling_parameters.largs, **handling_parameters.kwargs)
                 continue
             elif interception.event == EventType.pre_condition:
-                callback(*args, **kwargs)
+                callback(*parameters.largs, **parameters.kwargs)
                 continue
 
             raise ValueError, 'The event "%s" is not recognized.' % interception.event
@@ -108,6 +117,8 @@ class Action(object):
         for interception in self.__post_actions:
             callback   = self.__retrieve_callback(interception)
             parameters = interception.handling_parameters
+
+            #print '[POST] %s.%s --> %s' % (interception.handler.id(), interception.handling_action, callback.name)
 
             if interception.event == EventType.post_action:
                 callback(*parameters.largs, **parameters.kwargs)

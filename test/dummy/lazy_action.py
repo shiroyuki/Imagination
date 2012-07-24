@@ -28,8 +28,8 @@ class Alpha(object):
     def speak(self, context):
         Conversation.log(self, 'say, %s' % context)
 
-    def confirm(self):
-        Conversation.log(self, 'confirm')
+    def confirm(self, order):
+        Conversation.log(self, 'confirm for %s' % order)
 
 class Beta(object):
     def __init__(self):
@@ -54,7 +54,7 @@ class Charlie(object):
         Conversation.log(self, 'serve')
 
     def respond(self, response):
-        Conversation.log(self, 'repeat "%s" then "%s"' % (context, response))
+        Conversation.log(self, 'respond "%s"' % response)
 
     def repeat(self, feedback):
-        Conversation.log(self, 'repeat "%s" then "%s"' % (context, response))
+        Conversation.log(self, 'repeat "%s"' % feedback)
