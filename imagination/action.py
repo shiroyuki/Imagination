@@ -32,8 +32,9 @@ and :class:`imagination.loader.Loader` and simulate the singleton class on the p
 
 from inspect import getargspec
 
-from imagination.meta.interception import Interception
-from imagination.meta.package      import Parameter
+from imagination.decorator.validator import restrict_type, SpecialType
+from imagination.meta.interception   import Interception
+from imagination.meta.package        import Parameter
 
 class EventType(object):
     # event before the execution that doesn't care about the input given to the action.
@@ -49,6 +50,7 @@ class EventType(object):
     post_action    = 'after'
 
 class Action(object):
+    @restrict_type(SpecialType.function)
     def __init__(self, f):
         self.executed       = False
         self.reference      = f
@@ -67,6 +69,7 @@ class Action(object):
 
         return feedback
 
+    @restrict_type(Interception)
     def register(self, interception):
         event = str(interception.event)
 
