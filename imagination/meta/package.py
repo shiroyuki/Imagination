@@ -1,6 +1,7 @@
 '''
 :Author: Juti Noppornpitak
 :Availability: 1.5
+:Usage: Internal
 
 The module contains the data structure of method interception to aid the analysis
 and construction of the loaders and entities based on the configuration.

@@ -1,5 +1,6 @@
 '''
 :Author: Juti Noppornpitak
+:Availability: 1.5
 
 The module contains the data transformer to aid the analysis and construction of
 the loaders and entities based on the configuration.

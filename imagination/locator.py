@@ -130,28 +130,6 @@ class Locator(object):
         '''
         Load the entities from a XML configuration file at *file_path*.
 
-        .. code-block:: xml
-
-            <?xml version="1.0" encoding="utf-8"?>
-            <!-- This example simulates how to set up a service with Imagination. -->
-            <imagination>
-                <entity id="finder" class="tori.common.Finder"></entity>
-
-                <!-- Example of injecting a class reference. -->
-                <entity id="db" class="tori.service.rdb.EntityService">
-                    <param name="url">sqlite:///:memory:</param>
-                    <param name="entity_type" type="class">core.model.Log</param>
-                </entity>
-
-                <!-- Example of injecting a service. -->
-                <entity id="markdown-doc" class="app.note.service.MDDocumentService">
-                    <param name="finder" type="id">finder</param>
-                    <param name="location">/Users/jnopporn/Documents</param>
-                </entity>
-            </imagination>
-
-        The parameter of type ``class`` is only representing the reference of the class.
-
         :Status: Deprecated in 1.5
 
         '''

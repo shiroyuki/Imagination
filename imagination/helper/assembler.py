@@ -1,8 +1,15 @@
 '''
 :Author: Juti Noppornpitak
+:Availability: 1.5
 
 The module contains the assembler to constuct loaders and entites based on the configuration
 and register to a particular locator.
+
+XML Schema
+----------
+
+.. note::
+    This is just a rough idea of the syntax. It is known as an improper DTD.
 
 The schema is defined as followed::
 
@@ -15,11 +22,18 @@ The schema is defined as followed::
     # Entity
 
     ENTITY = <entity id=ENTITY_ID class=ENTITY_CLASS [option=ENTITY_OPTIONS]?>
-                 PARAMS*
-                 INTERCEPTION*
+                 PARAMETER[ PARAMETER[ ...]]
+                 INTERCEPTION[ INTERCEPTION[ ...]]
              </entity>
 
     ENTITY_OPTIONS=(factory-mode|no-interuption)
+
+    # Parameter
+
+    PARAMETER = <parameter type="PARAMETER_TYPE" name="PARAMETER_NAME">(PARAMETER_VALUE|ENTITY_ID|CLASS_IDENTIFIER)</parameter>
+
+    # See the section "Parameter Types" for PARAMETER_TYPE.
+
     # Event
 
     EVENT=(before|pre|post|after)
@@ -28,40 +42,63 @@ The schema is defined as followed::
                         EVENT=REFERENCE_ENTITY_IDENTIFIER
                         do=REFERENCE_ENTITY_METHOD
                         with=THIS_ENTITY_METHOD>
-                        PARAMETERS
+                        PARAMETER[ PARAMETER[ ...]]
                     </interception>
 
 where:
-* ENTITY_ID is the identifier of the entity.
-* ENTITY_CLASS is the fully-qualified class name of the entity. (e.g. ``tori.service.rdb.EntityService``)
+
+* ``ENTITY_ID`` is the identifier of the entity.
+* ``ENTITY_CLASS`` is the fully-qualified class name of the entity. (e.g. ``tori.service.rdb.EntityService``)
 * ``option`` is the option of the entity where ``ENTITY_OPTIONS`` can have one
   or more of:
+
   * ``factory-mode``: always fork the instance of the given class.
   * ``no-interuption``: any methods of the entity cannot be interrupted.
-* REFERENCE_ENTITY_IDENTIFIER is the reference's entity identifier
-* REFERENCE_ENTITY_METHOD is the reference's method name
-* THIS_ENTITY_METHOD is this entity's method name
-* EVENT is where the REFERENCE_ENTITY_METHOD is intercepted.
-  * 'before' is an event before the execution of the method of the reference
+
+* ``REFERENCE_ENTITY_IDENTIFIER`` is the reference's entity identifier
+* ``REFERENCE_ENTITY_METHOD`` is the reference's method name
+* ``THIS_ENTITY_METHOD`` is this entity's method name
+* ``EVENT`` is where the ``REFERENCE_ENTITY_METHOD`` is intercepted.
+
+  * ``before`` is an event before the execution of the method of the reference
     (reference method) regardless to the given arguments to the reference
     method.
-  * 'pre' is an event on pre-contact of the reference method and concerning
+  * ``pre`` is an event on pre-contact of the reference method and concerning
     about the arguments given to the reference method. The method of the entity
     (the intercepting method) takes the same paramenter as the reference method.
-  * 'post' is an event on post-contact of the reference method and concerning
+  * ``post`` is an event on post-contact of the reference method and concerning
     about the result returned by the reference method. The intercepting method
     for this event takes only one parameter which is the result from the
     reference method or any previous post-contact interceptors.
-  * 'after' is an event after the execution of the reference method regardless
+  * ``after`` is an event after the execution of the reference method regardless
     to the result reterned by the reference method.
+
+Parameter Types
+---------------
+
+========= =========================================
+Type Name Data Type
+========= =========================================
+unicode   Unicode (default)
+bool      Boolean [#pt1]_
+float     Float
+int       Integer
+reference Class reference [#pt2]_
+entity    :class:`imagination.entity.Entity` [#pt3]_
+========= =========================================
+
+.. rubric:: Footnotes
+
+.. [#pt1] Only any variations (letter case) of the word 'true' are considered as ``True``.
+.. [#pt2] The module and package specified as the value of ``<param>`` is loaded when :meth:`Locator.load_xml` is called.
+.. [#pt3] The encapsulated instance of the entity specified as the value of ``<param>`` is instantiated when :meth:`Locator.load_xml` is called.
+
+Example
+-------
 
 .. code-block:: xml
 
     <?xml version="1.0" encoding="utf-8"?>
-    <!--
-    This is specific for the test of dependency injection on actionable events and
-    super lazy loaders allowing any arbitery order of entity declaration.
-    -->
     <imagination>
         <entity id="alpha" class="dummy.lazy_action.Alpha">
             <param type="entity" name="accompany">beta</param>
@@ -119,6 +156,8 @@ from imagination.proxy               import Proxy
 
 class Assembler(object):
     '''
+    The entity assembler via configuration files.
+
     :param `transformer`: an instance of :class:`imagination.helper.data.Transformer`
     '''
 
@@ -132,6 +171,11 @@ class Assembler(object):
 
     @restrict_type(unicode)
     def load(self, filepath):
+        '''
+        Load the configuration.
+
+        :param `filepath`: the file path to the configuration.
+        '''
         xml = load_from_file(filepath)
 
         # First, register proxies to entities (for lazy initialization).
@@ -151,6 +195,11 @@ class Assembler(object):
                 .register_interception(interception)
 
     def locator(self):
+        '''
+        The injected locator via the data transformer.
+
+        :return: an instance of :class:`imagination.locator.Locator`
+        '''
         return self.__transformer.locator()
 
     @restrict_type(Kotoba)

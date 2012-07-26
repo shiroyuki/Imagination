@@ -3,6 +3,7 @@
 '''
 :Author: Juti Noppornpitak
 :Version: 1.5
+:Usage: Internal
 
 The module contains the package action used to be a wrapper or a decorator of
 any methods or callable objects inside :class:`imagination.entity.Entity`
