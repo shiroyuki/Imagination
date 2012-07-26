@@ -82,6 +82,7 @@ class Action(object):
 
         raise ValueError, 'The event "%s" is not recognized.' % event
 
+    @restrict_type(Interception)
     def __retrieve_callback(self, interception):
         handler  = interception.handler.load()
         callback = handler.__getattribute__(interception.handling_action)
