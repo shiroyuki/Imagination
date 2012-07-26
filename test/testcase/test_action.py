@@ -30,19 +30,48 @@ class TestAction(TestCase):
         del self.transformer
         del self.assembler
 
-    def test_actions_without_events(self):
+    def test_interceptable_method(self):
         c = self.locator.get('charlie')
 
         self.assertIsInstance(c.introduce, Action)
         self.assertEquals(c.name, c.introduce())
 
-    def test_actions(self):
-        ''' This is NOT a test. '''
+    def test_normal_execution(self):
+        ''' This is a sanity test. '''
+
+        expected_log_sequence = [
+            # sequence as charlie cooks
+            'Charlie: introduce itself as "Charlie"',
+            'Alpha: order "egg and becon"',
+            'Charlie: repeat "egg and becon"',
+            'Alpha: confirm for egg and becon',
+            'Charlie: respond "wilco"',
+            'Charlie: cook',
+
+            # sequence as charlie serves
+            'Alpha: speak to Beta, "watch your hand"',
+            'Beta: acknowledge',
+            'Alpha: wash hands',
+            'Charlie: serve'
+        ]
+
         alpha   = self.locator.get('alpha')
         charlie = self.locator.get('charlie')
 
         charlie.cook()
+        charlie.serve()
 
-        alpha.order('news')
+        self.assertEquals(
+            len(expected_log_sequence),
+            len(Conversation.logs),
+            'The number of sequences in the mock scenario must be the same.'
+        )
+
+        for step in range(len(Conversation.logs)):
+            self.assertEquals(
+                expected_log_sequence[step],
+                Conversation.logs[step],
+                'Failed at step %d' % step
+            )
 
         #print '\n'.join(Conversation.logs)

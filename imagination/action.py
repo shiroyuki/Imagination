@@ -59,11 +59,7 @@ class Action(object):
     def __call__(self, *args, **kwargs):
         parameters = Parameter(args, kwargs)
 
-        #print
-
         self.__run_pre_events(parameters)
-
-        #print self.name, args, kwargs
 
         feedback = self.reference(*parameters.largs, **parameters.kwargs)
 
@@ -102,8 +98,6 @@ class Action(object):
             callback   = self.__retrieve_callback(interception)
             handling_parameters = interception.handling_parameters
 
-            #print '[PRE ] %s.%s --> %s' % (interception.handler.id(), interception.handling_action, callback.name)
-
             if interception.event == EventType.pre_action:
                 callback(*handling_parameters.largs, **handling_parameters.kwargs)
                 continue
@@ -117,8 +111,6 @@ class Action(object):
         for interception in self.__post_actions:
             callback   = self.__retrieve_callback(interception)
             parameters = interception.handling_parameters
-
-            #print '[POST] %s.%s --> %s' % (interception.handler.id(), interception.handling_action, callback.name)
 
             if interception.event == EventType.post_action:
                 callback(*parameters.largs, **parameters.kwargs)

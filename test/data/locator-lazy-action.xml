@@ -39,7 +39,7 @@ where:
         <interception before="charlie" do="cook" with="order">
             <param type="unicode" name="item">egg and becon</param>
         </interception>
-        <interception pre="charlie" do="repeat" with="confirm"/>
+        <interception post="charlie" do="repeat" with="confirm"/>
         <interception before="charlie" do="serve" with="speak_to_accompany">
             <param type="str" name="context">watch your hand</param>
         </interception>

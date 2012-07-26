@@ -58,3 +58,4 @@ class Charlie(object):
 
     def repeat(self, feedback):
         Conversation.log(self, 'repeat "%s"' % feedback)
+        return feedback
