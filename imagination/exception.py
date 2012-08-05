@@ -27,3 +27,10 @@ class UnknownProxyError(Exception):
 
 class NonCallableError(Exception):
     ''' Exception thrown when :class:`imagination.action.Action` tries to execute a non-callable reference. '''
+
+class LockedEntityException(Exception):
+    '''
+    Exception thrown when a caller attempts to update any of alterable properties
+    of an instance of :class:`imagination.entity.Entity` when it is in the locked
+    state.
+    '''

@@ -67,7 +67,7 @@ class Locator(object):
         try:
             entity = self._entities[id]
 
-            return isinstance(entity, Entity) and entity.instance() or entity
+            return isinstance(entity, Entity) and entity.instance or entity
 
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
@@ -116,7 +116,7 @@ class Locator(object):
         if isinstance(entity, Proxy):
             return
 
-        for tag in entity.tags():
+        for tag in entity.tags:
             if not self._tag_to_entity_ids.has_key(tag):
                 self._tag_to_entity_ids[tag] = []
 

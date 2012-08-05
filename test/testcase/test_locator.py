@@ -46,7 +46,7 @@ class TestLocator(TestCase):
         self.locator.set('poo', entity)
 
         self.assertTrue(self.locator.has('poo'))
-        self.assertFalse(entity.activated())
+        self.assertFalse(entity.activated)
 
     def test_after_activation(self):
         entity = self.__make_good_entity()
@@ -54,7 +54,7 @@ class TestLocator(TestCase):
         self.locator.set('poo', entity)
 
         self.assertIsInstance(self.locator.get('poo'), PlainOldObject)
-        self.assertTrue(entity.activated())
+        self.assertTrue(entity.activated)
 
     def __get_data_path(self, filename):
         return abspath(join(dirname(__file__), '..', 'data', filename))

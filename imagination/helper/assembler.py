@@ -230,7 +230,8 @@ class Assembler(object):
         loader = Loader(kind)
 
         entity = Entity(id, loader, *params.largs, **params.kwargs)
-        entity.tags(tags)
+        entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
+        entity.tags = tags
 
         self.locator().set(id, entity)
 

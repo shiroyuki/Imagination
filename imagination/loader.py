@@ -60,7 +60,10 @@ class Loader(object):
 
     def package(self):
         ''' Get a reference to the package. '''
-        return self._package or self._retrieve_package()
+        if not self._package:
+            self._package = self._retrieve_package()
+
+        return self._package
 
     def filename(self):
         ''' Get the path to the package. '''

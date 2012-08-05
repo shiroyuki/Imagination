@@ -37,8 +37,10 @@ class Entity(object):
 
     :param `id`:     the service identifier (string).
     :param `loader`: a service loader which is an instance of :class:`imagination.loader.Loader`.
-    :param `args`:   parameters (without parameter name) used to instantiate the entity.
-    :param `kwargs`: parameters (with parameter name) used to instantiate the entity.
+    :param `args`:   constructor's parameters
+    :type args:      list or tuple
+    :param `kwargs`: constructor's parameters
+    :type args:      dict
 
     If the loader is not an instance of :class:`imagination.loader.Loader` or
     any classes based on :class:`imagination.loader.Loader`, the exception
@@ -62,23 +64,59 @@ class Entity(object):
         self._args     = args
         self._kwargs   = kwargs
         self._instance = None
-        self._tags     = None
+        self._tags     = []
         self._locked   = False
         self._prepared = False
+        self._interceptable  = True
         self._interceptions = []
 
+    @property
     def id(self):
-        ''' Get the entity ID. '''
+        '''
+        Entity ID
+
+        :rtype: strint or unicode or integer
+        '''
         return self._id
 
+    @property
     def loader(self):
-        ''' Get the package loader. '''
+        '''
+        Package loader
+
+        :rtype: imagination.loader.Loader
+        '''
         return self._loader
 
+    @property
+    def interceptable(self):
+        '''
+        Flag if this entity is interceptable
+
+        :rtype: boolean
+        '''
+        return self._interceptable
+
+    @interceptable.setter
+    @restrict_type(bool)
+    def interceptable(self, interceptable):
+        '''
+        Define if this entity is interceptable.
+
+        :param interceptable: Flag if this entity is interceptable
+        :type  interceptable: boolean
+        '''
+        if self.locked:
+            raise LockedEntityException
+
+        self._interceptable = interceptable
+
+    @property
     def argument_list(self):
         ''' Get the argument list. '''
         return self._args
 
+    @property
     def argument_dictionary(self):
         ''' Get the argument dictionary. '''
         return self._kwargs
@@ -86,9 +124,11 @@ class Entity(object):
     def lock(self):
         self._locked = True
 
+    @property
     def locked(self):
         return self._locked
 
+    @property
     def activated(self):
         '''
         Check if the entity is already activated.
@@ -97,26 +137,51 @@ class Entity(object):
         '''
         return self._instance is not None
 
-    def tags(self, new_tags=None):
+    @property
+    def tags(self):
         '''
-        Get the entity tags.
+        Retrieve the entity tags.
 
-        :param `tags`: new tags as replacements
+        :rtype: list
         '''
-        if isinstance(new_tags, list) and not self.locked():
-            self._tags = new_tags
+        return self._tags
 
-        return self._tags or []
+    @tags.setter
+    @restrict_type(list)
+    def tags(self, tags):
+        '''
+        Define the entire entity tags.
 
+        :param tags: new tags as replacements
+        :type  tags: list or tuple
+        '''
+        if self.locked:
+            raise LockedEntityException
+
+        self._tags = tags
+
+    @property
+    def interceptions(self):
+        '''
+        Retrieve the list of interceptions.
+        '''
+        return self._interceptions
+
+    @interceptions.setter
+    @restrict_type(list)
     def interceptions(self, interceptions):
-        if not isinstance(interceptions, list):
-            raise TypeError, 'The list of interceptions must be a list.'
+        '''
+        Define the list of interceptions.
 
+        :param interceptions: list of interceptions
+        :type  interceptions: list
+        '''
         self._interceptions = interceptions
 
     def register_interception(self, interception):
         self._interceptions.append(interception)
 
+    @property
     def instance(self):
         ''' Get the singleton instance of the class defined for the loader. '''
         if not self._instance:
@@ -134,6 +199,9 @@ class Entity(object):
 
         instance = self._loader.package()(*self._args, **self._kwargs)
 
+        if not self.interceptable:
+            return instance
+
         for attribute in dir(instance):
             if attribute[0] == '_':
                 continue
@@ -149,7 +217,6 @@ class Entity(object):
                 if interception.intercepted_action != attribute:
                     continue
 
-                #print '[REG] %s --> %s' % (attribute, interception)
                 new_ref.register(interception)
 
             instance.__setattr__(attribute, new_ref)
