@@ -197,7 +197,7 @@ class Entity(object):
         '''
         self.__prepare()
 
-        instance = self._loader.package()(*self._args, **self._kwargs)
+        instance = self._loader.package(*self._args, **self._kwargs)
 
         if not self.interceptable:
             return instance

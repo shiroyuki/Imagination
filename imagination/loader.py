@@ -52,12 +52,17 @@ class Loader(object):
 
     def name(self):
         ''' Get the name of the package. '''
-        return self.module().__package__
+        return self.module.__package__
 
+    @property
     def module(self):
         ''' Get a reference to the module. '''
-        return self._module or self._retrieve_module()
+        if not self._module:
+            self._module = self._retrieve_module()
 
+        return self._module
+
+    @property
     def package(self):
         ''' Get a reference to the package. '''
         if not self._package:
@@ -67,7 +72,7 @@ class Loader(object):
 
     def filename(self):
         ''' Get the path to the package. '''
-        return self.module().__file__
+        return self.module.__file__
 
     def _retrieve_module(self):
         ''' Retrieve a module by the module path. '''
@@ -87,4 +92,4 @@ class Loader(object):
 
         __import__(self._module_path, fromlist=[self._package_name])
 
-        return getattr(self.module(), self._package_name)
+        return getattr(self.module, self._package_name)
