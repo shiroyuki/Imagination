@@ -216,7 +216,7 @@ class Entity(object):
             new_ref = Action(ref)
 
             for interception in self._interceptions:
-                if interception.intercepted_action != attribute:
+                if interception.actor.method_name != attribute:
                     continue
 
                 new_ref.register(interception)

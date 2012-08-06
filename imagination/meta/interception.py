@@ -29,6 +29,7 @@ and construction of the loaders and entities based on the configuration.
 '''
 
 from imagination.decorator.validator import restrict_type, SpecialType
+from imagination.meta.aspect         import Contact
 from imagination.meta.package        import Parameter
 from imagination.proxy               import Proxy
 
@@ -42,37 +43,27 @@ class Interception(object):
 
     static_guid = 1
 
-    @restrict_type(unicode, Proxy, unicode, Proxy, unicode, Parameter)
-    def __init__(self, event, actor, intercepted_action, handler, handling_action, handling_parameters):
+    @restrict_type(unicode, Contact, Contact)
+    def __init__(self, event, actor, handler):
         self._guid   = Interception.static_guid
-        self.actor   = actor
-        self.event   = event
-        self.handler = handler
-
-        self.intercepted_action  = intercepted_action
-        self.handling_action     = handling_action
-        self.handling_parameters = handling_parameters
+        self._actor   = actor
+        self._event   = event
+        self._handler = handler
 
         Interception.static_guid += 1
+
+    @property
+    def actor(self):
+        return self._actor
+
+    @property
+    def event(self):
+        return self._event
+
+    @property
+    def handler(self):
+        return self._handler
 
     @staticmethod
     def self_reference_keyword():
         return 'me'
-
-    def __str__(self):
-        return 'Interception: %s %s.%s, %s.%s' % (
-            self.event,
-            self.actor,
-            self.intercepted_action,
-            self.handler,
-            self.handling_action
-        )
-
-    def __unicode__(self):
-        return u'Interception: %s %s.%s, %s.%s' % (
-            self.event,
-            self.actor,
-            self.intercepted_action,
-            self.handler,
-            self.handling_action
-        )

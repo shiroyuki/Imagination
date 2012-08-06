@@ -53,9 +53,8 @@ class EventType(object):
 class Action(object):
     @restrict_type(SpecialType.function)
     def __init__(self, f):
-        self.executed       = False
-        self.reference      = f
-        self.name           = f.__name__
+        self._name      = f.__name__
+        self._reference = f
         self.__pre_actions  = []
         self.__post_actions = []
 
@@ -65,10 +64,17 @@ class Action(object):
         self.__run_pre_events(parameters)
 
         feedback = self.reference(*parameters.largs, **parameters.kwargs)
-
         feedback = self.__run_post_events(feedback)
 
         return feedback
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def reference(self):
+        return self._reference
 
     @restrict_type(Interception)
     def register(self, interception):
@@ -85,26 +91,25 @@ class Action(object):
 
     @restrict_type(Interception)
     def __retrieve_callback(self, interception):
-        handler  = interception.handler.load()
-        callback = handler.__getattribute__(interception.handling_action)
+        callback = interception.handler.interface
 
         # cache callback?
 
         if not callable(callback):
             raise NonCallableError, '%s.%s is not callable' % (
-                interception.handler.id(),
-                interception.handling_action
+                interception.handler.id,
+                interception.handler.method_name
             )
 
         return callback
 
+    @restrict_type(Parameter)
     def __run_pre_events(self, parameters):
         for interception in self.__pre_actions:
-            callback   = self.__retrieve_callback(interception)
-            handling_parameters = interception.handling_parameters
+            callback = self.__retrieve_callback(interception)
 
             if interception.event == EventType.pre_action:
-                callback(*handling_parameters.largs, **handling_parameters.kwargs)
+                interception.handler.engage()
                 continue
             elif interception.event == EventType.pre_condition:
                 callback(*parameters.largs, **parameters.kwargs)
@@ -114,11 +119,10 @@ class Action(object):
 
     def __run_post_events(self, feedback):
         for interception in self.__post_actions:
-            callback   = self.__retrieve_callback(interception)
-            parameters = interception.handling_parameters
+            callback = self.__retrieve_callback(interception)
 
             if interception.event == EventType.post_action:
-                callback(*parameters.largs, **parameters.kwargs)
+                interception.handler.engage()
                 continue
             elif interception.event == EventType.post_condition:
                 feedback = callback(feedback)

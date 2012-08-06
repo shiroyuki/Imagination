@@ -157,6 +157,7 @@ from imagination.entity              import Entity
 from imagination.exception           import *
 from imagination.loader              import Loader
 from imagination.helper.data         import *
+from imagination.meta.aspect         import Contact
 from imagination.meta.interception   import Interception
 from imagination.meta.package        import Parameter
 from imagination.proxy               import Proxy
@@ -287,22 +288,11 @@ class Assembler(object):
             if handler not in self.__known_proxies:
                 raise UnknownProxyError, 'The handler (%s) of the interception is unknown.' % handler
 
-            actor   = self.__known_proxies[actor]
-            handler = self.__known_proxies[handler]
+            actor   = Contact(self.__known_proxies[actor], node.attribute('do'))
+            handler = Contact(self.__known_proxies[handler], node.attribute('with'), self.__get_params(node))
             event   = given_event
 
-            intercepted_action  = node.attribute('do')
-            handling_action     = node.attribute('with')
-            handling_parameters = self.__get_params(node)
-
-        return Interception(
-            event,
-            actor,
-            intercepted_action,
-            handler,
-            handling_action,
-            handling_parameters
-        )
+        return Interception(event, actor, handler)
 
     @restrict_type(Kotoba)
     def __get_params(self, node):
