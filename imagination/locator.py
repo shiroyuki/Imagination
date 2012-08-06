@@ -54,6 +54,7 @@ class Locator(object):
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
 
+    @property
     def entity_identifiers(self):
         return self._entities.keys()
 

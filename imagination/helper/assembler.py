@@ -16,21 +16,28 @@ The schema is defined as followed::
     # Base
 
     <imagination>
-        ENTITY*
+        (ENTITY)*
     </imagination>
 
     # Entity
 
-    ENTITY = <entity id=ENTITY_ID class=ENTITY_CLASS [option=ENTITY_OPTIONS]?>
-                 PARAMETER[ PARAMETER[ ...]]
-                 INTERCEPTION[ INTERCEPTION[ ...]]
+    ENTITY = <entity id="ENTITY_ID"
+                     class="ENTITY_CLASS"
+                     (interceptable="(true|false)")?
+                     (option=ENTITY_OPTIONS)?
+             >
+                 (CONSTRUCTOR_PARAMETER)*
+                 (INTERCEPTION)*
              </entity>
 
-    ENTITY_OPTIONS=(factory-mode|no-interuption)
+    ENTITY_OPTIONS=(factory-mode)
 
-    # Parameter
+    # Constructor's parameter and initial parameter
 
-    PARAMETER = <parameter type="PARAMETER_TYPE" name="PARAMETER_NAME">(PARAMETER_VALUE|ENTITY_ID|CLASS_IDENTIFIER)</parameter>
+    CONSTRUCTOR_PARAMETER = INITIAL_PARAMETER
+                          = <parameter type="PARAMETER_TYPE" name="PARAMETER_NAME">
+                                (PARAMETER_VALUE|ENTITY_ID|CLASS_IDENTIFIER)
+                            </parameter>
 
     # See the section "Parameter Types" for PARAMETER_TYPE.
 
@@ -38,11 +45,11 @@ The schema is defined as followed::
 
     EVENT=(before|pre|post|after)
 
-    INTERCEPTION =  <interception
-                        EVENT=REFERENCE_ENTITY_IDENTIFIER
-                        do=REFERENCE_ENTITY_METHOD
-                        with=THIS_ENTITY_METHOD>
-                        PARAMETER[ PARAMETER[ ...]]
+    INTERCEPTION =  <interception EVENT="REFERENCE_ENTITY_IDENTIFIER"
+                                  do="REFERENCE_ENTITY_METHOD"
+                                  with="THIS_ENTITY_METHOD"
+                    >
+                        (INITIAL_PARAMETER)*
                     </interception>
 
 where:
@@ -190,10 +197,11 @@ class Assembler(object):
 
         # Then, declare interceptions to target entities.
         for interception in self.__interceptions:
-            self.locator()\
-                .get_wrapper(interception.actor.id())\
+            self.locator\
+                .get_wrapper(interception.actor.id)\
                 .register_interception(interception)
 
+    @property
     def locator(self):
         '''
         The injected locator via the data transformer.
@@ -213,9 +221,9 @@ class Assembler(object):
     @restrict_type(Kotoba)
     def __register_proxy(self, node):
         id    = node.attribute('id')
-        proxy = Proxy(self.locator(), id)
+        proxy = Proxy(self.locator, id)
 
-        self.locator().set(id, proxy)
+        self.locator.set(id, proxy)
 
         # this is for interceptors
         self.__known_proxies[id] = proxy
@@ -230,10 +238,11 @@ class Assembler(object):
         loader = Loader(kind)
 
         entity = Entity(id, loader, *params.largs, **params.kwargs)
-        entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
-        entity.tags = tags
 
-        self.locator().set(id, entity)
+        entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
+        entity.tags          = tags
+
+        self.locator.set(id, entity)
 
     @restrict_type(Kotoba)
     def __get_tags(self, node):

@@ -199,9 +199,11 @@ class Entity(object):
 
         instance = self._loader.package(*self._args, **self._kwargs)
 
+        # Return the instance if this entity is not interceptable.
         if not self.interceptable:
             return instance
 
+        # For each PUBLIC method, make it interceptable with Action.
         for attribute in dir(instance):
             if attribute[0] == '_':
                 continue

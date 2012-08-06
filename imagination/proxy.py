@@ -38,6 +38,7 @@ class Proxy(object):
         self.__locator = locator
         self.__id      = id
 
+    @property
     def id(self):
         ''' Get the identifier of the proxy. '''
         return self.__id

@@ -39,7 +39,7 @@ class Loader(object):
         # In this case, we load the default renderer of Tori framework.
         loader = Loader('tori.renderer.DefaultRenderer')
         # Then, instantiate the default renderer.
-        renderer = loader.package()('app.views')
+        renderer = loader.package('app.views')
 
     '''
     def __init__(self, path_to_package):
@@ -50,6 +50,7 @@ class Loader(object):
         self._package_name = self._access_path[-1]
         self._package      = None
 
+    @property
     def name(self):
         ''' Get the name of the package. '''
         return self.module.__package__
@@ -70,6 +71,7 @@ class Loader(object):
 
         return self._package
 
+    @property
     def filename(self):
         ''' Get the path to the package. '''
         return self.module.__file__
