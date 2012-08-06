@@ -28,10 +28,8 @@ and construction of the loaders and entities based on the configuration.
 
 '''
 
-from imagination.decorator.validator import restrict_type, SpecialType
+from imagination.decorator.validator import restrict_type
 from imagination.meta.aspect         import Contact
-from imagination.meta.package        import Parameter
-from imagination.proxy               import Proxy
 
 class Interception(object):
     '''

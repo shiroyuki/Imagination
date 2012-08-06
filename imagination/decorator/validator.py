@@ -94,6 +94,8 @@ def restrict_type(*restricted_list, **restricted_map):
 
                 return reference(*args, **kwargs)
 
+        new_reference.__doc__ == reference.__doc__
+
         return new_reference
 
     return inner_decorator

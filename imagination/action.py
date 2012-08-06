@@ -5,9 +5,8 @@
 :Version: 1.5
 :Usage: Internal
 
-The module contains the package action used to be a wrapper or a decorator of
-any methods or callable objects inside :class:`imagination.entity.Entity`
-and :class:`imagination.loader.Loader` and simulate the singleton class on the package in the Loader.
+The module contains the classes used for interceptable actions/methods of any
+instance of :class:`imagination.entity.Entity`.
 
 .. note::
     Copyright (c) 2012 Juti Noppornpitak
@@ -38,21 +37,29 @@ from imagination.meta.interception   import Interception
 from imagination.meta.package        import Parameter
 
 class EventType(object):
-    # event before the execution that doesn't care about the input given to the action.
+    '''
+    Type of intercepting events
+    '''
+
     pre_action     = 'before'
+    ''' Event before the execution that doesn't care about the input given to the action. '''
 
-    # event before the execution that only concerns about the input given to the action.
     pre_condition  = 'pre'
+    ''' Event before the execution that only concerns about the input given to the action. '''
 
-    # event after the execution that only concerns about the returned value from the action.
     post_condition = 'post'
+    ''' Event after the execution that only concerns about the returned value from the action. '''
 
-    # event after the execution that doesn't care about the returned value from the action.
     post_action    = 'after'
+    ''' Event after the execution that doesn't care about the returned value from the action. '''
 
 class Action(object):
+    '''
+    Method wrapper for intercepting actions
+    '''
     @restrict_type(SpecialType.function)
     def __init__(self, f):
+        self.__doc__    = f.__doc__
         self._name      = f.__name__
         self._reference = f
         self.__pre_actions  = []
@@ -70,10 +77,12 @@ class Action(object):
 
     @property
     def name(self):
+        ''' Name of the action '''
         return self._name
 
     @property
     def reference(self):
+        ''' Reference of the action '''
         return self._reference
 
     @restrict_type(Interception)

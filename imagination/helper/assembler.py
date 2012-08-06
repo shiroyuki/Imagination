@@ -1,5 +1,7 @@
 '''
+:Module: imagination.helper.assembler
 :Author: Juti Noppornpitak
+:Dependency: kotoba 3.0
 :Availability: 1.5
 
 The module contains the assembler to constuct loaders and entites based on the configuration
@@ -9,7 +11,7 @@ XML Schema
 ----------
 
 .. note::
-    This is just a rough idea of the syntax. It is known as an improper DTD.
+    This is the master specification document for the configuration.
 
 The schema is defined as followed::
 
@@ -96,9 +98,13 @@ entity    :class:`imagination.entity.Entity` [#pt3]_
 
 .. rubric:: Footnotes
 
-.. [#pt1] Only any variations (letter case) of the word 'true' are considered as ``True``.
-.. [#pt2] The module and package specified as the value of ``<param>`` is loaded when :meth:`Locator.load_xml` is called.
-.. [#pt3] The encapsulated instance of the entity specified as the value of ``<param>`` is instantiated when :meth:`Locator.load_xml` is called.
+.. [#pt1] Only any variations (letter case) of the word 'true' or 'false' are
+          considered as a valid boolean value.
+.. [#pt2] The module and package specified as the value of ``<param>`` is loaded
+          when :meth:`Assembler.load` is executed.
+.. [#pt3] The encapsulated instance of the entity specified as the value of
+          ``<param>`` is instantiated when :meth:`Assembler.load`
+          is executed or when the instance is given with a proxy (:class:`imagination.proxy.Proxy`).
 
 Example
 -------
@@ -145,6 +151,9 @@ Example
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+API
+---
+
 '''
 
 from re import split
@@ -167,6 +176,7 @@ class Assembler(object):
     The entity assembler via configuration files.
 
     :param `transformer`: an instance of :class:`imagination.helper.data.Transformer`
+
     '''
 
     __known_interceptable_events = ['before', 'pre', 'post', 'after']
@@ -182,7 +192,8 @@ class Assembler(object):
         '''
         Load the configuration.
 
-        :param `filepath`: the file path to the configuration.
+        :param filepath: the file path to the configuration.
+        :type  filepath: string or unicode
         '''
         xml = load_from_file(filepath)
 
@@ -207,7 +218,7 @@ class Assembler(object):
         '''
         The injected locator via the data transformer.
 
-        :return: an instance of :class:`imagination.locator.Locator`
+        :rtype: imagination.locator.Locator
         '''
         return self.__transformer.locator()
 

@@ -6,21 +6,23 @@
 Imagination
 ===========
 
-:Copyright: Juti Noppornpitak
-:Author:    Juti Noppornpitak
+:Copyright: Juti Noppornpitak <juti_n@yahoo.co.jp>
+:Author:    Juti Noppornpitak <juti_n@yahoo.co.jp>
 :License:   MIT
 
 **Imagination** is a reusable component framework whose objectives are:
 
-* encapsulates an object into a single object with the lazy loader, inspired by many frameworks,
-* improves code maintainability by encapsulating reusable components (or dependencies) in a global memory, inspired by JavaBeans
-* introduce the concept of the aspect-oriented programming, inspired by AspectJ.
+* encapsulates an object into a single object with the lazy loader, inspired by
+  many frameworks (e.g., Symfony Framework in PHP and Spring Framework in Java),
+* improves code maintainability by encapsulating reusable components (or
+  dependencies) in a global memory, inspired by JavaBeans,
+* introduce the concept of the aspect-oriented programming (AOP), inspired by AspectJ.
 
 Want to get started? Please read :doc:`getting_started`.
 
 .. note::
-    Imagination plays a big role in Tori Web Framework dealing with clean
-    routing and globally referencing to any defined reusable components.
+    Imagination plays the big role in Tori Web Framework (http://shiroyuki.com/work/project-tori)
+    dealing with clean routing and globally referencing to any defined reusable components.
 
 Reference
 ---------
@@ -28,19 +30,14 @@ Reference
 .. toctree::
    :maxdepth: 2
    :glob:
-   
+
    getting_started
    api/*
 
-Related projects
-----------------
-
-* Tori Web Framework (http://shiroyuki.com/work/project-tori)
-
 .. Indices and tables
 .. ==================
-.. 
+..
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
-.. 
+..
