@@ -311,6 +311,8 @@ class Mock(object):
 
 MOCK_MODULES = [
     'kotoba',
+    'kotoba.kotoba',
+    'kotoba.kotoba.Kotoba',
     'kotoba.load_from_file'
 ]
 
