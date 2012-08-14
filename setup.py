@@ -7,5 +7,5 @@ setup(
     author='Juti Noppornpitak',
     author_email='juti_n@yahoo.co.jp',
     url='http://shiroyuki.com/work/projects-imagination',
-    packages=['imagination']
+    packages=['imagination', 'imagination.decorator', 'imagination.helper', 'imagination.meta']
 )
