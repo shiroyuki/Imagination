@@ -46,10 +46,12 @@ class Locator(object):
         :param `id`: entity identifier
         '''
         try:
+            entity = self._entities[id]
+
             if isinstance(entity, Proxy):
                 raise ForbiddenForkError
 
-            return self._entities[id].fork()
+            return entity.fork()
 
         except KeyError:
             raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
