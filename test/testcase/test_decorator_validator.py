@@ -32,7 +32,7 @@ class TestLazyAction(TestCase):
                 def __init__(self, b):
                     b = b
 
-            this.assertTrue(False)
+            self.assertTrue(False)
         except MisplacedValidatorError, e:
             pass
 
@@ -50,7 +50,3 @@ def foo(a):
 @restrict_type(Foo)
 def bar(b):
     return b
-
-@restrict_type(None, unicode, type)
-def goo(*args):
-    pass
