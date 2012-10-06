@@ -54,7 +54,7 @@ class Locator(object):
             return entity.fork()
 
         except KeyError:
-            raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+            raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
 
     @property
     def entity_identifiers(self):
@@ -73,7 +73,7 @@ class Locator(object):
             return isinstance(entity, Entity) and entity.instance or entity
 
         except KeyError:
-            raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+            raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
 
     def get_wrapper(self, id):
         '''
@@ -86,7 +86,7 @@ class Locator(object):
             return self._entities[id]
 
         except KeyError:
-            raise UnknownEntityError, 'The requested entity named "%s" is unknown or not found.' % id
+            raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
 
     def find_by_tag(self, tag_label):
         '''
@@ -109,7 +109,7 @@ class Locator(object):
         ''' Set the given *entity* by *id*. '''
 
         if not isinstance(entity, Entity) and not isinstance(entity, Proxy):
-            raise UnknownEntityError, 'The type of the given entity named "%s" is not excepted.' % id
+            raise UnknownEntityError('The type of the given entity named "%s" is not excepted.' % id)
 
         if isinstance(entity, Entity):
             entity.lock()
@@ -136,4 +136,4 @@ class Locator(object):
         :Status: Deprecated in 1.5
 
         '''
-        raise DeprecatedAPI, 'Use imagination.helper.assembler.Assembler.load instead.'
+        raise DeprecatedAPI('Use imagination.helper.assembler.Assembler.load instead.')

@@ -41,7 +41,7 @@ class Interception(object):
 
     static_guid = 1
 
-    @restrict_type(unicode, Contact, Contact)
+    @restrict_type(str, Contact, Contact)
     def __init__(self, event, actor, handler):
         self._guid   = Interception.static_guid
         self._actor   = actor

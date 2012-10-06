@@ -96,7 +96,7 @@ class Action(object):
             self.__post_actions.append(interception)
             return
 
-        raise ValueError, 'The event "%s" is not recognized.' % event
+        raise ValueError('The event "%s" is not recognized.' % event)
 
     @restrict_type(Interception)
     def __retrieve_callback(self, interception):
@@ -105,10 +105,10 @@ class Action(object):
         # cache callback?
 
         if not callable(callback):
-            raise NonCallableError, '%s.%s is not callable' % (
+            raise NonCallableError('%s.%s is not callable' % (
                 interception.handler.id,
                 interception.handler.method_name
-            )
+            ))
 
         return callback
 
@@ -124,7 +124,7 @@ class Action(object):
                 callback(*parameters.largs, **parameters.kwargs)
                 continue
 
-            raise ValueError, 'The event "%s" is not recognized.' % interception.event
+            raise ValueError('The event "%s" is not recognized.' % interception.event)
 
     def __run_post_events(self, feedback):
         for interception in self.__post_actions:
@@ -137,6 +137,6 @@ class Action(object):
                 feedback = callback(feedback)
                 continue
 
-            raise ValueError, 'The event "%s" is not recognized.' % interception.event
+            raise ValueError('The event "%s" is not recognized.' % interception.event)
 
         return feedback

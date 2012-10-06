@@ -64,7 +64,7 @@ class Transformer(object):
         elif kind == 'float':
             data = float(data)
         elif kind == 'bool':
-            data = unicode(data).capitalize()
+            data = data.capitalize()
 
             assert data == 'True' or data == 'False'
 

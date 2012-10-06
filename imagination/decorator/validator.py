@@ -51,6 +51,8 @@ def restrict_type(*restricted_list, **restricted_map):
      * If the given type is ``long``, the value of ``int`` and ``float`` are also valid.
      * If the given type is ``unicode``, the valud of ``str`` is also valid.
 
+    .. warning:: In Imagination 1.6, types ``unicode`` and ``long`` are no longer have fallback check in order to support Python 3.3.
+
     .. code-block:: python
 
         from imagination.decorator.validator import restrict_type
@@ -77,8 +79,9 @@ def restrict_type(*restricted_list, **restricted_map):
     '''
     def inner_decorator(reference):
         if isinstance(reference, type) or not callable(reference):
-            raise MisplacedValidatorError,\
+            raise MisplacedValidatorError(
                 'Can only be used with callable objects, e.g., functions, class methods, instance methods and static methods.'
+            )
 
         params   = inspect.getargspec(reference).args
         is_class = params and params[0] == 'self'
@@ -117,7 +120,9 @@ def __validate_type(allowed_list, allowed_dictionary, argument_list, argument_di
                 and 'function'\
                 or expected_type.__name__
 
-        for key, expected_type in allowed_dictionary.iteritems():
+        for key in allowed_dictionary:
+            expected_type = allowed_dictionary[key]
+
             reference = argument_dictionary[key]
 
             if key not in argument_dictionary:
@@ -129,8 +134,10 @@ def __validate_type(allowed_list, allowed_dictionary, argument_list, argument_di
             assert __assert_type(reference, expected_type),\
                 expected_type.__name__
 
-    except AssertionError, e:
-        raise TypeError, 'Argument #%s was excepting %s but %s has been given.' % (index, e.message, type(reference).__name__)
+    except AssertionError as e:
+        actual_type = e.message if 'message' in dir(e) else e
+
+        raise TypeError('Argument #%s was excepting %s but %s has been given.' % (index, actual_type, type(reference).__name__))
 
 def __assert_type(instance, expected_type):
     list_types = [list, tuple, set]
@@ -139,7 +146,7 @@ def __assert_type(instance, expected_type):
     instance_expected = isinstance(expected_type, type)
 
     if not callable_expected and not instance_expected:
-        raise TypeError, 'The expected type must be a type.'
+        raise TypeError('The expected type must be a type.')
 
     fallback_types = []
 
@@ -149,13 +156,7 @@ def __assert_type(instance, expected_type):
         return callable(instance)
 
     # Now, validate the type of INSTANCE.
-
-    if expected_type is unicode:
-        fallback_types.append(str)
-    elif expected_type is long:
-        fallback_types.append(float)
-        fallback_types.append(int)
-    elif expected_type in list_types:
+    if expected_type in list_types:
         fallback_types.extend(list_types)
 
     if type(instance) == expected_type:

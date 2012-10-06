@@ -7,14 +7,15 @@ class TestLazyAction(TestCase):
     def test_method_permitive_good(self):
         foo(2)
         foo(-2)
-        foo(01)
 
     def test_method_permitive_bad(self):
         try:
             foo(2.0)
             self.assertTrue(False)
-        except TypeError, e:
-            self.assertEqual('Argument #0 was excepting int but float has been given.', e.message)
+        except TypeError as e:
+            actual_message = str(e.message if 'message' in dir(e) else e)
+
+            self.assertEqual('Argument #0 was excepting int but float has been given.', actual_message)
 
     def test_method_instance(self):
         f = Foo()
@@ -33,7 +34,7 @@ class TestLazyAction(TestCase):
                     b = b
 
             self.assertTrue(False)
-        except MisplacedValidatorError, e:
+        except MisplacedValidatorError as e:
             pass
 
 class Foo(object):

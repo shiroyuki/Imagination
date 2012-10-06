@@ -187,7 +187,6 @@ class Assembler(object):
         self.__transformer   = transformer
         self.__known_proxies = {}
 
-    @restrict_type(unicode)
     def load(self, filepath):
         '''
         Load the configuration.
@@ -225,10 +224,10 @@ class Assembler(object):
     @restrict_type(Kotoba)
     def __validate_node(self, node):
         if not node.attribute('id'):
-            raise IncompatibleBlockError, 'Invalid entity configuration. No ID specified.'
+            raise IncompatibleBlockError('Invalid entity configuration. No ID specified.')
 
         if not node.attribute('class'):
-            raise IncompatibleBlockError, 'Invalid entity configuration. No class type specified.'
+            raise IncompatibleBlockError('Invalid entity configuration. No class type specified.')
 
     @restrict_type(Kotoba)
     def __register_proxy(self, node):
@@ -283,7 +282,7 @@ class Assembler(object):
             if not given_actor:
                 continue
             elif event:
-                raise MultipleInterceptingEventsWarning, given_event
+                raise MultipleInterceptingEventsWarning(given_event)
 
             # Initially get the name of the actor and the handler.
             actor   = given_actor
@@ -294,10 +293,10 @@ class Assembler(object):
 
             # If the actor or the handler has no proxies, raise the exception.
             if actor not in self.__known_proxies:
-                raise UnknownProxyError, 'The target (%s) of the interception is unknown.' % actor
+                raise UnknownProxyError('The target (%s) of the interception is unknown.' % actor)
 
             if handler not in self.__known_proxies:
-                raise UnknownProxyError, 'The handler (%s) of the interception is unknown.' % handler
+                raise UnknownProxyError('The handler (%s) of the interception is unknown.' % handler)
 
             actor   = Contact(self.__known_proxies[actor], node.attribute('do'))
             handler = Contact(self.__known_proxies[handler], node.attribute('with'), self.__get_params(node))
@@ -316,14 +315,14 @@ class Assembler(object):
                 assert param.attribute('name')\
                     or param.attribute('type'),\
                     'The parameter #%d does not have either name or type.' % index
-            except AssertionError, e:
-                raise IncompatibleBlockError, e.message
+            except AssertionError as e:
+                raise IncompatibleBlockError(e.message)
 
             index += 1
             name   = param.attribute('name')
 
-            if package.kwargs.has_key(name):
-                raise DuplicateKeyWarning, 'There is a parameter name "%s" with that name already registered.' % name
+            if name in package.kwargs:
+                raise DuplicateKeyWarning('There is a parameter name "%s" with that name already registered.' % name)
                 pass
 
             package.kwargs[name] = self.__transformer.cast(

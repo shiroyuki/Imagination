@@ -24,6 +24,22 @@ Want to get started? Please read :doc:`getting_started`.
     Imagination plays the big role in Tori Web Framework (http://shiroyuki.com/work/project-tori)
     dealing with clean routing and globally referencing to any defined reusable components.
 
+Releases
+--------
+
+*Development Version*
+
+* Support Python 3.3
+* Add a point cut
+
+*Version 1.5*
+
+* Added support for aspect-oriented programming and introduced some backward incompatibility.
+
+*Version 1.0*
+
+* Simple object collection repository
+
 Reference
 ---------
 
