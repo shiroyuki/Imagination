@@ -159,7 +159,7 @@ def __assert_type(instance, expected_type):
     if expected_type in list_types:
         fallback_types.extend(list_types)
 
-    if type(instance) == expected_type:
+    if type(instance) == expected_type or isinstance(instance, expected_type):
         return True
 
     for fallback_type in fallback_types:
