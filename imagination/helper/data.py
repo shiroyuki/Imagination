@@ -58,7 +58,7 @@ class Transformer(object):
         if kind == 'entity':
             data = self.__locator.get(data)
         elif kind == 'class':
-            data = Loader(data).package()
+            data = Loader(data).package
         elif kind == 'int':
             data = int(data)
         elif kind == 'float':

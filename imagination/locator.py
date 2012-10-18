@@ -70,7 +70,7 @@ class Locator(object):
         try:
             entity = self._entities[id]
 
-            return isinstance(entity, Entity) and entity.instance or entity
+            return entity.instance if isinstance(entity, Entity) else entity
 
         except KeyError:
             raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)

@@ -221,7 +221,10 @@ class Entity(object):
 
                 new_ref.register(interception)
 
-            instance.__setattr__(attribute, new_ref)
+            try:
+                instance.__setattr__(attribute, new_ref)
+            except AttributeError:
+                pass
 
         return instance
 

@@ -92,7 +92,7 @@ unicode   Unicode (default)
 bool      Boolean [#pt1]_
 float     Float
 int       Integer
-reference Class reference [#pt2]_
+class     Class reference [#pt2]_
 entity    :class:`imagination.entity.Entity` [#pt3]_
 ========= =========================================
 
