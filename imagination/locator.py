@@ -120,7 +120,7 @@ class Locator(object):
             return
 
         for tag in entity.tags:
-            if not self._tag_to_entity_ids.has_key(tag):
+            if tag not in self._tag_to_entity_ids:
                 self._tag_to_entity_ids[tag] = []
 
             self._tag_to_entity_ids[tag].append(entity.id())

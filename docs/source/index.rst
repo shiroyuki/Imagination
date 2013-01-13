@@ -21,8 +21,14 @@ Imagination
 Want to get started? Please read :doc:`getting_started`.
 
 .. note::
+
     Imagination plays the big role in Tori Web Framework (http://shiroyuki.com/work/project-tori)
     dealing with clean routing and globally referencing to any defined reusable components.
+
+How to Install
+--------------
+
+Python 3.3
 
 Releases
 --------
