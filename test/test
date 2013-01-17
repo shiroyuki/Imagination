@@ -1,2 +1,3 @@
 #!/bin/bash
 python -B test.py
+python3 -B test.py

@@ -27,6 +27,7 @@ The module contains the package loader used to improve code maintainability.
 
 import re
 import sys
+from imagination.helper import retrieve_module
 
 class Loader(object):
     '''
@@ -59,7 +60,7 @@ class Loader(object):
     def module(self):
         ''' Get a reference to the module. '''
         if not self._module:
-            self._module = self._retrieve_module()
+            self._module = retrieve_module(self._module_path)
 
         return self._module
 
@@ -76,22 +77,17 @@ class Loader(object):
         ''' Get the path to the package. '''
         return self.module.__file__
 
-    def _retrieve_module(self):
-        ''' Retrieve a module by the module path. '''
-
-        try:
-            if self._module_path not in sys.modules:
-                __import__(self._module_path)
-
-            self._module = sys.modules[self._module_path]
-
-            return self._module
-        except KeyError:
-            return None
-
     def _retrieve_package(self):
         ''' Retrieve a package by the module path and the package name. '''
 
-        __import__(self._module_path, fromlist=[self._package_name])
+        try:
+            __import__(self._module_path, fromlist=[self._package_name])
+        except:
+            for mk in sys.modules.keys():
+                if 'tori' not in mk:
+                    continue
+                print(mk)
+
+            raise RuntimeError('Could not retrieve {} from {}'.format(self._package_name, self._module_path))
 
         return getattr(self.module, self._package_name)
