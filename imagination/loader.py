@@ -83,11 +83,6 @@ class Loader(object):
         try:
             __import__(self._module_path, fromlist=[self._package_name])
         except:
-            for mk in sys.modules.keys():
-                if 'tori' not in mk:
-                    continue
-                print(mk)
-
             raise RuntimeError('Could not retrieve {} from {}'.format(self._package_name, self._module_path))
 
         return getattr(self.module, self._package_name)
