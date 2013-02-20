@@ -73,7 +73,12 @@ class Locator(object):
             return entity.instance if isinstance(entity, Entity) else entity
 
         except KeyError:
-            raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
+            raise UnknownEntityError(
+                'The requested entity named "{id}" is unknown or not found. This locator only knows {known_keys}.'.format(
+                    id=id,
+                    known_keys=list(self._entities.keys())
+                )
+            )
 
     def get_wrapper(self, id):
         '''

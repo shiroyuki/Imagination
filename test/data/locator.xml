@@ -17,4 +17,13 @@
     <entity id="dioe" class="dummy.core.DependencyInjectableObjectWithEntity">
         <param name="entity" type="entity">poow-1</param>
     </entity>
+    <entity id="owlad" class="dummy.core.ObjectWithListAndDict">
+        <param name="l" type="list">
+            <item type="int">1</item>
+            <item type="int">2</item>
+            <item type="list">
+                <item type="entity">poo</item>
+            </item>
+        </param>
+    </entity>
 </imagination>

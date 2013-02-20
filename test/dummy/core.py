@@ -1,7 +1,12 @@
+class ObjectWithListAndDict(object):
+    def __init__(self, l=[], d={}):
+        self.l = l
+        self.d = d
+
 class PlainOldObject(object):
     def __init__(self):
         pass
-    
+
     def method(self):
         return 0
 
@@ -10,10 +15,10 @@ class PlainOldObjectWithParameters(object):
         self.a = a
         self.b = b
         self.d = do_multiply
-    
+
     def method(self):
         r = self.d and self.a * self.b or self.a / self.b
-        
+
         return r
 
 class DependencyInjectableObjectWithClass(object):

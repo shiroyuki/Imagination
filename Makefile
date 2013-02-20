@@ -7,7 +7,8 @@ package:
 	python setup.py sdist
 
 ut:
-	python test/test.py
+	cd test && python test.py
+	cd test && python3 test.py
 
 doc:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

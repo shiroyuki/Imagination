@@ -1,13 +1,13 @@
-from os.path               import abspath, dirname, join
-from unittest              import TestCase
+from os.path  import abspath, dirname, join
+from unittest import TestCase
 
-from imagination.entity    import Entity
 from imagination.exception import *
-from imagination.loader    import Loader
 from imagination.locator   import Locator
 
 from imagination.helper.assembler import Assembler
 from imagination.helper.data      import Transformer
+from dummy.core import PlainOldObject
+
 
 class TestHelperAssembler(TestCase):
     def setUp(self):
@@ -30,12 +30,21 @@ class TestHelperAssembler(TestCase):
     def test_initialization_failed_on_multiple_events(self):
         assembler = Assembler(self.transformer)
 
-        try:
-            assembler.load(self.__filepath('locator-lazy-action-malform.xml'))
-            self.assertTrue(False, 'Passed where it should have failed.')
-        except MultipleInterceptingEventsWarning:
-            self.assertTrue(True)
+        self.assertRaises(MultipleInterceptingEventsWarning, assembler.load, self.__filepath('locator-lazy-action-malform.xml'))
 
     def test_only_loading(self):
         assembler = Assembler(self.transformer)
+
         assembler.load(self.filepath)
+
+    def test_list_support(self):
+        assembler = Assembler(self.transformer)
+
+        assembler.load(self.__filepath('locator.xml'))
+
+        obj = assembler.locator.get('owlad')
+
+        self.assertIsInstance(obj.l, list)
+        self.assertIsInstance(obj.l[1], int)
+        self.assertIsInstance(obj.l[2], list)
+        self.assertIsInstance(obj.l[2][0], PlainOldObject)

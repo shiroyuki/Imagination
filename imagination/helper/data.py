@@ -55,22 +55,35 @@ class Transformer(object):
         :returns: the data of the given kind
         '''
 
+        actual_data = data.data() if isinstance(data, Kotoba) else data
+
         if kind == 'entity':
-            data = self.__locator.get(data)
+            actual_data = self.__locator.get(actual_data)
         elif kind == 'class':
-            data = Loader(data).package
+            actual_data = Loader(actual_data).package
         elif kind == 'int':
-            data = int(data)
+            actual_data = int(actual_data)
         elif kind == 'float':
-            data = float(data)
+            actual_data = float(actual_data)
         elif kind == 'bool':
-            data = data.capitalize()
+            actual_data = actual_data.capitalize()
 
-            assert data == 'True' or data == 'False'
+            assert actual_data == 'True' or actual_data == 'False'
 
-            data = data == 'True'
+            actual_data = actual_data == 'True'
+        elif kind == 'list':
+            assert isinstance(data, Kotoba), 'Asking for a Kotoba object, getting an instance of type {}.'.format(type(data).__name__)
 
-        return data
+            actual_data = []
+
+            for item in data.children():
+                item_type = item.attribute('type') if isinstance(data, Kotoba) else type(item).__name__
+
+                actual_data.append(self.cast(item, item_type))
+        elif kind not in ['str', 'unicode']:
+            raise ValueError('Unknown type: {}'.format(kind))
+
+        return actual_data
 
     def locator(self):
         return self.__locator

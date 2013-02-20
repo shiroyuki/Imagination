@@ -326,7 +326,7 @@ class Assembler(object):
                 pass
 
             package.kwargs[name] = self.__transformer.cast(
-                param.data(),
+                param,
                 param.attribute('type')
             )
 
