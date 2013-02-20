@@ -77,12 +77,22 @@ class Transformer(object):
             actual_data = []
 
             for item in data.children():
-                item_type = item.attribute('type') if isinstance(data, Kotoba) else type(item).__name__
+                item_type = item.attribute('type')
 
                 actual_data.append(self.cast(item, item_type))
 
             if kind != 'list':
                 actual_data = eval(kind)(actual_data)
+        elif kind == 'dict':
+            assert isinstance(data, Kotoba), 'Asking for a Kotoba object, getting an instance of type {}.'.format(type(data).__name__)
+
+            actual_data = {}
+
+            for item in data.children():
+                item_name = item.attribute('name')
+                item_type = item.attribute('type')
+
+                actual_data[item_name] = self.cast(item, item_type)
         elif kind not in ['str', 'unicode']:
             raise ValueError('Unknown type: {}'.format(kind))
 

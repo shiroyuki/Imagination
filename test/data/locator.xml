@@ -30,5 +30,10 @@
             <item type="int">4</item>
             <item type="int">5</item>
         </param>
+        <param name="d" type="dict">
+            <item type="int" name="a">6</item>
+            <item type="int" name="b">7</item>
+            <item type="int" name="c">8</item>
+        </param>
     </entity>
 </imagination>

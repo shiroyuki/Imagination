@@ -49,3 +49,4 @@ class TestHelperAssembler(TestCase):
         self.assertIsInstance(obj.l[2], list)
         self.assertIsInstance(obj.l[2][0], PlainOldObject)
         self.assertIsInstance(obj.t, tuple)
+        self.assertIsInstance(obj.d, dict)
