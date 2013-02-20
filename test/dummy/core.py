@@ -2,6 +2,7 @@ class ObjectWithListAndDict(object):
     def __init__(self, l=[], d={}, t=tuple()):
         self.l = l
         self.d = d
+        self.t = t
 
 class PlainOldObject(object):
     def __init__(self):
