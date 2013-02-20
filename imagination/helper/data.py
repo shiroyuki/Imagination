@@ -71,7 +71,7 @@ class Transformer(object):
             assert actual_data == 'True' or actual_data == 'False'
 
             actual_data = actual_data == 'True'
-        elif kind == 'list':
+        elif kind in ['list', 'tuple', 'set']:
             assert isinstance(data, Kotoba), 'Asking for a Kotoba object, getting an instance of type {}.'.format(type(data).__name__)
 
             actual_data = []
@@ -80,6 +80,9 @@ class Transformer(object):
                 item_type = item.attribute('type') if isinstance(data, Kotoba) else type(item).__name__
 
                 actual_data.append(self.cast(item, item_type))
+
+            if kind != 'list':
+                actual_data = eval(kind)(actual_data)
         elif kind not in ['str', 'unicode']:
             raise ValueError('Unknown type: {}'.format(kind))
 

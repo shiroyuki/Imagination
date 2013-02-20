@@ -25,5 +25,10 @@
                 <item type="entity">poo</item>
             </item>
         </param>
+        <param name="t" type="tuple">
+            <item type="int">3</item>
+            <item type="int">4</item>
+            <item type="int">5</item>
+        </param>
     </entity>
 </imagination>

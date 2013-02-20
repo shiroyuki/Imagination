@@ -1,5 +1,5 @@
 class ObjectWithListAndDict(object):
-    def __init__(self, l=[], d={}):
+    def __init__(self, l=[], d={}, t=tuple()):
         self.l = l
         self.d = d
 
