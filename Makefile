@@ -6,11 +6,12 @@ ALLSPHINXOPTS = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(DOC
 package:
 	python setup.py sdist
 
-ut:
-	cd test && python test.py
-	cd test && python3 test.py
+test: clean
+	nosetests -c nose.cfg
+	nosetests-3.3 -c nose.cfg
 
 doc:
+	#cd docs && make clean && make html
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 clean:
