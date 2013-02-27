@@ -29,9 +29,22 @@ import re
 import sys
 from imagination.helper import retrieve_module
 
+class OnDemandProxy(object):
+    """On-demand Proxy
+
+    .. codeauthor:: Juti Noppornpitak <juti_n@yahoo.co.jp>
+    .. versionadded:: 1.6
+
+    .. warning:: experimental feature
+    """
+    def __init__(self, loader):
+        self.__loader  = loader
+
+    def __call__(self, *args, **kwargs):
+        return self.__loader.package
+
 class Loader(object):
-    '''
-    Package loader with lazy loading
+    """Package loader with lazy loading
 
     *path_to_package* is a string representing the package path.
 
@@ -42,7 +55,7 @@ class Loader(object):
         # Then, instantiate the default renderer.
         renderer = loader.package('app.views')
 
-    '''
+    """
     def __init__(self, path_to_package):
         self._path         = path_to_package
         self._access_path  = re.split('\.', self._path)
@@ -50,6 +63,8 @@ class Loader(object):
         self._module       = None
         self._package_name = self._access_path[-1]
         self._package      = None
+
+        self.on_demand_package = OnDemandProxy(self)
 
     @property
     def name(self):
@@ -82,7 +97,10 @@ class Loader(object):
 
         try:
             __import__(self._module_path, fromlist=[self._package_name])
-        except:
-            raise RuntimeError('Could not retrieve {} from {}'.format(self._package_name, self._module_path))
+        except ImportError as exception:
+            raise ImportError('Could not retrieve {} from {}'.format(self._package_name, self._module_path))
 
-        return getattr(self.module, self._package_name)
+        try:
+            return getattr(self.module, self._package_name)
+        except AttributeError as exception:
+            raise ImportError('{}. (Expecting: {})'.format(exception.message, dir(self.module)))
