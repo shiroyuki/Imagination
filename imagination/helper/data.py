@@ -42,7 +42,7 @@ class Transformer(object):
     '''
     @restrict_type(Locator)
     def __init__(self, locator):
-        assert isinstance(locator, Locator), "Expecting an instance of imagination.locator.Locator, one of %s was given instead." % (type(locator).__name__)
+        assert locator and isinstance(locator, Locator), "Expecting an instance of imagination.locator.Locator, one of %s was given instead." % (type(locator).__name__)
 
         self.__locator = locator
 
@@ -52,7 +52,7 @@ class Transformer(object):
 
         :param `data`: the data to be transform
         :param `kind`: the kind of data of the transformed data
-        :returns: the data of the given kind
+        :return: the data of the given kind
         '''
 
         actual_data = data.data() if isinstance(data, Kotoba) else data
@@ -94,7 +94,7 @@ class Transformer(object):
 
                 actual_data[item_name] = self.cast(item, item_type)
         elif kind not in ['str', 'unicode']:
-            raise ValueError('Unknown type: {}'.format(kind))
+            raise ValueError('Unknown type: {} (Given data: {})'.format(kind, data))
 
         return actual_data
 
