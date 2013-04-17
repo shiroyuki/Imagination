@@ -27,8 +27,11 @@ The module contains reusable input validators.
 '''
 
 import inspect
+import sys
 
 from imagination.exception import MisplacedValidatorError
+
+_disable_decorator = 'sphinx' in sys.modules
 
 class SpecialType(object):
     function = 'type:function'
@@ -78,6 +81,9 @@ def restrict_type(*restricted_list, **restricted_map):
 
     '''
     def inner_decorator(reference):
+        if _disable_decorator:
+            return reference
+
         if isinstance(reference, type) or not callable(reference):
             raise MisplacedValidatorError(
                 'Can only be used with callable objects, e.g., functions, class methods, instance methods and static methods.'
@@ -123,10 +129,10 @@ def __validate_type(allowed_list, allowed_dictionary, argument_list, argument_di
         for key in allowed_dictionary:
             expected_type = allowed_dictionary[key]
 
-            reference = argument_dictionary[key]
-
             if key not in argument_dictionary:
                 continue
+
+            reference = argument_dictionary[key]
 
             if not expected_type:
                 continue
