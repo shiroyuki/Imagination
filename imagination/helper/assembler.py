@@ -1,159 +1,24 @@
 '''
-:Module: imagination.helper.assembler
-:Author: Juti Noppornpitak
-:Dependency: kotoba 3.0
-:Availability: 1.5
+.. versionadded:: 1.5
 
-The module contains the assembler to constuct loaders and entites based on the configuration
-and register to a particular locator.
+Copyright (c) 2012-2013 Juti Noppornpitak
 
-XML Schema
-----------
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
 
-.. note::
-    This is the master specification document for the configuration.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-The schema is defined as followed::
-
-    # Base
-
-    <imagination>
-        (ENTITY)*
-    </imagination>
-
-    # Entity
-
-    ENTITY = <entity id="ENTITY_ID"
-                     class="ENTITY_CLASS"
-                     (interceptable="(true|false)")?
-                     (option=ENTITY_OPTIONS)?
-             >
-                 (CONSTRUCTOR_PARAMETER)*
-                 (INTERCEPTION)*
-             </entity>
-
-    ENTITY_OPTIONS=(factory-mode)
-
-    # Constructor's parameter and initial parameter
-
-    CONSTRUCTOR_PARAMETER = INITIAL_PARAMETER
-                          = <parameter type="PARAMETER_TYPE" name="PARAMETER_NAME">
-                                (PARAMETER_VALUE|ENTITY_ID|CLASS_IDENTIFIER)
-                            </parameter>
-
-    # See the section "Parameter Types" for PARAMETER_TYPE.
-
-    # Event
-
-    EVENT=(before|pre|post|after)
-
-    INTERCEPTION =  <interception EVENT="REFERENCE_ENTITY_IDENTIFIER"
-                                  do="REFERENCE_ENTITY_METHOD"
-                                  with="THIS_ENTITY_METHOD"
-                    >
-                        (INITIAL_PARAMETER)*
-                    </interception>
-
-where:
-
-* ``ENTITY_ID`` is the identifier of the entity.
-* ``ENTITY_CLASS`` is the fully-qualified class name of the entity. (e.g. ``tori.service.rdb.EntityService``)
-* ``option`` is the option of the entity where ``ENTITY_OPTIONS`` can have one
-  or more of:
-
-  * ``factory-mode``: always fork the instance of the given class.
-  * ``no-interuption``: any methods of the entity cannot be interrupted.
-
-* ``REFERENCE_ENTITY_IDENTIFIER`` is the reference's entity identifier
-* ``REFERENCE_ENTITY_METHOD`` is the reference's method name
-* ``THIS_ENTITY_METHOD`` is this entity's method name
-* ``EVENT`` is where the ``REFERENCE_ENTITY_METHOD`` is intercepted.
-
-  * ``before`` is an event before the execution of the method of the reference
-    (reference method) regardless to the given arguments to the reference
-    method.
-  * ``pre`` is an event on pre-contact of the reference method and concerning
-    about the arguments given to the reference method. The method of the entity
-    (the intercepting method) takes the same paramenter as the reference method.
-  * ``post`` is an event on post-contact of the reference method and concerning
-    about the result returned by the reference method. The intercepting method
-    for this event takes only one parameter which is the result from the
-    reference method or any previous post-contact interceptors.
-  * ``after`` is an event after the execution of the reference method regardless
-    to the result reterned by the reference method.
-
-Parameter Types
----------------
-
-========= =========================================
-Type Name Data Type
-========= =========================================
-unicode   Unicode (default)
-bool      Boolean [#pt1]_
-float     Float
-int       Integer
-class     Class reference [#pt2]_
-entity    :class:`imagination.entity.Entity` [#pt3]_
-========= =========================================
-
-.. rubric:: Footnotes
-
-.. [#pt1] Only any variations (letter case) of the word 'true' or 'false' are
-          considered as a valid boolean value.
-.. [#pt2] The module and package specified as the value of ``<param>`` is loaded
-          when :meth:`Assembler.load` is executed.
-.. [#pt3] The encapsulated instance of the entity specified as the value of
-          ``<param>`` is instantiated when :meth:`Assembler.load`
-          is executed or when the instance is given with a proxy (:class:`imagination.proxy.Proxy`).
-
-Example
--------
-
-.. code-block:: xml
-
-    <?xml version="1.0" encoding="utf-8"?>
-    <imagination>
-        <entity id="alpha" class="dummy.lazy_action.Alpha">
-            <param type="entity" name="accompany">beta</param>
-            <interception before="charlie" do="cook" with="order">
-                <param type="unicode" name="item">egg and becon</param>
-            </interception>
-            <interception pre="charlie" do="repeat" with="confirm"/>
-            <interception before="charlie" do="serve" with="speak_to_accompany">
-                <param type="str" name="context">watch your hand</param>
-            </interception>
-            <interception before="charlie" do="serve" with="wash_hands"/>
-            <interception after="me" do="eat" with="speak">
-                <param type="str" name="context">merci</param>
-            </interception>
-        </entity>
-        <entity id="beta" class="dummy.lazy_action.Beta"/>
-        <entity id="charlie" class="dummy.lazy_action.Charlie"/>
-    </imagination>
-
-.. note::
-    Copyright (c) 2012 Juti Noppornpitak
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-    of the Software, and to permit persons to whom the Software is furnished to do
-    so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-    PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-    OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-API
----
-
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from re import split
