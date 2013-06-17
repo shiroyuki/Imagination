@@ -37,9 +37,9 @@ The schema is defined as followed::
     INITIAL_PARAMETER     = CONSTRUCTOR_PARAMETER
     
     # Constructor's parameter and initial parameter
-    CONSTRUCTOR_PARAMETER = <parameter type="PARAMETER_TYPE" name="PARAMETER_NAME">
+    CONSTRUCTOR_PARAMETER = <param type="PARAMETER_TYPE" name="PARAMETER_NAME">
                                 (PARAMETER_VALUE|ENTITY_ID|CLASS_IDENTIFIER|ENTRY_ITEM*)
-                            </parameter>
+                            </param>
     ENTRY_ITEM = <item( name="DICT_KEY")? type="DATA_TYPE">DATA_VALUE</item>
 
     # See the section "Parameter Types" for PARAMETER_TYPE.
