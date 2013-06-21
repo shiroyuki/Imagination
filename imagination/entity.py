@@ -239,12 +239,12 @@ class Entity(object):
             if not isinstance(self._args[index], Proxy):
                 continue
 
-            self._args[index] = self._args[index].load()
+            #self._args[index] = self._args[index].load()
 
         for key in self._kwargs.keys():
             if not isinstance(self._kwargs[key], Proxy):
                 continue
 
-            self._kwargs[key] = self._kwargs[key].load()
+            #self._kwargs[key] = self._kwargs[key].load()
 
         self._prepared = True

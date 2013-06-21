@@ -128,7 +128,7 @@ class Locator(object):
             if tag not in self._tag_to_entity_ids:
                 self._tag_to_entity_ids[tag] = []
 
-            self._tag_to_entity_ids[tag].append(entity.id())
+            self._tag_to_entity_ids[tag].append(entity.id)
 
     def has(self, id):
         ''' Check if the entity with *id* is already registered. '''
