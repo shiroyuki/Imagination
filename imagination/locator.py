@@ -36,8 +36,20 @@ class Locator(object):
     ''' Entity locator '''
 
     def __init__(self):
-        self._entities = {}
+        self._entities          = {}
         self._tag_to_entity_ids = {}
+        self._in_passive_mode   = False
+
+    @property
+    def in_passive_mode(self):
+        return self._in_passive_mode
+
+    @in_passive_mode.setter
+    def in_passive_mode(self, value):
+        if not isinstance(value, bool):
+            raise ValueError('Expected a boolean value for in_passive_mode.')
+
+        self._in_passive_mode = value
 
     def fork(self, id):
         '''
@@ -52,7 +64,6 @@ class Locator(object):
                 raise ForbiddenForkError
 
             return entity.fork()
-
         except KeyError:
             raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
 
@@ -62,17 +73,19 @@ class Locator(object):
 
     def get(self, id):
         '''
-        Retrieve the entity identified by ``id``.
+        Retrieve an instance of the entity
 
         :param `id`: entity identifier
-        :returns: the requested entity
+        :returns: an instance of the requested entity
         '''
         try:
-            entity = self._entities[id]
+            entity = self.get_wrapper(id)
+
+            if isinstance(entity, Proxy):
+                return entity #return the proxy reference.
 
             return entity.instance if isinstance(entity, Entity) else entity
-
-        except KeyError:
+        except UnknownEntityError:
             raise UnknownEntityError(
                 'The requested entity named "{id}" is unknown or not found. This locator only knows {known_keys}.'.format(
                     id=id,
@@ -89,8 +102,10 @@ class Locator(object):
         '''
         try:
             return self._entities[id]
-
         except KeyError:
+            if self.in_passive_mode:
+                return Proxy(self, id)
+
             raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
 
     def find_by_tag(self, tag_label):

@@ -52,6 +52,12 @@ class Assembler(object):
         self.__transformer   = transformer
         self.__known_proxies = {}
 
+    def activate_passive_loading(self):
+        self.locator.in_passive_mode = True
+
+    def deactivate_passive_loading(self):
+        self.locator.in_passive_mode = False
+
     def load(self, filepath):
         '''
         Load the configuration.
@@ -76,6 +82,8 @@ class Assembler(object):
             self.locator\
                 .get_wrapper(interception.actor.id)\
                 .register_interception(interception)
+
+        self.__interceptions = []
 
     @property
     def locator(self):

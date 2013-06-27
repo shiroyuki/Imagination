@@ -68,10 +68,16 @@ class TestAction(TestCase):
         )
 
         for step in range(len(Conversation.logs)):
+            expectation = expected_log_sequence[step]
+            actual      = Conversation.logs[step]
             self.assertEquals(
-                expected_log_sequence[step],
-                Conversation.logs[step],
-                'Failed at step %d' % step
+                expectation,
+                actual,
+                'Failed at step {step}: should be "{expectation}", not "{actual}"'.format(
+                    step=step,
+                    expectation=expectation,
+                    actual=actual
+                )
             )
 
         #print '\n'.join(Conversation.logs)

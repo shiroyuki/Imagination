@@ -197,6 +197,14 @@ class Entity(object):
         '''
         self.__prepare()
 
+        for i in range(len(self._args)):
+            if isinstance(self._args[i], Proxy):
+                self._args[i] = self._args[i].load()
+
+        for i in self._kwargs:
+            if isinstance(self._kwargs[i], Proxy):
+                self._kwargs[i] = self._kwargs[i].load()
+
         instance = self._loader.package(*self._args, **self._kwargs)
 
         # Return the instance if this entity is not interceptable.
