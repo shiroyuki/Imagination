@@ -186,7 +186,7 @@ class Assembler(object):
         for param in node.children('param'):
             try:
                 assert param.attribute('name')\
-                    or param.attribute('type'),\
+                    and param.attribute('type'),\
                     'The parameter #%d does not have either name or type.' % index
             except AssertionError as e:
                 raise IncompatibleBlockError(e.message)

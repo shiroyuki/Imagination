@@ -97,6 +97,8 @@ class Loader(object):
 
         try:
             __import__(self._module_path, fromlist=[self._package_name])
+        except TypeError as exception:
+            raise ImportError('Package {}.{}'.format(self._module_path, self._package_name))
         except ImportError as exception:
             raise ImportError('Could not retrieve {} from {}'.format(self._package_name, self._module_path))
 

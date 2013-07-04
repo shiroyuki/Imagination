@@ -93,6 +93,8 @@ class Transformer(object):
                 item_type = item.attribute('type')
 
                 actual_data[item_name] = self.cast(item, item_type)
+        elif kind == 'str':
+            actual_data = str(actual_data)
         elif kind not in ['str', 'unicode']:
             raise ValueError('Unknown type: {} (Given data: {})'.format(kind, data))
 
