@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Imagination 1.5/1.6
-===================
+Imagination 1.6
+===============
 
 :Copyright: Juti Noppornpitak <juti_n@yahoo.co.jp>
 :Author:    Juti Noppornpitak <juti_n@yahoo.co.jp>
@@ -39,7 +39,7 @@ How to Install
 Release Notes
 -------------
 
-*Development Version*
+*Version 1.6*
 
 * Support Python 3.3.
 * Support lists and dictionaries in the XML configuration file.
