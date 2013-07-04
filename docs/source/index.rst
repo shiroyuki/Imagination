@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Imagination 1.5/1.6
-===================
+Imagination 1.7
+===============
 
 :Copyright: Juti Noppornpitak <juti_n@yahoo.co.jp>
 :Author:    Juti Noppornpitak <juti_n@yahoo.co.jp>
@@ -39,7 +39,15 @@ How to Install
 Release Notes
 -------------
 
-*Development Version*
+*Version 1.7*
+
+* Fixed bugs related to data access and conversion.
+* Added extra lazy loading on entity containers (delaying the
+  instantiation/forking of the target entity).
+* Added cross-document reference when ``imagination.helper.assembler.Assembler``
+  load the configuration from multiple files (used in Tori Framework 2.2).
+
+*Version 1.6*
 
 * Support Python 3.3.
 * Support lists and dictionaries in the XML configuration file.

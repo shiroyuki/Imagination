@@ -1,26 +1,3 @@
-'''
-.. versionadded:: 1.5
-
-Copyright (c) 2012-2013 Juti Noppornpitak
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-'''
-
 from re import split
 
 from kotoba.kotoba import Kotoba
@@ -37,13 +14,13 @@ from imagination.meta.package        import Parameter
 from imagination.proxy               import Proxy
 
 class Assembler(object):
-    '''
+    """
     The entity assembler via configuration files.
 
-    :param `transformer`: an instance of :class:`imagination.helper.data.Transformer`
+    .. versionadded:: 1.5
 
-    '''
-
+    :param imagination.helper.data.Transformer transformer: the data transformer
+    """
     __known_interceptable_events = ['before', 'pre', 'post', 'after']
 
     @restrict_type(Transformer)
@@ -53,18 +30,37 @@ class Assembler(object):
         self.__known_proxies = {}
 
     def activate_passive_loading(self):
+        """ Activate the passive loading mode.
+
+            This is to delay the instantiation or forking of an entity to when
+            it is referred/queried but undefined. This assumes that the queried
+            entity will later be defined.
+
+            If later on it isn't defined, the exception will be thrown.
+
+            When this method is used, please do not forget to call :meth:`deactivate_passive_loading`
+            to disable the passive mode.
+
+            .. versionadded:: 1.7
+        """
         self.locator.in_passive_mode = True
 
     def deactivate_passive_loading(self):
+        """ Deactivate the passive loading mode.
+
+            When :meth:`activate_passive_loading` is used, this method must be
+            called to disable the passive mode.
+
+            .. versionadded:: 1.7
+        """
         self.locator.in_passive_mode = False
 
     def load(self, filepath):
-        '''
+        """
         Load the configuration.
 
-        :param filepath: the file path to the configuration.
-        :type  filepath: string or unicode
-        '''
+        :param str filepath: the file path to the configuration.
+        """
         xml = load_from_file(filepath)
 
         # First, register proxies to entities (for lazy initialization).
@@ -87,11 +83,11 @@ class Assembler(object):
 
     @property
     def locator(self):
-        '''
+        """
         The injected locator via the data transformer.
 
         :rtype: imagination.locator.Locator
-        '''
+        """
         return self.__transformer.locator()
 
     @restrict_type(Kotoba)

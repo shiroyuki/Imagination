@@ -147,5 +147,8 @@ Example
 API
 ---
 
+.. automodule:: imagination.helper.data
+    :members:
+
 .. automodule:: imagination.helper.assembler
     :members:
