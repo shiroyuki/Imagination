@@ -31,6 +31,7 @@ from kotoba import load_from_file
 from imagination.entity    import Entity
 from imagination.exception import *
 from imagination.proxy     import Proxy
+from imagination.loader    import CallbackProxy
 
 class Locator(object):
     ''' Entity locator '''
@@ -60,8 +61,9 @@ class Locator(object):
         try:
             entity = self._entities[id]
 
-            if isinstance(entity, Proxy):
-                raise ForbiddenForkError
+            # Prevent the locator from forking a new instance of Proxy or CallbackProxy.
+            if isinstance(entity, CallbackProxy) or isinstance(entity, Proxy):
+                raise ForbiddenForkError('Unable to fork {}'.format(type(entity).__name__))
 
             return entity.fork()
         except KeyError:
@@ -81,6 +83,11 @@ class Locator(object):
         try:
             entity = self.get_wrapper(id)
 
+            # Retrieve a callback entity (callable).
+            if isinstance(entity, CallbackProxy):
+                return entity()
+
+            # Retrieve a proxy object to an entity
             if isinstance(entity, Proxy):
                 return entity #return the proxy reference.
 

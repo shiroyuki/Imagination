@@ -29,6 +29,25 @@ import re
 import sys
 from imagination.helper import retrieve_module
 
+class CallbackProxy(object):
+    """Callback Proxy
+
+    .. codeauthor:: Juti Noppornpitak <juti_n@yahoo.co.jp>
+    .. versionadded:: 1.6
+
+    .. warning:: experimental feature
+    """
+    def __init__(self, callback, *args, **kwargs):
+        if not callable(callback):
+            raise ValueError('The callback object is required for {}.'.format(self.__class__.__name__))
+
+        self.__callback = callback
+        self.__args     = args
+        self.__kwargs   = kwargs
+
+    def __call__(self):
+        return self.__callback(*self.__args, **self.__kwargs)
+
 class OnDemandProxy(object):
     """On-demand Proxy
 
@@ -38,7 +57,7 @@ class OnDemandProxy(object):
     .. warning:: experimental feature
     """
     def __init__(self, loader):
-        self.__loader  = loader
+        self.__loader = loader
 
     def __call__(self, *args, **kwargs):
         return self.__loader.package
@@ -100,7 +119,7 @@ class Loader(object):
         except TypeError as exception:
             raise ImportError('Package {}.{}'.format(self._module_path, self._package_name))
         except ImportError as exception:
-            raise ImportError('Could not retrieve {} from {}'.format(self._package_name, self._module_path))
+            raise ImportError('Could not retrieve {} from {} as {}'.format(self._package_name, self._module_path, exception.message))
 
         try:
             return getattr(self.module, self._package_name)

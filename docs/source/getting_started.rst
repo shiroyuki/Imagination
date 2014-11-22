@@ -140,3 +140,20 @@ becon". Then, **charlie** will take the order from the central queue.
 
 Now, eventually, we have the cleaner code that do exactly what we want in the
 more maintainable way.
+
+Callback Proxy
+--------------
+
+.. versionadded:: 1.8
+
+In case you want to execute something which cannot be registered with either an XML file or manually instantiate
+the loader, you can use the Callback Proxy like the following example::
+
+    import os.path
+    from imagination.loader import CallbackProxy
+    
+    def something(message):
+        return os.path
+    
+    callback_proxy = CallbackProxy(something, 'lah')
+    locator.set('cbp.something', callback_proxy)

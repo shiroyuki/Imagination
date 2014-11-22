@@ -18,7 +18,7 @@ doc:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 clean: cache_clean
-	rm -Rf MANIFEST dist docs/build/*
+	rm -Rf MANIFEST build dist docs/build/*
 
 cache_clean:
 	find . -name *.pyc -exec rm {} \;
