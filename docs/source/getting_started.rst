@@ -157,3 +157,5 @@ the loader, you can use the Callback Proxy like the following example::
     
     callback_proxy = CallbackProxy(something, 'lah')
     locator.set('cbp.something', callback_proxy)
+
+When you call ``locator.get('cbp.something')``, you will get ``os.path``.
