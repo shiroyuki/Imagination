@@ -6,6 +6,9 @@ ALLSPHINXOPTS = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(DOC
 package:
 	python setup.py sdist
 
+wheel_release:
+	python setup.py sdist bdist_wheel upload
+
 test: cache_clean
 	nosetests -c nose.cfg
 	nosetests-3.3 -c nose.cfg

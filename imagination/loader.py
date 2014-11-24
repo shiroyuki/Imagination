@@ -29,25 +29,6 @@ import re
 import sys
 from imagination.helper import retrieve_module
 
-class CallbackProxy(object):
-    """Callback Proxy
-
-    .. codeauthor:: Juti Noppornpitak <juti_n@yahoo.co.jp>
-    .. versionadded:: 1.6
-
-    .. warning:: experimental feature
-    """
-    def __init__(self, callback, *args, **kwargs):
-        if not callable(callback):
-            raise ValueError('The callback object is required for {}.'.format(self.__class__.__name__))
-
-        self.__callback = callback
-        self.__args     = args
-        self.__kwargs   = kwargs
-
-    def __call__(self):
-        return self.__callback(*self.__args, **self.__kwargs)
-
 class OnDemandProxy(object):
     """On-demand Proxy
 
