@@ -100,9 +100,9 @@ class Loader(object):
         except TypeError as exception:
             raise ImportError('Package {}.{}'.format(self._module_path, self._package_name))
         except ImportError as exception:
-            raise ImportError('Could not retrieve {} from {} as {}'.format(self._package_name, self._module_path, exception.message))
+            raise ImportError('Could not retrieve {} from {} as {}'.format(self._package_name, self._module_path, exception))
 
         try:
             return getattr(self.module, self._package_name)
         except AttributeError as exception:
-            raise ImportError('{}. (Expecting: {})'.format(exception.message, dir(self.module)))
+            raise ImportError('{}. (Expecting: {})'.format(exception, dir(self.module)))
