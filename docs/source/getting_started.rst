@@ -141,20 +141,61 @@ becon". Then, **charlie** will take the order from the central queue.
 Now, eventually, we have the cleaner code that do exactly what we want in the
 more maintainable way.
 
+Entity Factorization
+--------------------
+
+.. versionadded 1.9
+
+In Imagination 1.9, you can register a reusable entity instantiated by a factory
+object. For example, you may have a code like this.
+
+.. code-block:: python
+
+    class Manager(object):
+        def getWorkerObject(self, name):
+            return Worker(name)
+
+        def getDuplicationMethod(self, multiplier):
+            def duplicate(value):
+                return value * multiplier
+
+            return duplicate
+
+    class Worker(object):
+        def __init__(self, name):
+            self.name = name
+
+        def ping(self):
+            return self.name
+
+If you want to be able to call the locator with an identity and get the result
+of the object factorization, you may do so like the following example.
+
+.. code-block:: xml
+
+    <factorization id="worker.alpha" with="manager" call="getWorkerObject">
+        <param name="name" type="str">Alpha</param>
+    </factorization>
+
+.. note:: The interception setting is the same as any normal entity.
+
+.. note:: The factorization only supports forking objects.
+
 Callback Proxy
 --------------
 
 .. versionadded:: 1.8
 
-In case you want to execute something which cannot be registered with either an XML file or manually instantiate
-the loader, you can use the Callback Proxy like the following example::
+In case you want to execute something which cannot be registered with either an
+XML file or manually instantiate the loader, you can use the Callback Proxy like
+the following example::
 
     import os.path
     from imagination.loader import CallbackProxy
-    
+
     def something(message):
         return os.path
-    
+
     callback_proxy = CallbackProxy(something, 'lah')
     locator.set('cbp.something', callback_proxy)
 
