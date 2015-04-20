@@ -5,6 +5,7 @@ from kotoba        import load_from_file
 
 from imagination.decorator.validator import restrict_type
 from imagination.entity              import Entity
+from imagination.factorization       import Factorization
 from imagination.exception           import *
 from imagination.loader              import Loader
 from imagination.helper.data         import *
@@ -17,11 +18,29 @@ class Assembler(object):
     """
     The entity assembler via configuration files.
 
+    :param imagination.helper.data.Transformer transformer: the data transformer
+
     .. versionadded:: 1.5
 
-    :param imagination.helper.data.Transformer transformer: the data transformer
+        This class is added.
+
+    .. versionchanged:: 1.9
+
+        Added the support for entity factorization.
+
     """
     __known_interceptable_events = ['before', 'pre', 'post', 'after']
+    __entity_element_required_attributes = {
+        'entity': {
+            'id':    'entity identifier',
+            'class': 'entity class',
+        },
+        'factorization': {
+            'id':   'factorized entity identifier',
+            'with': 'factory entity identifier',
+            'call': 'factory method',
+        },
+    }
 
     @restrict_type(Transformer)
     def __init__(self, transformer):
@@ -71,7 +90,7 @@ class Assembler(object):
         # Then, register loaders for entities.
         for node in xml.children():
             self.__get_interceptions(node)
-            self.__register_loader(node)
+            self.__register_entity(node)
 
         # Then, declare interceptions to target entities.
         for interception in self.__interceptions:
@@ -92,11 +111,19 @@ class Assembler(object):
 
     @restrict_type(Kotoba)
     def __validate_node(self, node):
-        if not node.attribute('id'):
-            raise IncompatibleBlockError('Invalid entity configuration. No ID specified.')
+        entity_type         = node.name()
+        required_attributes = None
 
-        if not node.attribute('class'):
-            raise IncompatibleBlockError('Invalid entity configuration. No class type specified.')
+        if entity_type not in self.__entity_element_required_attributes:
+            raise IncompatibleBlockError('Entity class "{}" is undefined.'.format(entity_type))
+
+        required_attributes = self.__entity_element_required_attributes[entity_type]
+
+        for name in required_attributes:
+            if node.attribute(name):
+                continue
+
+            raise IncompatibleBlockError('Entity class "{}" needs a valid "{}" attribute.'.format(entity_type, required_attributes[name]))
 
     @restrict_type(Kotoba)
     def __register_proxy(self, node):
@@ -109,20 +136,42 @@ class Assembler(object):
         self.__known_proxies[id] = proxy
 
     @restrict_type(Kotoba)
-    def __register_loader(self, node):
-        id     = node.attribute('id')
-        kind   = node.attribute('class')
-        params = self.__get_params(node)
-        tags   = self.__get_tags(node)
+    def __register_entity(self, node):
+        entity_type = node.name()
+
+        if entity_type == 'entity':
+            return self.__register_normal_entity(node)
+
+        if entity_type == 'factorization':
+            return self.__register_factorized_entity(node)
+
+    def __register_normal_entity(self, node):
+        entity_id = node.attribute('id')
+        kind      = node.attribute('class')
+        params    = self.__get_params(node)
+        tags      = self.__get_tags(node)
 
         loader = Loader(kind)
-
-        entity = Entity(id, loader, *params.largs, **params.kwargs)
+        entity = Entity(entity_id, loader, *params.largs, **params.kwargs)
 
         entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
         entity.tags          = tags
 
-        self.locator.set(id, entity)
+        self.locator.set(entity_id, entity)
+
+    def __register_factorized_entity(self, node):
+        entity_id      = node.attribute('id')
+        factory_id     = node.attribute('with')
+        factory_method = node.attribute('call')
+        params         = self.__get_params(node)
+        tags           = self.__get_tags(node)
+
+        entity = Factorization(self.locator, factory_id, factory_method, params)
+
+        entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
+        entity.tags          = tags
+
+        self.locator.set(entity_id, entity)
 
     @restrict_type(Kotoba)
     def __get_tags(self, node):
@@ -162,10 +211,10 @@ class Assembler(object):
 
             # If the actor or the handler has no proxies, raise the exception.
             if actor not in self.__known_proxies:
-                raise UnknownProxyError('The target (%s) of the interception is unknown.' % actor)
+                raise UnknownProxyError('The target ({}) of the interception is unknown.'.format(actor))
 
             if handler not in self.__known_proxies:
-                raise UnknownProxyError('The handler (%s) of the interception is unknown.' % handler)
+                raise UnknownProxyError('The handler ({}) of the interception is unknown.'.format(handler))
 
             actor   = Contact(self.__known_proxies[actor], node.attribute('do'))
             handler = Contact(self.__known_proxies[handler], node.attribute('with'), self.__get_params(node))
@@ -183,7 +232,7 @@ class Assembler(object):
             try:
                 assert param.attribute('name')\
                     and param.attribute('type'),\
-                    'The parameter #%d does not have either name or type.' % index
+                    'The parameter #{} does not have either name or type.'.format(index)
             except AssertionError as e:
                 raise IncompatibleBlockError(e.message)
 
@@ -191,7 +240,7 @@ class Assembler(object):
             name   = param.attribute('name')
 
             if name in package.kwargs:
-                raise DuplicateKeyWarning('There is a parameter name "%s" with that name already registered.' % name)
+                raise DuplicateKeyWarning('There is a parameter name "{}" with that name already registered.'.format(name))
                 pass
 
             package.kwargs[name] = self.__transformer.cast(

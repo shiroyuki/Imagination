@@ -28,10 +28,11 @@ The module contains the entity locator used to promote reusability of components
 from re     import split
 from kotoba import load_from_file
 
-from imagination.entity    import CallbackProxy
-from imagination.entity    import Entity
-from imagination.exception import *
-from imagination.proxy     import Proxy
+from imagination.factorization import Factorization
+from imagination.entity        import CallbackProxy
+from imagination.entity        import Entity
+from imagination.exception     import *
+from imagination.proxy         import Proxy
 
 class Locator(object):
     ''' Entity locator '''
@@ -91,6 +92,9 @@ class Locator(object):
             if isinstance(entity, Proxy):
                 return entity #return the proxy reference.
 
+            if isinstance(entity, Factorization):
+                return entity.load()
+
             return entity.instance if isinstance(entity, Entity) else entity
         except UnknownEntityError:
             raise UnknownEntityError(
@@ -135,7 +139,7 @@ class Locator(object):
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
 
-        if type(entity) not in [Entity, Proxy, CallbackProxy]:
+        if type(entity) not in [Entity, Proxy, CallbackProxy, Factorization]:
             raise UnknownEntityError('The type of the given entity named "{}" is not excepted. ({})'.format(id, type(entity).__name__))
 
         if isinstance(entity, Entity):

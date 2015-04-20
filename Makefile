@@ -11,7 +11,9 @@ wheel_release:
 
 test: cache_clean
 	nosetests -c nose.cfg
-	nosetests-3.3 -c nose.cfg
+
+test_py3:
+	nosetests-3.4 -c nose.cfg
 
 install:
 	python setup.py install --optimize 2 --compile

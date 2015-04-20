@@ -15,7 +15,7 @@ The schema is defined as followed::
     # Base
 
     <imagination>
-        (ENTITY)*
+        (ENTITY|FACTORIZED_ENTITY)*
     </imagination>
 
     ##########
@@ -26,17 +26,23 @@ The schema is defined as followed::
                      class="ENTITY_CLASS"
                      (tags="...")?
                      (interceptable="(true|false)")?
-                     (option=ENTITY_OPTIONS)?
              >
                  (CONSTRUCTOR_PARAMETER)*
                  (INTERCEPTION)*
              </entity>
 
-    ENTITY_OPTIONS=(factory-mode)
+    FACTORIZED_ENTITY = <factorization
+                          id="CREATED_ENTITY_ID"
+                          with="FACTORY_ENTITY_ID"
+                          call="FACTORY_ENTITY_METHOD"
+                        >
+                          (CONSTRUCTOR_PARAMETER)*
+                          (INTERCEPTION)*
+                        </factorization>
 
     # Initial Parameter
     INITIAL_PARAMETER     = CONSTRUCTOR_PARAMETER
-    
+
     # Constructor's parameter and initial parameter
     CONSTRUCTOR_PARAMETER = <param type="PARAMETER_TYPE" name="PARAMETER_NAME">
                                 (PARAMETER_VALUE|ENTITY_ID|CLASS_IDENTIFIER|ENTRY_ITEM*)
@@ -62,6 +68,9 @@ where:
 
 * ``ENTITY_ID`` is the identifier of the entity.
 * ``ENTITY_CLASS`` is the fully-qualified class name of the entity. (e.g. ``tori.service.rdb.EntityService``)
+* ``CREATED_ENTITY_ID`` is the factorized entity ID. (Added in Imagination 1.9)
+* ``FACTORY_ENTITY_ID`` is the factory entity ID. (Added in Imagination 1.9)
+* ``FACTORY_ENTITY_METHOD`` is the factory method. (Added in Imagination 1.9)
 * ``option`` is the option of the entity where ``ENTITY_OPTIONS`` can have one
   or more of:
 

@@ -8,3 +8,8 @@
 MANIFEST
 dist/
 docs/build/
+*.egg-info
+.coverage
+.idea/
+PKG-INFO
+build/

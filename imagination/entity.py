@@ -26,7 +26,7 @@ and :class:`imagination.loader.Loader` and simulate the singleton class on the p
 
 '''
 
-from imagination.action              import Action
+from imagination.common              import InterceptableObject
 from imagination.decorator.validator import restrict_type
 from imagination.loader              import Loader
 from imagination.proxy               import Proxy
@@ -50,7 +50,7 @@ class CallbackProxy(object):
     def __call__(self):
         return self.__callback(*self.__args, **self.__kwargs)
 
-class Entity(object):
+class Entity(InterceptableObject):
     '''
     Entity represents the package, reference and instance of the reference.
 
@@ -78,16 +78,15 @@ class Entity(object):
 
     @restrict_type(None, Loader)
     def __init__(self, id, loader, *args, **kwargs):
+        super(Entity, self).__init__()
+
         self._id       = id
         self._loader   = loader
         self._args     = args
         self._kwargs   = kwargs
         self._instance = None
         self._tags     = []
-        self._locked   = False
         self._prepared = False
-        self._interceptable  = True
-        self._interceptions = []
 
     @property
     def id(self):
@@ -108,29 +107,6 @@ class Entity(object):
         return self._loader
 
     @property
-    def interceptable(self):
-        '''
-        Flag if this entity is interceptable
-
-        :rtype: boolean
-        '''
-        return self._interceptable
-
-    @interceptable.setter
-    @restrict_type(bool)
-    def interceptable(self, interceptable):
-        '''
-        Define if this entity is interceptable.
-
-        :param interceptable: Flag if this entity is interceptable
-        :type  interceptable: boolean
-        '''
-        if self.locked:
-            raise LockedEntityException
-
-        self._interceptable = interceptable
-
-    @property
     def argument_list(self):
         ''' Get the argument list. '''
         return self._args
@@ -139,13 +115,6 @@ class Entity(object):
     def argument_dictionary(self):
         ''' Get the argument dictionary. '''
         return self._kwargs
-
-    def lock(self):
-        self._locked = True
-
-    @property
-    def locked(self):
-        return self._locked
 
     @property
     def activated(self):
@@ -180,27 +149,6 @@ class Entity(object):
         self._tags = tags
 
     @property
-    def interceptions(self):
-        '''
-        Retrieve the list of interceptions.
-        '''
-        return self._interceptions
-
-    @interceptions.setter
-    @restrict_type(list)
-    def interceptions(self, interceptions):
-        '''
-        Define the list of interceptions.
-
-        :param interceptions: list of interceptions
-        :type  interceptions: list
-        '''
-        self._interceptions = interceptions
-
-    def register_interception(self, interception):
-        self._interceptions.append(interception)
-
-    @property
     def instance(self):
         ''' Get the singleton instance of the class defined for the loader. '''
         if not self._instance:
@@ -216,14 +164,6 @@ class Entity(object):
         '''
         self.__prepare()
 
-        for i in range(len(self._args)):
-            if isinstance(self._args[i], Proxy):
-                self._args[i] = self._args[i].load()
-
-        for i in self._kwargs:
-            if isinstance(self._kwargs[i], Proxy):
-                self._kwargs[i] = self._kwargs[i].load()
-
         instance = self._loader.package(*self._args, **self._kwargs)
 
         # Return the instance if this entity is not interceptable.
@@ -231,27 +171,7 @@ class Entity(object):
             return instance
 
         # For each PUBLIC method, make it interceptable with Action.
-        for attribute in dir(instance):
-            if attribute[0] == '_':
-                continue
-
-            ref = instance.__getattribute__(attribute)
-
-            if not ref or not callable(ref):
-                continue
-
-            new_ref = Action(ref)
-
-            for interception in self._interceptions:
-                if interception.actor.method_name != attribute:
-                    continue
-
-                new_ref.register(interception)
-
-            try:
-                instance.__setattr__(attribute, new_ref)
-            except AttributeError:
-                pass
+        self._bind_interceptions(instance, self._interceptions)
 
         return instance
 
@@ -259,19 +179,12 @@ class Entity(object):
         if self._prepared or self._instance:
             return
 
-        args   = []
-        kwargs = {}
+        for i in range(len(self._args)):
+            if isinstance(self._args[i], Proxy):
+                self._args[i] = self._args[i].load()
 
-        for index in range(len(self._args)):
-            if not isinstance(self._args[index], Proxy):
-                continue
-
-            #self._args[index] = self._args[index].load()
-
-        for key in self._kwargs.keys():
-            if not isinstance(self._kwargs[key], Proxy):
-                continue
-
-            #self._kwargs[key] = self._kwargs[key].load()
+        for i in self._kwargs:
+            if isinstance(self._kwargs[i], Proxy):
+                self._kwargs[i] = self._kwargs[i].load()
 
         self._prepared = True

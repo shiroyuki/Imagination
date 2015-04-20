@@ -92,7 +92,8 @@ class Action(object):
         if event in [EventType.pre_action, EventType.pre_condition]:
             self.__pre_actions.append(interception)
             return
-        elif event in [EventType.post_action, EventType.post_condition]:
+
+        if event in [EventType.post_action, EventType.post_condition]:
             self.__post_actions.append(interception)
             return
 
@@ -120,7 +121,8 @@ class Action(object):
             if interception.event == EventType.pre_action:
                 interception.handler.engage()
                 continue
-            elif interception.event == EventType.pre_condition:
+
+            if interception.event == EventType.pre_condition:
                 callback(*parameters.largs, **parameters.kwargs)
                 continue
 
@@ -133,7 +135,8 @@ class Action(object):
             if interception.event == EventType.post_action:
                 interception.handler.engage()
                 continue
-            elif interception.event == EventType.post_condition:
+
+            if interception.event == EventType.post_condition:
                 feedback = callback(feedback)
                 continue
 

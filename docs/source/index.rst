@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Imagination 1.7
+Imagination 1.9
 ===============
 
 :Copyright: Juti Noppornpitak <juti_n@yahoo.co.jp>
@@ -36,8 +36,27 @@ How to Install
 :Make:  make install
 :Setup: python setup.py install
 
+Architecture
+------------
+
+  Assembler ---> Locator --+--> Entity ---> Loader
+                           |       |
+                           |       +-----------------+--> InterceptableObject
+                           |                         |
+                           +--> Factorization -------+
+                           |
+                           +--> Proxy
+
 Release Notes
 -------------
+
+*Version 1.9*
+
+* Add a entity factorization.
+
+*Version 1.8*
+
+* Add a callback proxy for dynamic programming. (http://imagination.readthedocs.org/en/latest/getting_started.html#callback-proxy)
 
 *Version 1.7*
 

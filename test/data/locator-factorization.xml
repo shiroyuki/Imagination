@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--doctype imagination public "//shiroyuki//dtd imagination 1.0" "http://dev.shiroyuki.com/dtd/imagination-1.0.dtd"-->
+<imagination>
+    <!-- For testing interception -->
+    <entity id="something" class="dummy.factorization.Something"/>
+
+    <entity id="ticker" class="dummy.factorization.Ticker">
+        <interception post="worker.alpha" do="ping" with="tick"/>
+        <interception post="worker.bravo" do="ping" with="tick"/>
+    </entity>
+
+    <entity id="manager" class="dummy.factorization.Manager"/>
+
+    <factorization id="worker.alpha" with="manager" call="getWorkerObject">
+        <param name="name" type="str">Alpha</param>
+        <interception before="something" do="alpha" with="ping"/>
+    </factorization>
+
+    <factorization id="worker.bravo" with="manager" call="getWorkerObject">
+        <param name="name" type="str">Bravo</param>
+        <interception before="something" do="bravo" with="ping"/>
+    </factorization>
+
+    <!-- For testing callback proxies and non-interceptable callback-proxy entity -->
+    <factorization id="def.doubler" with="manager" call="getDuplicationMethod">
+        <param name="multiplier" type="int">2</param>
+    </factorization>
+
+    <factorization id="def.trippler" with="manager" call="getDuplicationMethod">
+        <param name="multiplier" type="int">3</param>
+    </factorization>
+</imagination>

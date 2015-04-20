@@ -29,11 +29,6 @@ class TestLocator(TestCase):
         del self.transformer
         del self.assembler
 
-    def __make_good_entity(self):
-        return Entity(
-            'poo', Loader('dummy.core.PlainOldObject')
-        )
-
     def test_checker(self):
         entity = self.__make_good_entity()
 
@@ -55,14 +50,6 @@ class TestLocator(TestCase):
 
         self.assertIsInstance(self.locator.get('poo'), PlainOldObject)
         self.assertTrue(entity.activated)
-
-    def __get_data_path(self, filename):
-        return abspath(join(dirname(__file__), '..', 'data', filename))
-
-    def __prepare_good_locator_from_xml(self):
-        test_file = self.__get_data_path('locator.xml')
-
-        self.assembler.load(test_file)
 
     def test_good_locator_xml_on_entity_registration(self):
         self.__prepare_good_locator_from_xml()
@@ -92,3 +79,19 @@ class TestLocator(TestCase):
         self.assertNotEquals(self.locator.get('poow-1').method(), self.locator.get('poow-2').method())
         self.assertEquals('%.2f' % self.locator.get('poow-1').method(), '0.67')
         self.assertEquals(self.locator.get('poow-2').method(), 35)
+
+    def __make_good_entity(self):
+        return Entity(
+            'poo', Loader('dummy.core.PlainOldObject')
+        )
+
+    def __get_data_path(self, filename):
+        return abspath(join(dirname(__file__), '..', 'data', filename))
+
+    def __load_from_xml(self, path_from_data):
+        test_file = self.__get_data_path(path_from_data)
+
+        self.assembler.load(test_file)
+
+    def __prepare_good_locator_from_xml(self):
+        self.__load_from_xml('locator.xml')
