@@ -93,7 +93,7 @@ class Locator(object):
                 return entity #return the proxy reference.
 
             if isinstance(entity, Factorization):
-                return entity.load()
+                return entity.fork()
 
             return entity.instance if isinstance(entity, Entity) else entity
         except UnknownEntityError:

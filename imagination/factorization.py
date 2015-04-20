@@ -81,11 +81,8 @@ class Factorization(InterceptableObject):
 
         self._tags = tags
 
-    def load(self):
-        ''' Load the entity. '''
-        if self._reference:
-            return self._reference
-
+    def fork(self):
+        ''' Fork the entity. '''
         self._prepare()
 
         factory        = self._locator.get(self._factory_id)
