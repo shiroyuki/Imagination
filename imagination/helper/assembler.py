@@ -85,9 +85,12 @@ class Assembler(object):
                 di = self.__delay_injection_map[k]
                 n  = di['node']
                 p  = di['ping']
+                r  = di['ready']
 
-                if not n:
+                if not n or r: # Skip if either the node is not defined or the delay injection is done for this entry.
                     continue
+
+                di['ready'] = True
 
                 injection_order.append((k, di['node'], di['ping']))
 
@@ -190,7 +193,8 @@ class Assembler(object):
         if id not in self.__delay_injection_map:
             self.__delay_injection_map[id] = {
                 'ping': 0,
-                'node': node
+                'node': node,
+                'ready': false,
             }
 
         if node:
