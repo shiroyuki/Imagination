@@ -86,14 +86,19 @@ class Locator(object):
 
             # Retrieve a callback entity (callable).
             if isinstance(entity, CallbackProxy):
+                #print('GET {} "{}" [Done]'.format(type(entity).__name__, id))
                 return entity()
 
             # Retrieve a proxy object to an entity
             if isinstance(entity, Proxy):
+                #print('GET {} "{}" [Done]'.format(type(entity).__name__, id))
                 return entity #return the proxy reference.
 
             if isinstance(entity, Factorization):
+                #print('GET {} "{}" [Done]'.format(type(entity).__name__, id))
                 return entity.fork()
+
+            #print('GET {} "{}" [Done]'.format(type(entity).__name__, id))
 
             return entity.instance if isinstance(entity, Entity) else entity
         except UnknownEntityError:
@@ -133,9 +138,6 @@ class Locator(object):
         # Then, get references to entities.
         return [self.get(entity_id) for entity_id in self._tag_to_entity_ids[tag_label]]
 
-    def has(self, id):
-        return id in self._entities
-
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
 
@@ -149,11 +151,17 @@ class Locator(object):
             entity.lock()
 
         if is_proxy and id in self._entities:
+            #print('SET Proxy "{}" [Ignored]'.format(id))
             return
 
         self._entities[id] = entity
 
-        if is_proxy or is_callback:
+        if is_proxy:
+            #print('SET Proxy "{}" [Done]'.format(id))
+            return
+
+        if is_callback:
+            #print('SET Callback "{}" [Done]'.format(id))
             return
 
         for tag in entity.tags:
@@ -161,6 +169,8 @@ class Locator(object):
                 self._tag_to_entity_ids[tag] = []
 
             self._tag_to_entity_ids[tag].append(entity.id)
+
+        #print('SET {} "{}" [Done]'.format(type(entity).__name__, id))
 
     def has(self, id):
         ''' Check if the entity with *id* is already registered. '''

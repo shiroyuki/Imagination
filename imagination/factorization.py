@@ -31,7 +31,11 @@ from imagination.decorator.validator import restrict_type
 from imagination.common              import InterceptableObject
 from imagination.proxy               import Proxy
 
-class NonCallableFactoryMethod(RuntimeError): pass
+class NonCallableFactoryMethod(RuntimeError):
+    """ The factory method is not callable. """
+
+class NotReadyError(RuntimeError):
+    """ When the factory service is not ready to use. """
 
 class Factorization(InterceptableObject):
     """
@@ -85,11 +89,15 @@ class Factorization(InterceptableObject):
         ''' Fork the entity. '''
         self._prepare()
 
-        factory        = self._locator.get(self._factory_id)
+        factory = self._locator.get(self._factory_id)
+
+        if isinstance(factory, Proxy):
+            raise NotReadyError(self._factory_id)
+
         factory_method = factory.__getattribute__(self._factory_method)
 
         if not factory_method or not callable(factory_method):
-            raise NonCallableFactoryMethod('{} ({})'.format(self._factory_method, type(factory_method)))
+            raise NonCallableFactoryMethod('{}.{} not available ({})'.format(self._factory_id, self._factory_method, type(factory_method)))
 
         self._reference = factory_method(*self._parameters.largs, **self._parameters.kwargs)
 

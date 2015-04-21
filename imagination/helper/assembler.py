@@ -5,7 +5,7 @@ from kotoba        import load_from_file
 
 from imagination.decorator.validator import restrict_type
 from imagination.entity              import Entity
-from imagination.factorization       import Factorization
+from imagination.factorization       import Factorization, NotReadyError
 from imagination.exception           import *
 from imagination.loader              import Loader
 from imagination.helper.data         import *
@@ -28,6 +28,10 @@ class Assembler(object):
 
         Added the support for entity factorization.
 
+    .. versionchanged:: 1.10
+
+        Added the support for delayed injections when the factory service is not ready to use during the factorization.
+
     """
     __known_interceptable_events = ['before', 'pre', 'post', 'after']
     __entity_element_required_attributes = {
@@ -47,6 +51,7 @@ class Assembler(object):
         self.__interceptions = []
         self.__transformer   = transformer
         self.__known_proxies = {}
+        self.__delay_injection_map = {}
 
     def activate_passive_loading(self):
         """ Activate the passive loading mode.
@@ -72,6 +77,30 @@ class Assembler(object):
 
             .. versionadded:: 1.7
         """
+
+        if self.__delay_injection_map:
+            injection_order = []
+
+            for k in self.__delay_injection_map:
+                di = self.__delay_injection_map[k]
+                n  = di['node']
+                p  = di['ping']
+
+                if not n:
+                    continue
+
+                injection_order.append((k, di['node'], di['ping']))
+
+            injection_order.sort(key=lambda i: i[2])
+
+            for di in injection_order:
+                id, node, ping = di
+
+                self.__get_interceptions(node)
+                self.__register_entity(node)
+
+            self.__activate_interceptions()
+
         self.locator.in_passive_mode = False
 
     def load(self, filepath):
@@ -92,6 +121,9 @@ class Assembler(object):
             self.__get_interceptions(node)
             self.__register_entity(node)
 
+        self.__activate_interceptions()
+
+    def __activate_interceptions(self):
         # Then, declare interceptions to target entities.
         for interception in self.__interceptions:
             self.locator\
@@ -139,11 +171,33 @@ class Assembler(object):
     def __register_entity(self, node):
         entity_type = node.name()
 
-        if entity_type == 'entity':
-            return self.__register_normal_entity(node)
+        try:
+            if entity_type == 'entity':
+                return self.__register_normal_entity(node)
 
-        if entity_type == 'factorization':
-            return self.__register_factorized_entity(node)
+            if entity_type == 'factorization':
+                return self.__register_factorized_entity(node)
+        except NotReadyError as e:
+            required = str(e)
+            targeted = node.attribute('id')
+
+            self.__set_delay_injection(required, None, True)
+            self.__set_delay_injection(targeted, node, False)
+
+            #print('POSTPONED {} DUE TO {}'.format(targeted, required))
+
+    def __set_delay_injection(self, id, node, ping):
+        if id not in self.__delay_injection_map:
+            self.__delay_injection_map[id] = {
+                'ping': 0,
+                'node': node
+            }
+
+        if node:
+            self.__delay_injection_map[id]['node'] = node
+
+        if ping:
+            self.__delay_injection_map[id]['ping'] -= 1
 
     def __register_normal_entity(self, node):
         entity_id = node.attribute('id')
