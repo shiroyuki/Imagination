@@ -139,15 +139,21 @@ class Locator(object):
     def set(self, id, entity):
         ''' Set the given *entity* by *id*. '''
 
+        is_proxy    = isinstance(entity, Proxy)
+        is_callback = isinstance(entity, CallbackProxy)
+
         if type(entity) not in [Entity, Proxy, CallbackProxy, Factorization]:
             raise UnknownEntityError('The type of the given entity named "{}" is not excepted. ({})'.format(id, type(entity).__name__))
 
         if isinstance(entity, Entity):
             entity.lock()
 
+        if is_proxy and id in self._entities:
+            return
+
         self._entities[id] = entity
 
-        if isinstance(entity, Proxy) or isinstance(entity, CallbackProxy):
+        if is_proxy or is_callback:
             return
 
         for tag in entity.tags:
