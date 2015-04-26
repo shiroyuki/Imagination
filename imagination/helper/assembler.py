@@ -192,9 +192,9 @@ class Assembler(object):
     def __set_delay_injection(self, id, node, ping):
         if id not in self.__delay_injection_map:
             self.__delay_injection_map[id] = {
-                'ping': 0,
-                'node': node,
-                'ready': false,
+                'ping':  0,
+                'node':  node,
+                'ready': False,
             }
 
         if node:
