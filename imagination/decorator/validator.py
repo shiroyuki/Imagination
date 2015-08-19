@@ -26,7 +26,12 @@ The module contains reusable input validators.
 
 '''
 
-import inspect
+try:
+    from inspect import getfullargspec
+except ImportError as e:
+    # Fall back to Python 2.7 mode
+    from inspect import getargspec as getfullargspec
+
 import sys
 
 from imagination.exception import MisplacedValidatorError
@@ -89,7 +94,7 @@ def restrict_type(*restricted_list, **restricted_map):
                 'Can only be used with callable objects, e.g., functions, class methods, instance methods and static methods.'
             )
 
-        params   = inspect.getfullargspec(reference).args
+        params   = getfullargspec(reference).args
         is_class = params and params[0] == 'self'
 
         if is_class:
