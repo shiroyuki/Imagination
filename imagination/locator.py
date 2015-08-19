@@ -101,11 +101,12 @@ class Locator(object):
             #print('GET {} "{}" [Done]'.format(type(entity).__name__, id))
 
             return entity.instance if isinstance(entity, Entity) else entity
-        except UnknownEntityError:
+        except UnknownEntityError as e:
             raise UnknownEntityError(
-                'The requested entity named "{id}" is unknown or not found. This locator only knows {known_keys}.'.format(
-                    id=id,
-                    known_keys=list(self._entities.keys())
+                'The requested entity named "{id}" is unknown or not found. This locator only knows {known_keys}. (Reason: {original})'.format(
+                    id         = id,
+                    known_keys = ', '.join(self._entities.keys()),
+                    original   = e
                 )
             )
 

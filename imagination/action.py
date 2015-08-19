@@ -60,7 +60,7 @@ class Action(object):
     @restrict_type(SpecialType.function)
     def __init__(self, f):
         self.__doc__    = f.__doc__
-        self._name      = f.__name__
+        self.__name__   = f.__name__
         self._reference = f
         self.__pre_actions  = []
         self.__post_actions = []
@@ -78,7 +78,7 @@ class Action(object):
     @property
     def name(self):
         ''' Name of the action '''
-        return self._name
+        return self.__name__
 
     @property
     def reference(self):
