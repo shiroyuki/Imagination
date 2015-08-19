@@ -89,7 +89,7 @@ def restrict_type(*restricted_list, **restricted_map):
                 'Can only be used with callable objects, e.g., functions, class methods, instance methods and static methods.'
             )
 
-        params   = inspect.getargspec(reference).args
+        params   = inspect.getfullargspec(reference).args
         is_class = params and params[0] == 'self'
 
         if is_class:

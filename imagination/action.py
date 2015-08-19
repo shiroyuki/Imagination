@@ -30,8 +30,6 @@ instance of :class:`imagination.entity.Entity`.
 
 '''
 
-from inspect import getargspec
-
 from imagination.decorator.validator import restrict_type, SpecialType
 from imagination.meta.interception   import Interception
 from imagination.meta.package        import Parameter
