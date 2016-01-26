@@ -50,6 +50,16 @@ Architecture
 Release Notes
 -------------
 
+*Version 1.16*
+
+* BUGFIX: Prevent the non-callable properties from being intercepted.
+
+*Version 1.15*
+
+* Add the support for delayed injections when the factory service is not ready to use during the factorization. (1.10.0)
+* Fix compatibility with Python 2.7, 3.3, 3.4, 3.5 and 3.6 (dev).
+* Improve the stability.
+
 *Version 1.9*
 
 * Add a entity factorization.
