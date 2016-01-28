@@ -50,6 +50,10 @@ Architecture
 Release Notes
 -------------
 
+*Version 1.17*
+
+* Improve the error message when the loader handles non-existing modules or references in a target module.
+
 *Version 1.16*
 
 * BUGFIX: Prevent the non-callable properties from being intercepted.

@@ -8,6 +8,7 @@ from imagination.entity    import Entity
 from imagination.exception import UnknownEntityError
 from imagination.loader    import Loader
 from imagination.locator   import Locator
+from imagination.action    import Action
 
 # For reference.
 from dummy.core import PlainOldObject
@@ -79,6 +80,12 @@ class TestLocator(TestCase):
         self.assertNotEquals(self.locator.get('poow-1').method(), self.locator.get('poow-2').method())
         self.assertEquals('%.2f' % self.locator.get('poow-1').method(), '0.67')
         self.assertEquals(self.locator.get('poow-2').method(), 35)
+
+    def test_bugfix_prevent_public_property_from_being_intercepted(self):
+        self.__prepare_good_locator_from_xml()
+
+        self.assertTrue(isinstance(self.locator.get('poo').name, str))
+        self.assertFalse(isinstance(self.locator.get('poo').name, Action))
 
     def __make_good_entity(self):
         return Entity(

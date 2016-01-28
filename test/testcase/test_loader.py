@@ -1,3 +1,4 @@
+import re
 from unittest           import TestCase
 from imagination.loader import Loader
 
@@ -41,3 +42,26 @@ class TestLoader(TestCase):
 
         self.assertIsNone(loader._package)
         self.assertEquals(loader.package, dummy.core.PlainOldObject)
+
+    def test_import_non_existing_module(self):
+        """ The loader attempts to load a non-existing module. """
+        loader = Loader('elephant.wonder')
+
+        self.assertIsNone(loader._package)
+
+        try:
+            loader.package()
+        except ImportError as e:
+            self.assertIsNotNone(re.search('^No module named', e.msg))
+
+
+    def test_import_non_existing_reference(self):
+        """ The loader attempts to load a non-existing reference of an existing module. """
+        loader = Loader('imagination.loader.GodLoader')
+
+        self.assertIsNone(loader._package)
+
+        try:
+            loader.package()
+        except ImportError as e:
+            self.assertTrue(bool(re.search('^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+', e.msg)))

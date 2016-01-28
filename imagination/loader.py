@@ -96,12 +96,14 @@ class Loader(object):
     def _retrieve_package(self):
         ''' Retrieve a package by the module path and the package name. '''
 
+        target_module = self.module
+
         # Either built-in class or a file.
         if '.' not in self._path:
             try:
                 importlib.import_module(self._path)
 
-                return getattr(self.module, self._path)
+                return getattr(target_module, self._path)
             except ImportError as exception:
                 return eval(self._path)
                 # NOP; assume that the request path is a built-in module.
@@ -111,11 +113,13 @@ class Loader(object):
         try:
             __import__(self._module_path, fromlist=[self._package_name])
         except TypeError as exception:
-            raise ImportError('Unable to import {}.{} as {}'.format(self._module_path, self._package_name, exception))
-        except ImportError as exception:
-            raise ImportError('Could not retrieve {} from {} as {}'.format(self._package_name, self._module_path, exception))
+            raise ImportError('Unable to import {}.{} as {}'.format(
+                self._module_path, self._package_name, exception
+            ))
 
         try:
-            return getattr(self.module, self._package_name)
+            return getattr(target_module, self._package_name)
         except AttributeError as exception:
-            raise ImportError('{}. (Expecting: {})'.format(exception, dir(self.module)))
+            raise ImportError('Module \'{}\' has no reference to \'{}\', except {}.'.format(
+                target_module.__name__, self._package_name, ', '.join(dir(target_module))
+            ))

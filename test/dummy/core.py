@@ -6,7 +6,7 @@ class ObjectWithListAndDict(object):
 
 class PlainOldObject(object):
     def __init__(self):
-        pass
+        self.name = 'something'
 
     def method(self):
         return 0
