@@ -52,7 +52,7 @@ class TestLoader(TestCase):
         try:
             loader.package()
         except ImportError as e:
-            self.assertIsNotNone(re.search('^No module named', e.msg))
+            self.assertTrue(self._has_error_message(e, '^No module named'))
 
 
     def test_import_non_existing_reference(self):
@@ -64,9 +64,7 @@ class TestLoader(TestCase):
         try:
             loader.package()
         except ImportError as e:
-            expected_pattern = '^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+'
+            self.assertTrue(self._has_error_message(e, '^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+'))
 
-            try:
-                self.assertTrue(bool(re.search(expected_pattern, e.msg))) # Python 3
-            except AttributeError as e:
-                self.assertTrue(bool(re.search('^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+', e.message))) # Python 2
+    def _has_error_message(self, exception, pattern):
+        return bool(re.search(pattern, exception.msg if hasattr(exception, 'msg') else e.message))
