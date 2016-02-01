@@ -64,4 +64,9 @@ class TestLoader(TestCase):
         try:
             loader.package()
         except ImportError as e:
-            self.assertTrue(bool(re.search('^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+', e.msg)))
+            expected_pattern = '^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+'
+
+            try:
+                self.assertTrue(bool(re.search(expected_pattern, e.msg))) # Python 3
+            except AttributeError as e:
+                self.assertTrue(bool(re.search('^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+', e.message))) # Python 2
