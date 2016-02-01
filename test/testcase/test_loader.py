@@ -67,4 +67,4 @@ class TestLoader(TestCase):
             self.assertTrue(self._has_error_message(e, '^Module \'imagination.loader\' has no ref.+ to \'GodLoader\'.+'))
 
     def _has_error_message(self, exception, pattern):
-        return bool(re.search(pattern, exception.msg if hasattr(exception, 'msg') else e.message))
+        return bool(re.search(pattern, exception.msg if hasattr(exception, 'msg') else exception.message))
