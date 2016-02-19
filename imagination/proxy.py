@@ -35,14 +35,28 @@ class Proxy(object):
     :param `id`: entity identifier
     '''
     def __init__(self, locator, id):
-        self.__locator = locator
-        self.__id      = id
-
-    @property
-    def id(self):
-        ''' Get the identifier of the proxy. '''
-        return self.__id
+        self.__dict__ = {
+            'id':      id,
+            'locator': locator,
+            'cache':   None,
+        }
 
     def load(self):
-        ''' Load the entity. '''
-        return self.__locator.get(self.__id)
+        if not self.__dict__['cache']:
+            self.__dict__['cache'] = self.__dict__['locator'].get(self.__dict__['id'])
+
+        return self.__dict__['cache']
+
+    def __getattr__(self, name):
+        if name in self.__dict__:
+            return self.__dict__[name]
+
+        actual_object = self.load()
+
+        print(dir(self))
+        print(dir(actual_object))
+
+        if not hasattr(actual_object, name):
+            raise AttributeError('{} has no attribute "{}".'.format(type(actual_object).__name__), name)
+
+        return getattr(actual_object, name)
