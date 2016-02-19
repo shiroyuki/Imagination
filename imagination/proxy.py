@@ -53,9 +53,6 @@ class Proxy(object):
 
         actual_object = self.load()
 
-        print(dir(self))
-        print(dir(actual_object))
-
         if not hasattr(actual_object, name):
             raise AttributeError('{} has no attribute "{}".'.format(type(actual_object).__name__), name)
 
