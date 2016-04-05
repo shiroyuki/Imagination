@@ -194,9 +194,12 @@ the following example::
     from imagination.loader import CallbackProxy
 
     def something(message):
-        return os.path
+        return print(message * 10)
 
-    callback_proxy = CallbackProxy(something, 'lah')
+    callback_proxy = CallbackProxy(something, ('la',), is_static = True) # in Imagination 1.20
+    # callback_proxy = CallbackProxy(something, 'la') # in Imagination 1.19 or earlier
     locator.set('cbp.something', callback_proxy)
 
-When you call ``locator.get('cbp.something')``, you will get ``os.path``.
+When you call ``locator.get('cbp.something')``, you will get ``lalalalalalalalalala``.
+
+.. note:: When `is_static` is `True`, the given callback callable will only be called once.

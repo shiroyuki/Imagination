@@ -1,7 +1,7 @@
 Assembler
 =========
 
-The module contains the assembler to constuct loaders and entites based on the configuration
+The module contains the assembler to construct loaders and entities based on the configuration
 and register to a particular locator.
 
 XML Schema
@@ -15,7 +15,7 @@ The schema is defined as followed::
     # Base
 
     <imagination>
-        (ENTITY|FACTORIZED_ENTITY)*
+        (ENTITY|FACTORIZATION|CALLABLE)*
     </imagination>
 
     ##########
@@ -31,14 +31,21 @@ The schema is defined as followed::
                  (INTERCEPTION)*
              </entity>
 
-    FACTORIZED_ENTITY = <factorization
+    FACTORIZATION = <factorization
                           id="CREATED_ENTITY_ID"
                           with="FACTORY_ENTITY_ID"
                           call="FACTORY_ENTITY_METHOD"
                         >
                           (CONSTRUCTOR_PARAMETER)*
-                          (INTERCEPTION)*
                         </factorization>
+
+    CALLABLE = <callable
+                  id="CREATED_ENTITY_ID"
+                  method="IMPORTABLE_PATH_TO_CALLABLE"
+                  static="(true|false)"
+                >
+                  (CONSTRUCTOR_PARAMETER)*
+                </callable>
 
     # Initial Parameter
     INITIAL_PARAMETER     = CONSTRUCTOR_PARAMETER

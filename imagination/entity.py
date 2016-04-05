@@ -31,24 +31,54 @@ from imagination.decorator.validator import restrict_type
 from imagination.loader              import Loader
 from imagination.proxy               import Proxy
 
-class CallbackProxy(object):
-    """Callback Proxy
+class ReferenceProxy(object):
+    """ Reference Proxy
 
     .. codeauthor:: Juti Noppornpitak <juti_n@yahoo.co.jp>
-    .. versionadded:: 1.6
+    .. versionadded:: 1.20
 
     .. warning:: experimental feature
     """
-    def __init__(self, callback, *args, **kwargs):
+    def __init__(self, reference):
+        self.__reference = reference
+
+    @property
+    def reference(self):
+        return self.__reference
+
+class CallbackProxy(object):
+    """ Callback Proxy
+
+        A proxy to a callback function where it executes the method with
+        pre-defined parameters whenever it is called. The end result will
+        be cached by the proxy.
+
+        .. codeauthor:: Juti Noppornpitak <juti_n@yahoo.co.jp>
+        .. versionadded:: 1.6
+    """
+    def __init__(self, callback, args, kwargs, static = False):
         if not callable(callback):
             raise ValueError('The callback object is required for {}.'.format(self.__class__.__name__))
 
         self.__callback = callback
         self.__args     = args
         self.__kwargs   = kwargs
+        self.__static   = static
+        self.__executed = False
+        self.__result   = None
+
+    def __execute(self):
+        return self.__callback(*self.__args, **self.__kwargs)
 
     def __call__(self):
-        return self.__callback(*self.__args, **self.__kwargs)
+        if not self.__do_once:
+            return self.__execute()
+
+        if not self.__executed:
+            self.__executed = True
+            self.__result   = self.__execute()
+
+        return self.__result
 
 class Entity(InterceptableObject):
     '''

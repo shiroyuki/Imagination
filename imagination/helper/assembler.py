@@ -4,7 +4,7 @@ from kotoba.kotoba import Kotoba
 from kotoba        import load_from_file
 
 from imagination.decorator.validator import restrict_type
-from imagination.entity              import Entity
+from imagination.entity              import *
 from imagination.factorization       import Factorization, NotReadyError
 from imagination.exception           import *
 from imagination.loader              import Loader
@@ -14,7 +14,10 @@ from imagination.meta.interception   import Interception
 from imagination.meta.package        import Parameter
 from imagination.proxy               import Proxy
 
-class Assembler(object):
+from . import extension
+from . import mixin
+
+class Assembler(mixin.ParameterParsingMixin):
     """
     The entity assembler via configuration files.
 
@@ -32,6 +35,10 @@ class Assembler(object):
 
         Added the support for delayed injections when the factory service is not ready to use during the factorization.
 
+    .. versionchanged:: 1.20
+
+        Supports callable proxies, execute-only-once proxies, and reference proxies.
+
     """
     __known_interceptable_events = ['before', 'pre', 'post', 'after']
     __entity_element_required_attributes = {
@@ -44,14 +51,26 @@ class Assembler(object):
             'with': 'factory entity identifier',
             'call': 'factory method',
         },
+        'callable': {
+            'id':     'execution identifier',
+            'method': 'callable method path (used by the "import" statement)',
+            'cached': 'whether to cache the result'
+        },
     }
 
     @restrict_type(Transformer)
     def __init__(self, transformer):
+        self._transformer = transformer
+
         self.__interceptions = []
-        self.__transformer   = transformer
         self.__known_proxies = {}
         self.__delay_injection_map = {}
+
+        self.__extensions = [
+            extension.EntityRegistrar(self._transformer),
+            extension.FactorizationRegistrar(self._transformer),
+            extension.CallableRegistrar(self._transformer),
+        ]
 
     def activate_passive_loading(self):
         """ Activate the passive loading mode.
@@ -142,23 +161,18 @@ class Assembler(object):
 
         :rtype: imagination.locator.Locator
         """
-        return self.__transformer.locator()
+        return self._transformer.locator()
 
     @restrict_type(Kotoba)
     def __validate_node(self, node):
-        entity_type         = node.name()
-        required_attributes = None
+        """ .. deprecated:: 1.20 """
+        entity_type = node.name()
 
-        if entity_type not in self.__entity_element_required_attributes:
-            raise IncompatibleBlockError('Entity class "{}" is undefined.'.format(entity_type))
-
-        required_attributes = self.__entity_element_required_attributes[entity_type]
-
-        for name in required_attributes:
-            if node.attribute(name):
+        for ext in self.__extensions:
+            if entity_type not in ext.element_names():
                 continue
 
-            raise IncompatibleBlockError('Entity class "{}" needs a valid "{}" attribute.'.format(entity_type, required_attributes[name]))
+            ext.validate(node)
 
     @restrict_type(Kotoba)
     def __register_proxy(self, node):
@@ -175,19 +189,18 @@ class Assembler(object):
         entity_type = node.name()
 
         try:
-            if entity_type == 'entity':
-                return self.__register_normal_entity(node)
+            for ext in self.__extensions:
+                if entity_type not in ext.element_names():
+                    continue
 
-            if entity_type == 'factorization':
-                return self.__register_factorized_entity(node)
+                ext.register(node)
+
         except NotReadyError as e:
             required = str(e)
             targeted = node.attribute('id')
 
             self.__set_delay_injection(required, None, True)
             self.__set_delay_injection(targeted, node, False)
-
-            #print('POSTPONED {} DUE TO {}'.format(targeted, required))
 
     def __set_delay_injection(self, id, node, ping):
         if id not in self.__delay_injection_map:
@@ -197,45 +210,13 @@ class Assembler(object):
                 'ready': False,
             }
 
+        injection = self.__delay_injection_map[id]
+
         if node:
-            self.__delay_injection_map[id]['node'] = node
+            injection['node'] = node
 
         if ping:
-            self.__delay_injection_map[id]['ping'] -= 1
-
-    def __register_normal_entity(self, node):
-        entity_id = node.attribute('id')
-        kind      = node.attribute('class')
-        params    = self.__get_params(node)
-        tags      = self.__get_tags(node)
-
-        loader = Loader(kind)
-        entity = Entity(entity_id, loader, *params.largs, **params.kwargs)
-
-        entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
-        entity.tags          = tags
-
-        self.locator.set(entity_id, entity)
-
-    def __register_factorized_entity(self, node):
-        entity_id      = node.attribute('id')
-        factory_id     = node.attribute('with')
-        factory_method = node.attribute('call')
-        params         = self.__get_params(node)
-        tags           = self.__get_tags(node)
-
-        entity = Factorization(self.locator, factory_id, factory_method, params)
-
-        entity.interceptable = self.__transformer.cast(node.attribute('interceptable') or 'true', 'bool')
-        entity.tags          = tags
-
-        self.locator.set(entity_id, entity)
-
-    @restrict_type(Kotoba)
-    def __get_tags(self, node):
-        tags = node.attribute('tags')
-
-        return tags and split(' ', tags.strip()) or []
+            injection['ping'] -= 1
 
     @restrict_type(Kotoba)
     def __get_interceptions(self, node):
@@ -275,35 +256,7 @@ class Assembler(object):
                 raise UnknownProxyError('The handler ({}) of the interception is unknown.'.format(handler))
 
             actor   = Contact(self.__known_proxies[actor], node.attribute('do'))
-            handler = Contact(self.__known_proxies[handler], node.attribute('with'), self.__get_params(node))
+            handler = Contact(self.__known_proxies[handler], node.attribute('with'), self._get_params(node))
             event   = given_event
 
         return Interception(event, actor, handler)
-
-    @restrict_type(Kotoba)
-    def __get_params(self, node):
-        package = Parameter()
-
-        index = 0
-
-        for param in node.children('param'):
-            try:
-                assert param.attribute('name')\
-                    and param.attribute('type'),\
-                    'The parameter #{} does not have either name or type.'.format(index)
-            except AssertionError as e:
-                raise IncompatibleBlockError(e.message)
-
-            index += 1
-            name   = param.attribute('name')
-
-            if name in package.kwargs:
-                raise DuplicateKeyWarning('There is a parameter name "{}" with that name already registered.'.format(name))
-                pass
-
-            package.kwargs[name] = self.__transformer.cast(
-                param,
-                param.attribute('type')
-            )
-
-        return package
