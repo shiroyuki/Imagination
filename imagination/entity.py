@@ -56,7 +56,7 @@ class CallbackProxy(object):
         .. codeauthor:: Juti Noppornpitak <juti_n@yahoo.co.jp>
         .. versionadded:: 1.6
     """
-    def __init__(self, callback, args, kwargs, static = False):
+    def __init__(self, callback, args = [], kwargs = {}, static = False):
         if not callable(callback):
             raise ValueError('The callback object is required for {}.'.format(self.__class__.__name__))
 
@@ -71,7 +71,7 @@ class CallbackProxy(object):
         return self.__callback(*self.__args, **self.__kwargs)
 
     def __call__(self):
-        if not self.__do_once:
+        if not self.__static:
             return self.__execute()
 
         if not self.__executed:
