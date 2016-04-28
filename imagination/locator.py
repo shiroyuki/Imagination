@@ -37,6 +37,8 @@ from imagination.proxy         import Proxy
 class Locator(object):
     ''' Entity locator '''
 
+    __self_reference__ = 'container'
+
     def __init__(self):
         self._entities          = {}
         self._tag_to_entity_ids = {}
@@ -68,6 +70,9 @@ class Locator(object):
 
             return entity.fork()
         except KeyError:
+            if id == self.__self_reference__:
+                return self
+
             raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
 
     @property
@@ -102,6 +107,9 @@ class Locator(object):
 
             return entity.instance if isinstance(entity, Entity) else entity
         except UnknownEntityError as e:
+            if id == self.__self_reference__:
+                return self
+
             raise UnknownEntityError(
                 'The requested entity named "{id}" is unknown or not found. This locator only knows {known_keys}. (Reason: {original})'.format(
                     id         = id,
