@@ -4,7 +4,7 @@ from imagination.decorator.validator import restrict_type
 class InterceptableObject(object):
     def __init__(self):
         self._locked        = False
-        self._interceptable = True
+        self._interceptable = False
         self._interceptions = []
 
     def lock(self):

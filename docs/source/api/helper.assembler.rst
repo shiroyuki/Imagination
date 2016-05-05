@@ -25,7 +25,7 @@ The schema is defined as followed::
     ENTITY = <entity id="ENTITY_ID"
                      class="ENTITY_CLASS"
                      (tags="...")?
-                     (interceptable="(true|false)")?
+                     (interceptable="(false|true)")?
              >
                  (CONSTRUCTOR_PARAMETER)*
                  (INTERCEPTION)*
