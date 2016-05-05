@@ -1,3 +1,4 @@
+PY            = python3
 SPHINXBUILD   = sphinx-build
 DOCPREFIX     = docs
 BUILDDIR      = $(DOCPREFIX)/build
@@ -10,13 +11,13 @@ LXC_TEST_DOCKER_COMMAND=docker run -i -t --rm -v `pwd`:$(LXC_MOUNT_POINT) python
 LXC_TEST_EXECUTE=bash -c 'cp -r $(LXC_MOUNT_POINT) $(LXC_WORKING_DIR); pip install nosetests kotoba $(LXC_WORKING_DIR) && cd $(LXC_WORKING_DIR) && nosetests -c nose.cfg'
 
 package:
-	python3 setup.py $(BUILD_PKG_OPT)
+	$(PY) setup.py $(BUILD_PKG_OPT)
 
 release:
-	python3 setup.py $(RELEASE_OPT)
+	$(PY) setup.py $(RELEASE_OPT)
 
 install:
-	python3 setup.py install
+	$(PY) setup.py install
 
 test: cache_clean
 	nosetests -c nose.cfg

@@ -61,8 +61,11 @@ class Locator(object):
 
         :param `id`: entity identifier
         '''
+        if id == self.__self_reference__:
+            return self
+
         try:
-            entity = self._entities[id]
+            entity = self.get_wrapper(id)
 
             # Prevent the locator from forking a new instance of Proxy or CallbackProxy.
             if isinstance(entity, CallbackProxy) or isinstance(entity, Proxy):
@@ -70,14 +73,15 @@ class Locator(object):
 
             return entity.fork()
         except KeyError:
-            if id == self.__self_reference__:
-                return self
-
-            raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
+            raise UnknownEntityError('The requested entity named "{}" is not found.'.format(id))
 
     @property
     def entity_identifiers(self):
-        return self._entities.keys()
+        keys = list(self._entities.keys())
+        keys.append(self.__self_reference__)
+        keys.sort()
+
+        return keys
 
     def get(self, id):
         '''
@@ -86,6 +90,9 @@ class Locator(object):
         :param `id`: entity identifier
         :returns: an instance of the requested entity
         '''
+        if id == self.__self_reference__:
+            return self
+
         try:
             entity = self.get_wrapper(id)
 
@@ -107,11 +114,8 @@ class Locator(object):
 
             return entity.instance if isinstance(entity, Entity) else entity
         except UnknownEntityError as e:
-            if id == self.__self_reference__:
-                return self
-
             raise UnknownEntityError(
-                'The requested entity named "{id}" is unknown or not found. This locator only knows {known_keys}. (Reason: {original})'.format(
+                'The requested entity named "{id}" is not found. This locator only knows {known_keys}. (Reason: {original})'.format(
                     id         = id,
                     known_keys = ', '.join(self._entities.keys()),
                     original   = e
@@ -125,13 +129,16 @@ class Locator(object):
         :param `id`: entity identifier
         :returns: the requested entity wrapper
         '''
+        if id == self.__self_reference__:
+            return self
+
         try:
             return self._entities[id]
         except KeyError:
             if self.in_passive_mode:
                 return Proxy(self, id)
 
-            raise UnknownEntityError('The requested entity named "%s" is unknown or not found.' % id)
+            raise UnknownEntityError('The requested entity named "{}" is not found.'.format(id))
 
     def find_by_tag(self, tag_label):
         '''
