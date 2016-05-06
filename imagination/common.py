@@ -74,7 +74,7 @@ class InterceptableObject(object):
 
             ref = instance.__getattribute__(attribute)
 
-            if not callable(ref):
+            if not callable(ref) or isinstance(ref, Action):
                 continue
 
             new_ref = Action(ref)
