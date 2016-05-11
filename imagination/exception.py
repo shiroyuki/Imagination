@@ -34,3 +34,6 @@ class LockedEntityException(Exception):
     of an instance of :class:`imagination.entity.Entity` when it is in the locked
     state.
     '''
+
+class InstantiationError(RuntimeError):
+    """ Exception thrown when forking fails. """

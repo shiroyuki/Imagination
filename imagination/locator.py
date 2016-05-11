@@ -24,8 +24,6 @@ The module contains the entity locator used to promote reusability of components
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''
-
-from re     import split
 from kotoba import load_from_file
 
 from imagination.factorization import Factorization

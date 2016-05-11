@@ -25,9 +25,11 @@ and :class:`imagination.loader.Loader` and simulate the singleton class on the p
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 '''
+import inspect
 
 from imagination.common              import InterceptableObject
 from imagination.decorator.validator import restrict_type
+from imagination.exception           import InstantiationError
 from imagination.loader              import Loader
 from imagination.proxy               import Proxy
 
@@ -194,7 +196,44 @@ class Entity(InterceptableObject):
         '''
         self.__prepare()
 
-        instance = self._loader.package(*self._args, **self._kwargs)
+        cls = self._loader.package
+
+        try:
+            instance = cls(*self._args, **self._kwargs)
+        except TypeError as e:
+            signature = inspect.signature(cls)
+
+            given_args = [str(a) for a in self._args]
+
+            for k in signature.parameters:
+                if k not in self._kwargs:
+                    continue
+
+                value = self._kwargs[k]
+                kind  = type(value).__name__ or 'null'
+
+                given_args.append(
+                    '{key}={value} : {kind}'.format(
+                        key = k,
+                        kind = kind,
+                        value = '"{}"'.format(value) \
+                            if isinstance(value, str) \
+                            else value
+                    )
+                )
+
+            error_message = ' '.join([
+                'The configuration for the entity "{entity_id}" of class',
+                '{full_class_name}{signature} is POSSIBLY INCORRECT, given',
+                'that the provided configuration shows that you provide ({given}).'
+            ]).format(
+                entity_id       = self._id,
+                full_class_name = self._loader._path,
+                signature       = signature,
+                given           = ', '.join(given_args),
+            )
+
+            raise InstantiationError(error_message)
 
         # Return the instance if this entity is not interceptable.
         if not self.interceptable:

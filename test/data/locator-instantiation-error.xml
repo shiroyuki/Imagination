@@ -3,7 +3,7 @@
 <imagination>
     <entity id="poo" class="dummy.core.PlainOldObject"></entity>
     <entity id="poow-1" class="dummy.core.PlainOldObjectWithParameters">
-        <param name="a" type="int">2</param>
+        <!-- <param name="a" type="int">2</param> -->
         <param name="b" type="float">3</param>
         <param name="do_multiply" type="bool">false</param>
     </entity>
