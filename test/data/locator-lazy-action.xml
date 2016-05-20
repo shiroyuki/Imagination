@@ -34,7 +34,7 @@ where:
     to the result reterned by the reference method.
 -->
 <imagination>
-    <entity id="alpha" class="dummy.lazy_action.Alpha">
+    <entity id="alpha" class="dummy.lazy_action.Alpha" interceptable="true">
         <param type="entity" name="accompany">beta</param>
         <interception before="charlie" do="cook" with="order">
             <param type="unicode" name="item">egg and becon</param>
@@ -48,10 +48,10 @@ where:
             <param type="str" name="context">merci</param>
         </interception>
     </entity>
-    <entity id="beta" class="dummy.lazy_action.Beta">
+    <entity id="beta" class="dummy.lazy_action.Beta" interceptable="true">
         <interception after="alpha" do="speak_to_accompany" with="acknowledge"/>
     </entity>
-    <entity id="charlie" class="dummy.lazy_action.Charlie">
+    <entity id="charlie" class="dummy.lazy_action.Charlie" interceptable="true">
         <interception post="alpha" do="order" with="repeat"/>
         <interception post="beta" do="order" with="repeat"/>
         <interception after="alpha" do="order" with="respond">

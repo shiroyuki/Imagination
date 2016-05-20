@@ -5,10 +5,15 @@ except:
 
 setup(
     name         = 'imagination',
-    version      = '1.29.0',
+    version      = '1.30.0',
     description  = 'Reusable Component Framework',
     author       = 'Juti Noppornpitak',
     author_email = 'juti_n@yahoo.co.jp',
     url          = 'https://github.com/shiroyuki/Imagination',
-    packages     = ['imagination', 'imagination.decorator', 'imagination.helper', 'imagination.meta']
+    packages     = [
+        'imagination',
+        'imagination.decorator',
+        'imagination.helper',
+        'imagination.meta'
+    ]
 )

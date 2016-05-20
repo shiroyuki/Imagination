@@ -43,7 +43,9 @@ class AbstractRegistrar(mixin.ParameterParsingMixin):
         params = self._get_params(node)
         entity = self.construct(node, params)
 
-        entity.interceptable = self._transformer.cast(node.attribute('interceptable') or 'true', 'bool')
+        raw_attr_interceptable = node.attribute('interceptable')
+
+        entity.interceptable = self._transformer.cast(raw_attr_interceptable or 'false', 'bool')
         entity.tags          = self.__get_tags(node)
 
         self.locator.set(entity_id, entity)

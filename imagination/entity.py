@@ -201,6 +201,17 @@ class Entity(InterceptableObject):
         try:
             instance = cls(*self._args, **self._kwargs)
         except TypeError as e:
+            if not hasattr(inspect, 'signature'): # Python 2.7
+                error_message = ' '.join([
+                    'The configuration for the entity "{entity_id}" of class',
+                    '{full_class_name}(...) is POSSIBLY INCORRECT.'
+                ]).format(
+                    entity_id       = self._id,
+                    full_class_name = self._loader._path,
+                )
+
+                raise InstantiationError(error_message)
+
             signature = inspect.signature(cls)
 
             given_args = [str(a) for a in self._args]
