@@ -34,7 +34,7 @@ class TestAction(TestCase):
         c = self.locator.get('charlie')
 
         self.assertIsInstance(c.introduce, Action)
-        self.assertEquals(c.name, c.introduce())
+        self.assertEqual(c.name, c.introduce())
 
     def test_normal_execution(self):
         ''' This is a sanity test. '''
@@ -61,7 +61,7 @@ class TestAction(TestCase):
         charlie.cook()
         charlie.serve()
 
-        self.assertEquals(
+        self.assertEqual(
             len(expected_log_sequence),
             len(Conversation.logs),
             'The number of sequences in the mock scenario must be the same.'
@@ -70,7 +70,7 @@ class TestAction(TestCase):
         for step in range(len(Conversation.logs)):
             expectation = expected_log_sequence[step]
             actual      = Conversation.logs[step]
-            self.assertEquals(
+            self.assertEqual(
                 expectation,
                 actual,
                 'Failed at step {step}: should be "{expectation}", not "{actual}"'.format(

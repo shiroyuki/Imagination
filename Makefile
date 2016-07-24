@@ -24,8 +24,12 @@ release:
 install:
 	$(PY) setup.py install
 
+test-v2:
+	$(PY) -m unittest discover -s test/v2
+
 test: clean-cache
-	nosetests -c nose.cfg
+	$(PY) -m unittest discover -s test/testcase -t test/
+	$(PY) -m unittest discover -s test/v2
 
 test-lxc: clean-cache test-lxc-quick test-lxc-primary
 	@(make test-lxc-secondary || echo "\nWARNING: Failed tests on legacy support")

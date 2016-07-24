@@ -27,14 +27,14 @@ class TestEntity(TestCase):
 
         self.assertTrue(a is not None)
         self.assertTrue(b is not None)
-        self.assertNotEquals(a, b);
+        self.assertNotEqual(a, b);
         self.assertFalse(e.activated)
 
     def test_initialization_with_no_args(self):
         e = Entity('test-object', self.plainLoader)
 
         self.assertFalse(e.activated)
-        self.assertEquals(e.instance.method(), 0)
+        self.assertEqual(e.instance.method(), 0)
         self.assertTrue(e.activated)
 
         a = e.instance
@@ -42,14 +42,14 @@ class TestEntity(TestCase):
 
         self.assertTrue(a is not None)
         self.assertTrue(b is not None)
-        self.assertEquals(a, b);
+        self.assertEqual(a, b);
 
     def test_with_only_list_args(self):
         e = Entity('test-object', self.paramLoader, 2, 3)
 
         self.assertFalse(e.activated)
         self.assertEqual(e.instance.a, 2)
-        self.assertEquals(e.instance.method(), 6)
+        self.assertEqual(e.instance.method(), 6)
         self.assertTrue(e.activated)
 
     def test_with_only_dict_args(self):
@@ -57,7 +57,7 @@ class TestEntity(TestCase):
 
         self.assertFalse(e.activated)
         self.assertEqual(e.instance.b, 7)
-        self.assertEquals(e.instance.method(), 35)
+        self.assertEqual(e.instance.method(), 35)
         self.assertTrue(e.activated)
 
     def test_with_mixed_args(self):
@@ -65,7 +65,7 @@ class TestEntity(TestCase):
 
         self.assertFalse(e.activated)
         self.assertEqual(e.instance.a, 13)
-        self.assertEquals(e.instance.method(), 143)
+        self.assertEqual(e.instance.method(), 143)
         self.assertTrue(e.activated)
 
     def test_loader_exception(self):

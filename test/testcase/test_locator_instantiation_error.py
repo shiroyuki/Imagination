@@ -34,7 +34,7 @@ class TestLocator(TestCase):
 
         # just to verify
         self.assertIsInstance(actual_exception, InstantiationError)
-        self.assertRegexpMatches(
+        self.assertRegex(
             str(actual_exception),
             'entity "poow-1".+a, b, do_.+provide.+do_.+bool\)' \
                 if version_info > (3,3) \

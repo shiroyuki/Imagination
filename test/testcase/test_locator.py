@@ -77,9 +77,9 @@ class TestLocator(TestCase):
         self.assertIsInstance(self.locator.get('poow-1'), PlainOldObjectWithParameters)
         self.assertIsInstance(self.locator.get('poow-2'), PlainOldObjectWithParameters)
 
-        self.assertNotEquals(self.locator.get('poow-1').method(), self.locator.get('poow-2').method())
-        self.assertEquals('%.2f' % self.locator.get('poow-1').method(), '0.67')
-        self.assertEquals(self.locator.get('poow-2').method(), 35)
+        self.assertNotEqual(self.locator.get('poow-1').method(), self.locator.get('poow-2').method())
+        self.assertEqual('%.2f' % self.locator.get('poow-1').method(), '0.67')
+        self.assertEqual(self.locator.get('poow-2').method(), 35)
 
     def test_bugfix_prevent_public_property_from_being_intercepted(self):
         self.__prepare_good_locator_from_xml()
