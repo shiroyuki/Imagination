@@ -1,4 +1,5 @@
 from os.path  import abspath, dirname, join
+from sys      import version_info
 from unittest import TestCase
 
 from imagination.helper.assembler import Assembler
@@ -35,8 +36,10 @@ class TestLocator(TestCase):
         self.assertIsInstance(actual_exception, InstantiationError)
         self.assertRegex(
             str(actual_exception),
-            'entity "poow-1".+a, b, do_.+provide.+do_.+bool\)'
-        )
+            'entity "poow-1".+a, b, do_.+provide.+do_.+bool\)' \
+                if version_info > (3,3) \
+                else 'entity "poow-1".+\(\.\.\.\)'
+        ) # Python 2.7 will have less feedback.
 
     def __get_data_path(self, filename):
         return abspath(join(dirname(__file__), '..', 'data', filename))

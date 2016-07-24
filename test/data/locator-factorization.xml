@@ -2,21 +2,21 @@
 <!--doctype imagination public "//shiroyuki//dtd imagination 1.0" "http://dev.shiroyuki.com/dtd/imagination-1.0.dtd"-->
 <imagination>
     <!-- For testing interception -->
-    <entity id="something" class="dummy.factorization.Something"/>
+    <entity id="something" class="dummy.factorization.Something" interceptable="true"/>
 
-    <entity id="ticker" class="dummy.factorization.Ticker">
+    <entity id="ticker" class="dummy.factorization.Ticker" interceptable="false">
         <interception post="worker.alpha" do="ping" with="tick"/>
         <interception post="worker.bravo" do="ping" with="tick"/>
     </entity>
 
     <entity id="manager" class="dummy.factorization.Manager"/>
 
-    <factorization id="worker.alpha" with="manager" call="getWorkerObject">
+    <factorization id="worker.alpha" with="manager" call="getWorkerObject" interceptable="true">
         <param name="name" type="str">Alpha</param>
         <interception before="something" do="alpha" with="ping"/>
     </factorization>
 
-    <factorization id="worker.bravo" with="manager" call="getWorkerObject">
+    <factorization id="worker.bravo" with="manager" call="getWorkerObject" interceptable="true">
         <param name="name" type="str">Bravo</param>
         <interception before="something" do="bravo" with="ping"/>
     </factorization>

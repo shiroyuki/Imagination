@@ -11,6 +11,7 @@ LXC_TEST_DOCKER_COMMAND=docker run \
 	-it --rm \
 	-w $(LXC_MOUNT_POINT) \
 	-v `pwd`:$(LXC_MOUNT_POINT):ro \
+	--privileged \
 	python
 LXC_TEST_EXECUTE=bash -c "make test-lxc-run"
 
@@ -58,9 +59,10 @@ test-lxc-on-version:
 	@echo ""
 
 test-lxc-run:
+	@rm -rfv $(LXC_WORKING_DIR)
 	@cp -r $(LXC_MOUNT_POINT) $(LXC_WORKING_DIR)
-	@pip install -q nose kotoba $(LXC_WORKING_DIR)
-	@cd $(LXC_WORKING_DIR) && nosetests -c nose.cfg
+	@pip install -q nose kotoba
+	@cd $(LXC_WORKING_DIR) && PYTHONPATH=`pwd`:$$PYTHONPATH nosetests -c nose.cfg
 
 doc:
 	#cd docs && make clean && make html
