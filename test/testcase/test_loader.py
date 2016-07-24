@@ -23,9 +23,9 @@ class TestLoader(TestCase):
         loader = Loader('dummy.core.PlainOldObject')
 
         # Make sure that all information is ready.
-        self.assertEquals(loader._path, 'dummy.core.PlainOldObject')
-        self.assertEquals(loader._module_path, 'dummy.core')
-        self.assertEquals(loader._package_name, 'PlainOldObject')
+        self.assertEqual(loader._path, 'dummy.core.PlainOldObject')
+        self.assertEqual(loader._module_path, 'dummy.core')
+        self.assertEqual(loader._package_name, 'PlainOldObject')
 
     def test_module(self):
         ''' The loader loads the module only when it needs. '''
@@ -33,7 +33,7 @@ class TestLoader(TestCase):
         loader = Loader('dummy.core.PlainOldObject')
 
         self.assertIsNone(loader._module)
-        self.assertEquals(loader.module, dummy.core)
+        self.assertEqual(loader.module, dummy.core)
 
     def test_package(self):
         ''' The loader loads the package only when it needs. '''
@@ -41,7 +41,7 @@ class TestLoader(TestCase):
         loader = Loader('dummy.core.PlainOldObject')
 
         self.assertIsNone(loader._package)
-        self.assertEquals(loader.package, dummy.core.PlainOldObject)
+        self.assertEqual(loader.package, dummy.core.PlainOldObject)
 
     def test_import_non_existing_module(self):
         """ The loader attempts to load a non-existing module. """

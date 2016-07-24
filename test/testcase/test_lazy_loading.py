@@ -34,7 +34,7 @@ class TestLazyLoading(TestCase):
         self.assertIsInstance(self.locator.get('alpha').call_accompany(), Beta)
         self.assertIsInstance(self.locator.get('beta'), Beta)
 
-        self.assertEquals(self.locator.get('alpha').call_accompany(), self.locator.get('beta'))
+        self.assertEqual(self.locator.get('alpha').call_accompany(), self.locator.get('beta'))
 
     # Test for actionable events... due to be in a seperate files.
 
