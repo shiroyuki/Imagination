@@ -2,18 +2,32 @@ import re
 
 from kotoba import load_from_file
 
-from ..meta.general    import Container
+from ..meta.container  import Entity, Factorization
 from ..meta.definition import ParameterCollection, DataDefinition
 from .abstract         import ConfigParser
 
 
-def convert_container_node_to_meta_container(container_node): # -> Container
-    return Container(
-        container_node.attribute('id'),
-        container_node.name(),
-        container_node.attribute('class') or None,
-        convert_container_node_to_parameter_collection(container_node)
-    )
+__re_factorization_element_name = re.compile('^factori(s|z)ation$')
+
+def convert_container_node_to_meta_container(container_node) -> Entity:
+    container_type = container_node.name()
+
+    if container_type == 'entity':
+        return Entity(
+            container_node.attribute('id'),
+            container_node.attribute('class') or None,
+            convert_container_node_to_parameter_collection(container_node)
+        )
+
+    if __re_factorization_element_name.search(container_type):
+        return Factorization(
+            container_node.attribute('id'),
+            container_node.attribute('with'),
+            container_node.attribute('call'),
+            convert_container_node_to_parameter_collection(container_node)
+        )
+
+    raise NotImplementedError()
 
 def convert_container_node_to_parameter_collection(node, key_property_name = None): # -> ParameterCollection
     collection = ParameterCollection()

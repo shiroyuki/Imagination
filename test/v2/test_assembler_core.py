@@ -11,11 +11,19 @@ class FunctionalTest(unittest.TestCase):
         if sys.version_info < (3, 3):
             self.skipTest('The tested feature is not supported in Python {}.'.format(sys.version))
 
-    def test_simple(self):
-        test_filepath = 'test/data/locator.xml'
+        self.test_filepaths = [
+            'test/data/locator.xml',
+            'test/data/locator-factorization.xml',
+            'test/data/locator-lazy-action.xml',
+        ]
 
-        assembler       = Assembler()
-        meta_containers = assembler._load_config_files(test_filepath)
+        self.assembler = Assembler()
+
+    def test_simple(self):
+        meta_containers = self.assembler._load_config_files(*self.test_filepaths)
 
         self.assertIn('poow-1', meta_containers['dioe'].dependencies)
         self.assertIn('poo',    meta_containers['owlad'].dependencies)
+
+    def test_activation_order(self):
+        pass

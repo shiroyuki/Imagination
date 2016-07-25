@@ -13,7 +13,11 @@ class Assembler(object):
             XMLParser(),
         ]
 
-        self.core = Imagination()
+        self._core = Imagination()
+
+    @property
+    def core(self):
+        return self._core
 
     def load(self, *filepaths):
         meta_container_map = self._load_config_files(*filepaths)
