@@ -25,7 +25,7 @@ install:
 	$(PY) setup.py install
 
 test-v2:
-	$(PY) -m unittest discover -s test/v2
+	$(PY) -m unittest discover -v -s test/v2
 
 test: clean-cache
 	$(PY) -m unittest discover -s test/testcase -t test/

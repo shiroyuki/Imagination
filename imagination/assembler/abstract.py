@@ -1,6 +1,6 @@
 class ConfigParser(object):
-    def can_handle(self, filepath : str): # -> bool
-        raise NotImplemented()
+    def can_handle(self, filepath : str) -> bool:
+        raise NotImplementedError()
 
-    def parse(self, filepath : str):
-        raise NotImplemented()
+    def parse(self, filepath : str) -> dict:
+        raise NotImplementedError()
