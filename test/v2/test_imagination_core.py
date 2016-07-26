@@ -40,3 +40,8 @@ class FunctionalTest(unittest.TestCase):
         self.assertIsNotNone(alpha)
         self.assertIsInstance(alpha, Alpha)
         self.assertIsInstance(alpha.accompany, Beta)
+
+        self.assertTrue(self.core.get_info('alpha').activated())
+        self.assertTrue(self.core.get_info('beta').activated())
+        self.assertFalse(self.core.get_info('charlie').activated())
+        self.assertFalse(self.core.get_info('poow-1').activated())
