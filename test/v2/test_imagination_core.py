@@ -1,6 +1,8 @@
 import sys
 import unittest
 
+from dummy.lazy_action import Alpha, Beta
+
 if sys.version_info >= (3, 3):
     from imagination.debug          import dump_meta_container
     from imagination.assembler.core import Assembler
@@ -36,3 +38,5 @@ class FunctionalTest(unittest.TestCase):
         alpha = self.core.get('alpha')
 
         self.assertIsNotNone(alpha)
+        self.assertIsInstance(alpha, Alpha)
+        self.assertIsInstance(alpha.accompany, Beta)

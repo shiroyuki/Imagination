@@ -5,7 +5,10 @@ from .definition      import ParameterCollection
 
 
 class FrozenContainerError(RuntimeError):
-    """ Error raised when the external code attampts to modify the container while it is frozen. """
+    """ Error raised when the external code attampts to
+        modify the container while it is frozen.
+    """
+
 
 class Container(PrintableMixin):
     def __init__(self, identifier : str, cacheable : bool = True):
@@ -22,7 +25,9 @@ class Container(PrintableMixin):
     @id.setter
     def id(self, new_id : str):
         if self.__is_frozen:
-            raise FrozenContainerError('Forbidden to change the identifier in the frozen state')
+            raise FrozenContainerError(
+                'Forbidden to change the identifier in the frozen state'
+            )
 
         self.__identifier = new_id
 
@@ -30,15 +35,17 @@ class Container(PrintableMixin):
     def cacheable(self):
         return self.__cacheable
 
+
 class Entity(Container):
-    def __init__(self, identifier : str, fqcn : str, params : ParameterCollection = None, cacheable : bool = True):
+    def __init__(self, identifier : str, fqcn : str,
+                 params : ParameterCollection = None, cacheable : bool = True):
         Container.__init__(self, identifier, cacheable)
 
         assert fqcn, 'Container\'s class must be defined.'
 
         self.__fqcn         = fqcn
         self.__params       = params or ParameterCollection()
-        self.__dependencies = set() # container ID
+        self.__dependencies = set()  # Container ID
 
         self.__dependency_calculated = False
 
@@ -61,17 +68,23 @@ class Entity(Container):
 
         return self.__dependencies
 
+
 class Factorization(Container):
-    def __init__(self, identifier : str, factory_id : str, factory_method_name : str, params : ParameterCollection = None, cacheable : bool = True):
+    def __init__(self,
+                 identifier          : str,
+                 factory_id          : str,
+                 factory_method_name : str,
+                 params              : ParameterCollection = None,
+                 cacheable           : bool = True):
         Container.__init__(self, identifier, cacheable)
 
-        assert factory_id,      'Container\'s factory ID must be defined.'
-        assert factory_method_name, 'Container\'s factory method must be defined.'
+        assert factory_id,          'Undefined factory ID'
+        assert factory_method_name, 'Undefined factory method'
 
         self.__factory_id          = factory_id
         self.__factory_method_name = factory_method_name
         self.__params              = params or ParameterCollection()
-        self.__dependencies        = set() # container ID
+        self.__dependencies        = set()  # Container ID
 
         self.__dependency_calculated = False
 
