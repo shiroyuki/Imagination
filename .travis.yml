@@ -1,7 +1,10 @@
 language: python
 python:
-  - "3.5"
-  - "3.4"
-  - "3.3"
-install: "pip install kotoba"
+    - "nightly"
+    - "pypy"
+    - "3.5-dev"
+    - "3.5"
+    - "3.4"
+    - "3.3"
+install: "pip install kotoba && pip install "
 script:  "python -m unittest discover -s test/v2"
