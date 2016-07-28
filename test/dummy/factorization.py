@@ -1,9 +1,19 @@
 class Something(object):
-    def __init__(self): pass
-    def alpha(self): pass
-    def bravo(self): pass
-    def doubler(self): pass
-    def trippler(self): pass
+    def __init__(self):
+        return True
+
+    def alpha(self):
+        return True
+
+    def bravo(self):
+        return True
+
+    def doubler(self):
+        return True
+
+    def trippler(self):
+        return True
+
 
 class Ticker(object):
     def __init__(self):
@@ -11,6 +21,7 @@ class Ticker(object):
 
     def tick(self, result):
         self.sequence.append(result)
+
 
 class Manager(object):
     def getWorkerObject(self, name):
@@ -21,6 +32,7 @@ class Manager(object):
             return value * multiplier
 
         return duplicate
+
 
 class Worker(object):
     def __init__(self, name):

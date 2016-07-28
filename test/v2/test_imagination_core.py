@@ -1,7 +1,8 @@
 import sys
 import unittest
 
-from dummy.lazy_action import Alpha, Beta
+from dummy.lazy_action   import Alpha, Beta
+from dummy.factorization import Manager, Worker
 
 if sys.version_info >= (3, 3):
     from imagination.debug          import dump_meta_container
@@ -46,6 +47,17 @@ class FunctionalTest(unittest.TestCase):
         self.assertTrue(self.core.get_info('beta').activated())
         self.assertFalse(self.core.get_info('charlie').activated())
         self.assertFalse(self.core.get_info('poow-1').activated())
+
+    def test_get_factorization(self):
+        alpha = self.core.get('worker.alpha')
+
+        self.assertIsNotNone(alpha)
+        self.assertIsInstance(alpha, Worker)
+
+        self.assertTrue(self.core.get_info('worker.alpha').activated())
+        self.assertTrue(self.core.get_info('manager').activated())
+        self.assertFalse(self.core.get_info('worker.bravo').activated())
+        self.assertFalse(self.core.get_info('something').activated())
 
     def test_get_lambda(self):
         func_foo = self.core.get('func_foo')
