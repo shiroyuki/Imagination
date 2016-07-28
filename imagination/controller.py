@@ -1,7 +1,7 @@
 # v2
 from .loader          import Loader
 from .debug           import get_logger, dump_meta_container
-from .meta.container  import Container, Entity, Factorization
+from .meta.container  import Container, Entity, Factorization, Lambda
 from .meta.definition import ParameterCollection
 
 
@@ -9,7 +9,8 @@ class Controller(object):
     def __init__(self,
                  metadata : Container,
                  core_get : callable,
-                 transformer_cast : callable):
+                 transformer_cast : callable
+                 ):
         self.__metadata         = metadata
         self.__core_get         = core_get
         self.__transformer_cast = transformer_cast
@@ -35,6 +36,14 @@ class Controller(object):
         new_instance   = None
         make_method    = None
 
+        if container_type is Lambda:
+            callable_object = Loader(metadata.fq_callable_name).package
+
+            if self.__metadata.cacheable:
+                self.__container_instance = callable_object
+
+            return callable_object
+
         if container_type is Entity:
             make_method = Loader(metadata.fqcn).package
 
@@ -42,7 +51,7 @@ class Controller(object):
             factory_service = self.__core_get(metadata.factory_id)
             make_method     = getattr(factory_service, metadata.factory_method_name)
 
-        else:
+        if not make_method:
             raise NotImplementedError('No make method for {}'.format(container_type.__name__))
 
         new_instance = make_method(*params['sequence'], **params['items'])

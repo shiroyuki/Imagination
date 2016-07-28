@@ -5,6 +5,7 @@ from ..debug import PrintableMixin
 class DuplicateParameterDefinitionWarning(Warning):
     """ Warning for Duplicate Parameter Definition """
 
+
 class DataDefinition(PrintableMixin):
     def __init__(self, definition, name : str = None, kind : str = None, transformation_required : bool = True):
         self.__name       = name
@@ -28,6 +29,7 @@ class DataDefinition(PrintableMixin):
     @property
     def transformation_required(self):
         return self.__transformation_required
+
 
 class ParameterCollection(PrintableMixin):
     def __init__(self):
@@ -59,3 +61,6 @@ class ParameterCollection(PrintableMixin):
             raise DuplicateParameterDefinitionWarning(name)
 
         self.__map[name] = meta_parameter
+
+    def __len__(self):
+        return len(self.__list) + len(self.__map)
