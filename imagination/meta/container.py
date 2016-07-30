@@ -12,9 +12,10 @@ class FrozenContainerError(RuntimeError):
 
 class Container(PrintableMixin):
     def __init__(self,
-                 identifier : str,
-                 params : ParameterCollection = None,
-                 cacheable : bool = True
+                 identifier   : str,
+                 params       : ParameterCollection = None,
+                 interception : list = [],
+                 cacheable    : bool = True
                  ):
         assert identifier, 'Container ID must be defined.'
 

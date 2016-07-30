@@ -7,7 +7,8 @@ class DuplicateParameterDefinitionWarning(Warning):
 
 
 class DataDefinition(PrintableMixin):
-    def __init__(self, definition, name : str = None, kind : str = None, transformation_required : bool = True):
+    def __init__(self, definition, name : str = None, kind : str = None,
+                 transformation_required : bool = True):
         self.__name       = name
         self.__kind       = kind or 'str'
         self.__definition = definition
@@ -64,3 +65,41 @@ class ParameterCollection(PrintableMixin):
 
     def __len__(self):
         return len(self.__list) + len(self.__map)
+
+
+class Interception(object):
+    __self_reference__ = 'self'
+
+    def __init__(self, when_to_intercept : str, container_id_to_intercept : str,
+                 interceptor_id : str, intercepting_method : str,
+                 params : ParameterCollection = None
+                 ):
+
+        assert when_to_intercept in ('before', 'after', 'error'), 'Unknown event given'
+        assert container_id_to_intercept and interceptor_id and intercepting_method
+
+        self._when_to_intercept         = when_to_intercept
+        self._container_id_to_intercept = container_id_to_intercept
+        self._interceptor_id            = interceptor_id
+        self._intercepting_method       = intercepting_method
+        self._params                    = params or ParameterCollection()
+
+    @property
+    def when_to_intercept(self):
+        return self._when_to_intercept
+
+    @property
+    def container_id_to_intercept(self):
+        return self._container_id_to_intercept
+
+    @property
+    def interceptor_id(self):
+        return self._interceptor_id
+
+    @property
+    def intercepting_method(self):
+        return self._intercepting_method
+
+    @property
+    def params(self):
+        return self._params

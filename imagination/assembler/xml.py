@@ -3,44 +3,30 @@ import re
 
 from kotoba import load_from_file
 
-from ..meta.container  import Entity, Factorization, Lambda
+from ..meta.container  import Container
 from ..meta.definition import ParameterCollection, DataDefinition
 from .abstract         import ConfigParser
+from .handlers         import EntityCreator, FactorizationCreator, LambdaCreator
 
 
 __re_factorization_element_name = re.compile('^factori(s|z)ation$')
+__container_creators            = [EntityCreator, FactorizationCreator, LambdaCreator]
 
 
 class UnsupportedContainerError(RuntimeError):
     """ Error when an unsupported container is defined. """
 
 
-def convert_container_node_to_meta_container(container_node) -> Entity:
+def convert_container_node_to_meta_container(container_node) -> Container:
     container_type   = container_node.name().lower()
     container_id     = container_node.attribute('id')
     container_params = convert_container_node_to_parameter_collection(container_node)
 
-    if container_type == 'entity':
-        return Entity(
-            container_id,
-            container_node.attribute('class') or None,
-            container_params
-        )
+    for creator in __container_creators:
+        if not creator.can_handle(container_type):
+            continue
 
-    if __re_factorization_element_name.search(container_type):
-        return Factorization(
-            container_id,
-            container_node.attribute('with'),
-            container_node.attribute('call'),
-            container_params
-        )
-
-    if container_type == 'callable':
-        return Lambda(
-            container_id,
-            container_node.attribute('with'),
-            container_params
-        )
+        return creator.create(container_id, container_params, container_node)
 
     raise UnsupportedContainerError(container_type)
 
