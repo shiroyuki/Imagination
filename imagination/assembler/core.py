@@ -1,3 +1,4 @@
+# v2
 from ..core  import Imagination
 from ..debug import dump_meta_container
 
@@ -6,6 +7,7 @@ from .xml import XMLParser
 
 class UnsupportedConfigFileError(RuntimeError):
     """ Error when detect unsupported configuration file """
+
 
 class Assembler(object):
     def __init__(self, core : Imagination = None):

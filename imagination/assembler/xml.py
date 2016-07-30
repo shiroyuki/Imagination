@@ -1,38 +1,57 @@
+# v2
 import re
 
 from kotoba import load_from_file
 
-from ..meta.container  import Entity, Factorization
+from ..meta.container  import Entity, Factorization, Lambda
 from ..meta.definition import ParameterCollection, DataDefinition
 from .abstract         import ConfigParser
 
 
 __re_factorization_element_name = re.compile('^factori(s|z)ation$')
 
+
+class UnsupportedContainerError(RuntimeError):
+    """ Error when an unsupported container is defined. """
+
+
 def convert_container_node_to_meta_container(container_node) -> Entity:
-    container_type = container_node.name()
+    container_type   = container_node.name().lower()
+    container_id     = container_node.attribute('id')
+    container_params = convert_container_node_to_parameter_collection(container_node)
 
     if container_type == 'entity':
         return Entity(
-            container_node.attribute('id'),
+            container_id,
             container_node.attribute('class') or None,
-            convert_container_node_to_parameter_collection(container_node)
+            container_params
         )
 
     if __re_factorization_element_name.search(container_type):
         return Factorization(
-            container_node.attribute('id'),
+            container_id,
             container_node.attribute('with'),
             container_node.attribute('call'),
-            convert_container_node_to_parameter_collection(container_node)
+            container_params
         )
 
-    raise NotImplementedError()
+    if container_type == 'callable':
+        return Lambda(
+            container_id,
+            container_node.attribute('with'),
+            container_params
+        )
 
-def convert_container_node_to_parameter_collection(node, key_property_name = None): # -> ParameterCollection
+    raise UnsupportedContainerError(container_type)
+
+
+def convert_container_node_to_parameter_collection(node, key_property_name = None) -> ParameterCollection:
     collection = ParameterCollection()
 
     for child_node in node.children():
+        if child_node.name() not in ('param', 'item'):
+            continue
+
         name = child_node.attribute(key_property_name or 'name') or None
         kind = child_node.attribute('type')
 
@@ -45,6 +64,7 @@ def convert_container_node_to_parameter_collection(node, key_property_name = Non
         collection.add(data, name)
 
     return collection
+
 
 class XMLParser(ConfigParser):
     def __init__(self):
