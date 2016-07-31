@@ -61,11 +61,13 @@ class Container(PrintableMixin):
 
 
 class Entity(Container):
+    """ Metadata representing Entity """
     def __init__(self,
-                 identifier : str,
-                 fqcn       : str,
-                 params     : ParameterCollection = None,
-                 cacheable  : bool = True
+                 identifier   : str,
+                 fqcn         : str,
+                 params       : ParameterCollection = None,
+                 interception : list = [],
+                 cacheable    : bool = True
                  ):
         Container.__init__(self, identifier, params, cacheable)
 
@@ -79,11 +81,13 @@ class Entity(Container):
 
 
 class Factorization(Container):
+    """ Metadata representing Factorization """
     def __init__(self,
                  identifier          : str,
                  factory_id          : str,
                  factory_method_name : str,
                  params              : ParameterCollection = None,
+                 interception        : list = [],
                  cacheable           : bool = True
                  ):
         Container.__init__(self, identifier, params, cacheable)
@@ -124,6 +128,11 @@ class LambdaUnusedParameterWarning(RuntimeWarning):
 
 
 class Lambda(Container):
+    """ Metadata representing Lambda/Callable
+
+        .. warn:: This type of containers does not use parameters.
+        .. warn:: This type of containers does not support interception.
+    """
     def __init__(self,
                  identifier       : str,
                  fq_callable_name : str,

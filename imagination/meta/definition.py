@@ -68,29 +68,44 @@ class ParameterCollection(PrintableMixin):
 
 
 class Interception(object):
-    __self_reference__ = 'self'
+    """ Metadata for Interception
 
-    def __init__(self, when_to_intercept : str, container_id_to_intercept : str,
-                 interceptor_id : str, intercepting_method : str,
-                 params : ParameterCollection = None
+        .. note::
+
+            The "before" event is now the same as "pre" and "after" is the same
+            as "post" from version 2. The "pre" and "post" events will be
+            deprecated.
+    """
+    __self_reference__ = 'self'
+    __known_events__   = ('before', 'after', 'error', 'pre', 'post')
+    __remap_events__   = {'pre': 'before', 'post': 'after'}
+
+    def __init__(self,
+                 when_to_intercept   : str,
+                 method_to_intercept : str,
+                 interceptor_id      : str,
+                 intercepting_method : str
                  ):
 
-        assert when_to_intercept in ('before', 'after', 'error'), 'Unknown event given'
-        assert container_id_to_intercept and interceptor_id and intercepting_method
+        assert when_to_intercept in self.__known_events__, 'Unknown event given ({})'.format(when_to_intercept)
+        assert method_to_intercept and interceptor_id and intercepting_method
 
-        self._when_to_intercept         = when_to_intercept
-        self._container_id_to_intercept = container_id_to_intercept
-        self._interceptor_id            = interceptor_id
-        self._intercepting_method       = intercepting_method
-        self._params                    = params or ParameterCollection()
+        # NOTE Remap for PARTIAL backward compatibility.
+        if when_to_intercept in self.__remap_events__:
+            when_to_intercept = self.__remap_events__[when_to_intercept]
+
+        self._when_to_intercept   = when_to_intercept
+        self._method_to_intercept = method_to_intercept
+        self._interceptor_id      = interceptor_id
+        self._intercepting_method = intercepting_method
 
     @property
     def when_to_intercept(self):
         return self._when_to_intercept
 
     @property
-    def container_id_to_intercept(self):
-        return self._container_id_to_intercept
+    def method_to_intercept(self):
+        return self._method_to_intercept
 
     @property
     def interceptor_id(self):
@@ -99,7 +114,3 @@ class Interception(object):
     @property
     def intercepting_method(self):
         return self._intercepting_method
-
-    @property
-    def params(self):
-        return self._params
