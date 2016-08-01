@@ -12,18 +12,19 @@ class FrozenContainerError(RuntimeError):
 
 class Container(PrintableMixin):
     def __init__(self,
-                 identifier   : str,
-                 params       : ParameterCollection = None,
-                 interception : list = [],
-                 cacheable    : bool = True
+                 identifier    : str,
+                 params        : ParameterCollection = None,
+                 interceptions : list = [],
+                 cacheable     : bool = True
                  ):
         assert identifier, 'Container ID must be defined.'
 
-        self._is_frozen    = False
-        self._cacheable    = cacheable
-        self._identifier   = identifier.strip()
-        self._params       = params or ParameterCollection()
-        self._dependencies = set()  # Container ID
+        self._is_frozen     = False
+        self._cacheable     = cacheable
+        self._identifier    = identifier.strip()
+        self._params        = params or ParameterCollection()
+        self._interceptions = interceptions
+        self._dependencies  = set()  # Container ID
 
         self._dependency_calculated = False
 
@@ -49,6 +50,10 @@ class Container(PrintableMixin):
         return self._cacheable
 
     @property
+    def interceptions(self):
+        return self._interceptions
+
+    @property
     def dependencies(self):
         if not self._dependency_calculated:
             self._dependencies.update(
@@ -63,13 +68,13 @@ class Container(PrintableMixin):
 class Entity(Container):
     """ Metadata representing Entity """
     def __init__(self,
-                 identifier   : str,
-                 fqcn         : str,
-                 params       : ParameterCollection = None,
-                 interception : list = [],
-                 cacheable    : bool = True
+                 identifier    : str,
+                 fqcn          : str,
+                 params        : ParameterCollection = None,
+                 interceptions : list = [],
+                 cacheable     : bool = True
                  ):
-        Container.__init__(self, identifier, params, cacheable)
+        Container.__init__(self, identifier, params, interceptions, cacheable)
 
         assert fqcn, 'Container\'s class must be defined.'
 
@@ -87,10 +92,10 @@ class Factorization(Container):
                  factory_id          : str,
                  factory_method_name : str,
                  params              : ParameterCollection = None,
-                 interception        : list = [],
+                 interceptions       : list = [],
                  cacheable           : bool = True
                  ):
-        Container.__init__(self, identifier, params, cacheable)
+        Container.__init__(self, identifier, params, interceptions, cacheable)
 
         assert factory_id,          'Undefined factory ID'
         assert factory_method_name, 'Undefined factory method'
@@ -139,7 +144,7 @@ class Lambda(Container):
                  params           : ParameterCollection = None,
                  cacheable        : bool = True
                  ):
-        Container.__init__(self, identifier, params, cacheable)
+        Container.__init__(self, identifier, params, cacheable = cacheable)
 
         assert fq_callable_name, 'Undefined callable'
 

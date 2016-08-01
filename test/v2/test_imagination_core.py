@@ -1,6 +1,8 @@
 import sys
 import unittest
 
+from imagination.wrapper import Wrapper
+
 from dummy.lazy_action   import Alpha, Beta
 from dummy.factorization import Manager, Worker
 
@@ -40,8 +42,10 @@ class FunctionalTest(unittest.TestCase):
         alpha = self.core.get('alpha')
 
         self.assertIsNotNone(alpha)
-        self.assertIsInstance(alpha, Alpha)
-        self.assertIsInstance(alpha.accompany, Beta)
+        self.assertIsInstance(alpha, Wrapper)
+        self.assertIsInstance(alpha._internal_instance, Alpha)
+        self.assertIsInstance(alpha.accompany, Wrapper)
+        self.assertIsInstance(alpha.accompany._internal_instance, Beta)
 
         self.assertTrue(self.core.get_info('alpha').activated())
         self.assertTrue(self.core.get_info('beta').activated())
@@ -52,7 +56,8 @@ class FunctionalTest(unittest.TestCase):
         alpha = self.core.get('worker.alpha')
 
         self.assertIsNotNone(alpha)
-        self.assertIsInstance(alpha, Worker)
+        self.assertIsInstance(alpha, Wrapper)
+        self.assertIsInstance(alpha._internal_instance, Worker)
 
         self.assertTrue(self.core.get_info('worker.alpha').activated())
         self.assertTrue(self.core.get_info('manager').activated())
