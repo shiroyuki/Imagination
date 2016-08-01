@@ -59,22 +59,26 @@ def convert_container_node_to_parameter_collection(node, key_property_name = Non
 
 
 def convert_blocks_to_interception_metadatas(node):
-    interceptions = []
+    interceptor_id = node.attribute('id')
+    interceptions  = []
 
     for child_node in node.children('interception'):
         event_type          = None
-        method_to_intercept = None
-        interceptor_id      = child_node.attribute('with')
-        intercepting_method = child_node.attribute('do')
+        intercepted_id      = None
+        method_to_intercept = child_node.attribute('do')
+        intercepting_method = child_node.attribute('with')
 
         for known_event_type in Interception.__known_events__:
             if child_node.attribute(known_event_type):
-                method_to_intercept = child_node.attribute(known_event_type)
-                event_type          = known_event_type
+                event_type     = known_event_type
+                intercepted_id = child_node.attribute(event_type)
+
+                break
 
         try:
             interceptions.append(Interception(
                 when_to_intercept   = event_type,
+                intercepted_id      = intercepted_id,
                 method_to_intercept = method_to_intercept,
                 interceptor_id      = interceptor_id,
                 intercepting_method = intercepting_method,

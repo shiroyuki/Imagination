@@ -8,35 +8,48 @@ from .wrapper         import Wrapper
 
 class Controller(object):
     def __init__(self,
-                 metadata : Container,
-                 core_get : callable,
-                 transformer_cast : callable
+                 metadata               : Container,
+                 core_get               : callable,
+                 core_get_interceptions : callable,
+                 transformer_cast       : callable
                  ):
-        self.__metadata         = metadata
-        self.__core_get         = core_get
-        self.__transformer_cast = transformer_cast
-        self.__logger           = get_logger('controller/{}'.format(metadata.id))
-
-        self.__container_instance = None  # Cache
-        self.activation_sequence  = None  # Activation Sequence
+        self.__metadata               = metadata
+        self.__core_get               = core_get
+        self.__core_get_interceptions = core_get_interceptions
+        self.__transformer_cast       = transformer_cast
+        self.__logger                 = get_logger('controller/{}'.format(metadata.id))
+        self.__container_instance     = None  # Cache
+        self.__wrapper_instance       = None  # Wrapper Cache
+        self.activation_sequence      = None  # Activation Sequence
 
     @property
     def metadata(self):
         return self.__metadata
 
     def activated(self):
-        return self.__container_instance is not None
+        return self.__wrapper_instance is not None or self.__container_instance is not None
 
     def activate(self):
         if self.activated():
-            return self.__container_instance
+            return self.__wrapper_instance or self.__container_instance
 
         new_instance = self.__instantiate_container()
 
         if self.__metadata.cacheable:
             self.__container_instance = new_instance
 
-        return new_instance
+        interceptions = self.__core_get_interceptions(self.__metadata.id)
+
+        if not interceptions:
+            return self.__container_instance
+
+        self.__wrapper_instance = Wrapper(
+            self.__core_get,
+            self.__container_instance,
+            interceptions
+        )
+
+        return self.__wrapper_instance
 
     def __instantiate_container(self):
         metadata       = self.__metadata
@@ -57,9 +70,6 @@ class Controller(object):
             raise NotImplementedError('No make method for {}'.format(container_type.__name__))
 
         new_instance = make_method(*params['sequence'], **params['items'])
-
-        if metadata.interceptions:
-            return Wrapper(self.__core_get, new_instance, metadata.interceptions)
 
         return new_instance
 

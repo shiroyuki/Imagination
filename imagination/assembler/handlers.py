@@ -3,7 +3,6 @@ import re
 
 from ..meta.container  import Entity, Factorization, Lambda
 
-
 _re_factorization_element_name = re.compile('^factori(s|z)ation$')
 
 

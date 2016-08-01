@@ -1,6 +1,6 @@
 # v2
 from ..debug          import PrintableMixin
-from ..helper.general import extract_container_ids_from_parameter_collection
+from ..helper.general import extract_dependency_ids_from_parameters
 from .definition      import ParameterCollection
 
 
@@ -57,7 +57,7 @@ class Container(PrintableMixin):
     def dependencies(self):
         if not self._dependency_calculated:
             self._dependencies.update(
-                extract_container_ids_from_parameter_collection(self._params)
+                extract_dependency_ids_from_parameters(self._params)
             )
 
             self._dependency_calculated = True
@@ -118,7 +118,7 @@ class Factorization(Container):
             self._dependencies.add(self._factory_id)
 
             self._dependencies.update(
-                extract_container_ids_from_parameter_collection(self._params)
+                extract_dependency_ids_from_parameters(self._params)
             )
 
             self._dependency_calculated = True

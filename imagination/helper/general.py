@@ -1,12 +1,22 @@
+import contextlib
+
 from ..meta.definition import ParameterCollection
 
-def extract_container_ids_from_parameter_collection(collection):
+
+@contextlib.contextmanager
+def exclusive_lock(lock):
+    lock.acquire()
+    yield
+    lock.release()
+
+
+def extract_dependency_ids_from_parameters(collection : ParameterCollection):
     container_ids = set()
 
     for item in collection.sequence():
         if type(item.definition) is ParameterCollection:
             container_ids.update(
-                extract_container_ids_from_parameter_collection(item.definition)
+                extract_dependency_ids_from_parameters(item.definition)
             )
 
             continue
@@ -19,7 +29,7 @@ def extract_container_ids_from_parameter_collection(collection):
     for k, item in collection.items():
         if type(item.definition) is ParameterCollection:
             container_ids.update(
-                extract_container_ids_from_parameter_collection(item.definition)
+                extract_dependency_ids_from_parameters(item.definition)
             )
 
             continue

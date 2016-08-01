@@ -67,7 +67,7 @@ class ParameterCollection(PrintableMixin):
         return len(self.__list) + len(self.__map)
 
 
-class Interception(object):
+class Interception(PrintableMixin):
     """ Metadata for Interception
 
         .. note::
@@ -76,12 +76,13 @@ class Interception(object):
             as "post" from version 2. The "pre" and "post" events will be
             deprecated.
     """
-    __self_reference__ = 'self'
-    __known_events__   = ('before', 'after', 'error', 'pre', 'post')
-    __remap_events__   = {'pre': 'before', 'post': 'after'}
+    __self_references__ = {'self', 'me'}  # "me" is a legacy self-reference.
+    __known_events__    = ('before', 'after', 'error', 'pre', 'post')
+    __remap_events__    = {'pre': 'before', 'post': 'after'}
 
     def __init__(self,
                  when_to_intercept   : str,
+                 intercepted_id      : str,
                  method_to_intercept : str,
                  interceptor_id      : str,
                  intercepting_method : str
@@ -95,6 +96,7 @@ class Interception(object):
             when_to_intercept = self.__remap_events__[when_to_intercept]
 
         self._when_to_intercept   = when_to_intercept
+        self._intercepted_id      = intercepted_id
         self._method_to_intercept = method_to_intercept
         self._interceptor_id      = interceptor_id
         self._intercepting_method = intercepting_method
@@ -102,6 +104,10 @@ class Interception(object):
     @property
     def when_to_intercept(self):
         return self._when_to_intercept
+
+    @property
+    def intercepted_id(self):
+        return self._intercepted_id
 
     @property
     def method_to_intercept(self):
@@ -114,3 +120,6 @@ class Interception(object):
     @property
     def intercepting_method(self):
         return self._intercepting_method
+
+    def is_self_interception(self):
+        return self._interceptor_id in self.__self_references__
