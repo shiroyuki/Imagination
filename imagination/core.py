@@ -19,6 +19,15 @@ class CoreOnLockDownError(RuntimeError):
 
 
 class Imagination(object):
+    """ Imagination Core
+
+        `self.__interception_graph` is a  tree where::
+
+            container-id
+            (1) --> (0..n) method name
+                            (1) --> (3) event-type
+                                        (1) --> (0..n) interception
+    """
     def __init__(self, transformer : Transformer = None):
         self.__internal_lock  = threading.Lock()
         self.__controller_map = {}
@@ -166,18 +175,13 @@ class Imagination(object):
             if intercepted_id not in interception_graph:
                 interception_graph[intercepted_id] = {}
 
-            event_to_methods_map = interception_graph[intercepted_id]
+            method_to_event_map = interception_graph[intercepted_id]
 
-            if event_type not in event_to_methods_map:
-                event_to_methods_map[event_type] = {
+            if intercepted_method not in method_to_event_map:
+                method_to_event_map[intercepted_method] = {
                     'after'  : [],
                     'before' : [],
                     'error'  : [],
                 }
 
-            interceptions_map = event_to_methods_map[event_type]
-
-            if intercepted_method not in interceptions_map:
-                interceptions_map[intercepted_method] = []
-
-            interceptions_map[intercepted_method].append(interception)
+            method_to_event_map[intercepted_method][event_type].append(interception)
