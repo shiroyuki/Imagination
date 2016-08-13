@@ -59,7 +59,7 @@ class FunctionalTest(unittest.TestCase):
             'Charlie: cook',
             'Charlie: serve',
             'Alpha: says "Thank you" to Charlie',
-            'Beta: says "Merci" to Charlie',
+            'Beta: says "Merci" to Charlie'
         ]
 
         conversation = self.core.get('conversation')
