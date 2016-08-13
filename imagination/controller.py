@@ -123,7 +123,7 @@ class Controller(object):
                     )
                 )
 
-        return make_method(*params['sequence'], **params['items'])
+        return make_method(**using_parameters)
 
     def __get_parameter_default_value(self, parameter):
         # TODO Use parameter.annotation to check for type.
