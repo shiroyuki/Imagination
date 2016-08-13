@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Expected errors:
+- "poow-1" does not intentionally define the parameter "a".
+-->
+<!--doctype imagination public "//shiroyuki//dtd imagination 1.0" "http://dev.shiroyuki.com/dtd/imagination-1.0.dtd"-->
+<imagination>
+    <entity id="poow" class="dummy.core.PlainOldObjectWithParameters">
+        <param name="a" type="int">2</param>
+        <param name="b" type="float">3</param>
+        <param name="do_multiply" type="bool">false</param>
+    </entity>
+    <entity id="dioe" class="dummy.core.DependencyInjectableObjectWithEntity">
+        <param name="entity" type="entity">panda</param>
+    </entity>
+</imagination>

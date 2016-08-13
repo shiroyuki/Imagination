@@ -2,7 +2,7 @@
 import inspect
 
 from .debug           import get_logger, dump_meta_container
-from .exc             import UndefinedDefaultValueException
+from .exc             import UnexpectedParameterException, UndefinedDefaultValueException
 from .loader          import Loader
 from .meta.container  import Container, Entity, Factorization, Lambda
 from .meta.definition import ParameterCollection
@@ -79,14 +79,21 @@ class Controller(object):
         using_parameters = {}
         signature        = inspect.signature(make_method)
         expected_params  = [signature.parameters[name] for name in signature.parameters]
+        expected_count   = len(expected_params)
 
         for index in range(len(params['sequence'])):
+            if index >= expected_count:
+                raise UnexpectedParameterException('#{}'.format(index))
+
             definition     = params['sequence'][index]
             expected_param = expected_params[index]
 
             using_parameters[expected_param.name] = definition
 
         for name, definition in params['items'].items():
+            if name not in signature.parameters:
+                raise UnexpectedParameterException('#{}'.format(name))
+
             expected_param = signature.parameters[name]
 
             using_parameters[expected_param.name] = definition

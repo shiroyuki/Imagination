@@ -22,11 +22,7 @@ The schema is defined as followed::
     # Entity #
     ##########
 
-    ENTITY = <entity id="ENTITY_ID"
-                     class="ENTITY_CLASS"
-                     (tags="...")?
-                     (interceptable="(false|true)")?
-             >
+    ENTITY = <entity id="ENTITY_ID" class="ENTITY_CLASS">
                  (CONSTRUCTOR_PARAMETER)*
                  (INTERCEPTION)*
              </entity>
@@ -40,15 +36,12 @@ The schema is defined as followed::
                         </factorization>
 
     CALLABLE = <callable
-                  id="CREATED_ENTITY_ID"
-                  method="IMPORTABLE_PATH_TO_CALLABLE"
-                  static="(true|false)"
-                >
-                  (CONSTRUCTOR_PARAMETER)*
-                </callable>
+                id="CREATED_ENTITY_ID"
+                (with|method)=(The fully-qualified class path to callable object)
+                />
 
     # Initial Parameter
-    INITIAL_PARAMETER     = CONSTRUCTOR_PARAMETER
+    INITIAL_PARAMETER = CONSTRUCTOR_PARAMETER
 
     # Constructor's parameter and initial parameter
     CONSTRUCTOR_PARAMETER = <param type="PARAMETER_TYPE" name="PARAMETER_NAME">
@@ -66,10 +59,24 @@ The schema is defined as followed::
 
     INTERCEPTION =  <interception EVENT="REFERENCE_ENTITY_IDENTIFIER"
                                   do="REFERENCE_ENTITY_METHOD"
-                                  with="THIS_ENTITY_METHOD"
-                    >
+                                  with="THIS_ENTITY_METHOD">
                         (INITIAL_PARAMETER)*
                     </interception>
+
+.. note::
+
+    For version 1, this is the definition for ``callable``.
+
+    .. code-block::
+
+        CALLABLE = <callable
+                      id="CREATED_ENTITY_ID"
+                      method="IMPORTABLE_PATH_TO_CALLABLE"
+                      static="(true|false)"
+                    >
+                      (CONSTRUCTOR_PARAMETER)*
+                    </callable>
+
 
 where:
 
