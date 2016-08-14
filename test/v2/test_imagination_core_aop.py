@@ -58,8 +58,8 @@ class FunctionalTest(unittest.TestCase):
             'Beta: acknowledge "egg"',
             'Charlie: cook',
             'Charlie: serve',
+            'Beta: says "Merci" to Charlie',
             'Alpha: says "Thank you" to Charlie',
-            'Beta: says "Merci" to Charlie'
         ]
 
         conversation = self.core.get('conversation')
