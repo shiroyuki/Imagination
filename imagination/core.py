@@ -18,7 +18,8 @@ class CoreOnLockDownError(RuntimeError):
 class Imagination(object):
     """ Imagination Core
 
-        `self.__interception_graph` is a  tree where::
+        In order to track the interceptions properly, the code will keep all
+        information in `self.__interception_graph`, which is a tree where::
 
             container-id
             (1) --> (0..n) method name
@@ -34,9 +35,16 @@ class Imagination(object):
         self.__interception_graph = {}
 
     def lock_down(self):
+        """ Lock down the core.
+
+            This will prevent the core from accepting new entity definition.
+
+            .. note:: This method will be invoked on the first ``get`` call.
+        """
         self.__on_lockdown = True
 
     def is_on_lockdown(self) -> bool:
+        """ Check if the core is locked down. """
         return self.__on_lockdown
 
     def update_metadata(self, meta_container_map : dict):
@@ -52,9 +60,11 @@ class Imagination(object):
                 self.set_metadata(container_id, meta_container)
 
     def contain(self, container_id : str):
+        """ Check if the entity ID is registered. """
         return container_id in self.__controller_map
 
     def get(self, container_id : str):
+        """ Retrieve an entity by ID """
         info = self.get_info(container_id)
 
         with exclusive_lock(self.__internal_lock):
@@ -76,6 +86,13 @@ class Imagination(object):
 
         return instance
 
+    def all_ids(self):
+        """ Get all entity IDs.
+
+            :rtype: tuple
+        """
+        return tuple(self.__controller_map.keys())
+
     def get_info(self, container_id : str) -> Controller:
         if not self.contain(container_id):
             raise UndefinedContainerIDError(container_id)
@@ -83,12 +100,14 @@ class Imagination(object):
         return self.__controller_map[container_id]
 
     def get_metadata(self, container_id : str) -> Container:
+        """ Retrieve the metadata of the container. """
         return self.get_info(container_id).metadata
 
     def set_metadata(self, container_id : str, new_meta_container : Container):
         """ Define the metadata of the new container.
 
             .. warning:: This method allows ID overriding.
+            .. warning:: Use this with care.
         """
         if self.__on_lockdown:
             raise CoreOnLockDownError()
@@ -102,7 +121,8 @@ class Imagination(object):
 
         self.__controller_map[container_id] = new_controller
 
-    def get_interceptions(self, intercepted_id, event_type = None, method_to_intercept = None):
+    def get_interceptions(self, intercepted_id, event_type = None,
+                          method_to_intercept = None):
         if intercepted_id not in self.__interception_graph:
             return None
 
