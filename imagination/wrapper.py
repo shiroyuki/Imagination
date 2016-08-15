@@ -59,7 +59,7 @@ class InterceptableCallable(object):
     def _has_interceptions(self, event_type):
         return bool(self._internal_interceptions[event_type])
 
-    def _intercept(self, event_type, largs = None, kwargs = None, error = None):
+    def _intercept(self, event_type, largs = None, kwargs = None, error = None, returning = False):
         if not self._has_interceptions(event_type):
             return
 
@@ -67,7 +67,7 @@ class InterceptableCallable(object):
         kwargs = kwargs or {}
 
         for interception in self._internal_interceptions[event_type]:
-            interceptor         = core_get(interception.interceptor_id)
+            interceptor         = self._internal_core_get(interception.interceptor_id)
             intercepting_method = getattr(interceptor,
                                           interception.intercepting_method)
 
@@ -77,12 +77,21 @@ class InterceptableCallable(object):
                 intercepting_method(*largs, **kwargs)
 
     def __call__(self, *largs, **kwargs):
-        self._intercept('before', largs, kwargs)
+        self._intercept('before', largs, kwargs, returning = False)
+
+        result = None
 
         if self._has_interceptions('error'):
             try:
-                self._internal_callable(*largs, **kwargs)
+                result = self._internal_callable(*largs, **kwargs)
             except Exception as e:
-                self._intercept('error', largs, kwargs, error)
+                self._intercept('error', largs, kwargs, error, returning = False)
 
-        self._intercept('after', largs, kwargs)
+                return
+        else:
+            result = self._internal_callable(*largs, **kwargs)
+
+        if self._has_interceptions('after'):
+            return self._intercept('after', [result], returning = True)
+
+        return result

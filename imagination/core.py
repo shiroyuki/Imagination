@@ -3,13 +3,10 @@ import pprint
 import threading
 
 from .controller         import Controller
+from .exc                import UndefinedContainerIDError
 from .helper.general     import exclusive_lock
 from .helper.transformer import Transformer
 from .meta.container     import Container
-
-
-class UndefinedContainerIDError(RuntimeError):
-    """ Error when an undefined container ID is requested. """
 
 
 class CoreOnLockDownError(RuntimeError):

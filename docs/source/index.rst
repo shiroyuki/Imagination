@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Imagination 1.9
-===============
+Imagination 2
+=============
 
 :Copyright: Juti Noppornpitak <juti_n@yahoo.co.jp>
 :Author:    Juti Noppornpitak <juti_n@yahoo.co.jp>

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Expected errors:
+- "poow-1" does not intentionally define the parameter "a".
+-->
 <!--doctype imagination public "//shiroyuki//dtd imagination 1.0" "http://dev.shiroyuki.com/dtd/imagination-1.0.dtd"-->
 <imagination>
     <entity id="poo" class="dummy.core.PlainOldObject"></entity>
