@@ -92,7 +92,7 @@ class Controller(object):
 
         for name, definition in params['items'].items():
             if name not in signature.parameters:
-                raise UnexpectedParameterException('#{}'.format(name))
+                raise UnexpectedParameterException('Failed to initiate {} due to unexpected parameter {}'.format(metadata.id, name))
 
             expected_param = signature.parameters[name]
 
