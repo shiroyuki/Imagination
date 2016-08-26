@@ -1,38 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-This is specific for the test of dependency injection on actionable events and
-super lazy loaders allowing any arbitery order of entity declaration.
-
-Schema::
-
-    EVENT=(before|pre|post|after)
-
-    <interception
-        EVENT=REFERENCE_ENTITY_IDENTIFIER
-        do=REFERENCE_ENTITY_METHOD
-        with=THIS_ENTITY_METHOD
-    >
-        PARAMETERS
-    </interception>
-
-where:
-* REFERENCE_ENTITY_IDENTIFIER is the reference's entity identifier
-* REFERENCE_ENTITY_METHOD is the reference's method name
-* THIS_ENTITY_METHOD is this entity's method name
-* EVENT is where the REFERENCE_ENTITY_METHOD is intercepted.
-  * 'before' is an event before the execution of the method of the reference
-    (reference method) regardless to the given arguments to the reference
-    method.
-  * 'pre' is an event on pre-contact of the reference method and concerning
-    about the arguments given to the reference method. The method of the entity
-    (the intercepting method) takes the same paramenter as the reference method.
-  * 'post' is an event on post-contact of the reference method and concerning
-    about the result returned by the reference method. The intercepting method
-    for this event takes only one parameter which is the result from the
-    reference method or any previous post-contact interceptors.
-  * 'after' is an event after the execution of the reference method regardless
-    to the result reterned by the reference method.
--->
 <imagination>
     <entity id="alpha" class="dummy.lazy_action.Alpha" interceptable="true">
         <param type="entity" name="accompany">beta</param>

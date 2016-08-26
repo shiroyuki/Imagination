@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<imagination>
+    <entity id="conversation" class="dummy.sample_aop.Conversation"/>
+    <entity id="alpha" class="dummy.sample_aop.Alpha">
+        <param type="entity" name="conversation">conversation</param>
+        <param type="entity" name="accompany">beta</param>
+        <interception before="charlie" do="cook" with="order"/>
+        <interception after="charlie" do="serve" with="say_thank"/>
+    </entity>
+    <entity id="beta" class="dummy.sample_aop.Beta">
+        <param type="entity" name="conversation">conversation</param>
+        <interception after="alpha" do="order" with="acknowledge"/>
+        <interception after="charlie" do="serve" with="say_thank"/>
+    </entity>
+    <entity id="charlie" class="dummy.sample_aop.Charlie">
+        <param type="entity" name="conversation">conversation</param>
+    </entity>
+</imagination>

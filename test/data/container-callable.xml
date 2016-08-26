@@ -1,0 +1,3 @@
+<imagination>
+    <callable id="func_foo" with="dummy.exec.foo"/>
+</imagination>

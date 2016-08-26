@@ -1,4 +1,5 @@
-'''
+# v1 and v2
+"""
 :Author: Juti Noppornpitak
 
 The module contains the package loader used to improve code maintainability.
@@ -23,7 +24,7 @@ The module contains the package loader used to improve code maintainability.
     OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'''
+"""
 
 import re
 import importlib
