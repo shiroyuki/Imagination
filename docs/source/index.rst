@@ -47,6 +47,7 @@ More resources
 ==============
 
 * `XML DTD for the configuration file <https://github.com/shiroyuki/Imagination/blob/v2-dev/imagination.dtd>`_
+* `Source Code on GitHub <https://github.com/shiroyuki/Imagination>`_
 
 .. Indices and tables
 .. ==================
