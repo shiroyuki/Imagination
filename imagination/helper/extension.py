@@ -57,7 +57,7 @@ class AbstractRegistrar(mixin.ParameterParsingMixin):
     def __get_tags(self, node):
         tags = node.attribute('tags')
 
-        return tags.split(' ', tags.strip()) if tags.strip() or []
+        return tags.split(' ', tags.strip()) if tags.strip() else []
 
 class EntityRegistrar(AbstractRegistrar):
     def element_names(self):
