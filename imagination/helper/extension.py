@@ -55,9 +55,9 @@ class AbstractRegistrar(mixin.ParameterParsingMixin):
 
     @restrict_type(Kotoba)
     def __get_tags(self, node):
-        tags = node.attribute('tags')
+        tags = str(node.attribute('tags') or '').strip()
 
-        return tags.split(' ', tags.strip()) if tags.strip() else []
+        return tags.split() if tags else []
 
 class EntityRegistrar(AbstractRegistrar):
     def element_names(self):
