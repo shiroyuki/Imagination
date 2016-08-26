@@ -10,6 +10,11 @@ Imagination v1
 :Author:    Juti Noppornpitak <juti_n@yahoo.co.jp>
 :License:   MIT
 
+.. warn::
+
+    Imagination v1.x is now in maintenance mode. Please use **Imagination
+    v2.x** instead.
+
 **Imagination** is a reusable component framework whose objectives are:
 
 * encapsulates an object into a single object with the lazy loader, inspired by
