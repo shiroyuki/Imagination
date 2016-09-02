@@ -65,7 +65,6 @@ class Transformer(object):
             # At theis point, assume that actual_data is ParameterCollection.
 
             for item in actual_data.sequence():
-                print(item)
                 collection.append(self.cast(item))
 
             if kind != 'list':
@@ -79,7 +78,6 @@ class Transformer(object):
             # At theis point, assume that actual_data is ParameterCollection.
 
             for key, value in actual_data.items():
-                print(key, value)
                 kv_map[key] = self.cast(value)
 
             return kv_map
