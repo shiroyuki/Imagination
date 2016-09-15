@@ -31,7 +31,6 @@ test-v2-dev:
 	$(PY) -m unittest discover -f -v -s test/v2
 
 test: clean-cache
-	$(PY) -m unittest discover -s test/testcase -t test/
 	$(PY) -m unittest discover -s test/v2
 
 test-lxc: clean-cache test-lxc-quick test-lxc-primary

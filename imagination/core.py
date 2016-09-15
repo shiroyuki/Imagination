@@ -8,6 +8,8 @@ from .helper.general     import exclusive_lock
 from .helper.transformer import Transformer
 from .meta.container     import Container
 
+CORE_SELF_REFERENCE = 'container'
+
 
 class CoreOnLockDownError(RuntimeError):
     """ Error when the external code attempts to update the
@@ -56,16 +58,21 @@ class Imagination(object):
             raise CoreOnLockDownError()
 
         with exclusive_lock(self.__internal_lock):
-            for container_id, meta_container in meta_container_map.items():
-                self.set_metadata(container_id, meta_container)
+            for entity_id, meta_container in meta_container_map.items():
+                self.set_metadata(entity_id, meta_container)
 
-    def contain(self, container_id : str):
+    def contain(self, entity_id : str):
         """ Check if the entity ID is registered. """
-        return container_id in self.__controller_map
+        return entity_id in self.__controller_map
 
-    def get(self, container_id : str):
+    def get(self, entity_id : str):
         """ Retrieve an entity by ID """
-        info = self.get_info(container_id)
+        global CORE_SELF_REFERENCE
+
+        info = self.get_info(entity_id)
+
+        if entity_id == CORE_SELF_REFERENCE:
+            return self
 
         with exclusive_lock(self.__internal_lock):
             # On the first request, the core will be on lockdown.
@@ -74,7 +81,7 @@ class Imagination(object):
                 self._generate_interception_graph()
 
             if not info.activation_sequence:
-                new_sequence = self._calculate_activation_sequence(container_id)
+                new_sequence = self._calculate_activation_sequence(entity_id)
                 info.activation_sequence = new_sequence
 
         # Activate all dependencies.
@@ -82,7 +89,7 @@ class Imagination(object):
             self.get_info(dependency_id).activate()
 
         # Activate the requested container ID.
-        instance = self.get_info(container_id).activate()
+        instance = self.get_info(entity_id).activate()
 
         return instance
 
@@ -93,17 +100,17 @@ class Imagination(object):
         """
         return tuple(self.__controller_map.keys())
 
-    def get_info(self, container_id : str) -> Controller:
-        if not self.contain(container_id):
-            raise UndefinedContainerIDError(container_id)
+    def get_info(self, entity_id : str) -> Controller:
+        if not self.contain(entity_id):
+            raise UndefinedContainerIDError(entity_id)
 
-        return self.__controller_map[container_id]
+        return self.__controller_map[entity_id]
 
-    def get_metadata(self, container_id : str) -> Container:
+    def get_metadata(self, entity_id : str) -> Container:
         """ Retrieve the metadata of the container. """
-        return self.get_info(container_id).metadata
+        return self.get_info(entity_id).metadata
 
-    def set_metadata(self, container_id : str, new_meta_container : Container):
+    def set_metadata(self, entity_id : str, new_meta_container : Container):
         """ Define the metadata of the new container.
 
             .. warning:: This method allows ID overriding.
@@ -113,13 +120,13 @@ class Imagination(object):
             raise CoreOnLockDownError()
 
         # Redefine the container ID.
-        new_meta_container.id = container_id
+        new_meta_container.id = entity_id
         new_controller        = Controller(new_meta_container,
                                            self.get,
                                            self.get_interceptions,
                                            self.__transformer.cast)
 
-        self.__controller_map[container_id] = new_controller
+        self.__controller_map[entity_id] = new_controller
 
     def get_interceptions(self, intercepted_id, event_type = None,
                           method_to_intercept = None):
@@ -139,11 +146,11 @@ class Imagination(object):
 
         return sub_graph[event_type][method_to_intercept]
 
-    def _calculate_activation_sequence(self, container_id):
+    def _calculate_activation_sequence(self, entity_id):
         activation_sequence = []
         scoreboard          = {}  # id -> number of dependants
 
-        metadata = self.get_metadata(container_id)
+        metadata = self.get_metadata(entity_id)
 
         for dependency_id in metadata.dependencies:
             if dependency_id not in scoreboard:
@@ -175,7 +182,7 @@ class Imagination(object):
         interception_graph   = self.__interception_graph
         unique_interceptions = list()
 
-        for container_id, controller in self.__controller_map.items():
+        for entity_id, controller in self.__controller_map.items():
             metadata = controller.metadata
 
             for interception in metadata.interceptions:
