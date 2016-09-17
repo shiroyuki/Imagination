@@ -67,8 +67,8 @@ class Transformer(object):
             for item in actual_data.sequence():
                 collection.append(self.cast(item))
 
-            if kind != 'list':
-                collection = eval(kind)(collection)
+            if actual_kind != 'list':
+                collection = eval(actual_kind)(collection)
 
             return collection
 
