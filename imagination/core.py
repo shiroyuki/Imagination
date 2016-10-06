@@ -74,15 +74,15 @@ class Imagination(object):
         if entity_id == CORE_SELF_REFERENCE:
             return self
 
-        with exclusive_lock(self.__internal_lock):
-            # On the first request, the core will be on lockdown.
-            if not self.is_on_lockdown():
-                self.lock_down()
-                self._generate_interception_graph()
+        # with exclusive_lock(self.__internal_lock):
+        # On the first request, the core will be on lockdown.
+        if not self.is_on_lockdown():
+            self.lock_down()
+            self._generate_interception_graph()
 
-            if not info.activation_sequence:
-                new_sequence = self._calculate_activation_sequence(entity_id)
-                info.activation_sequence = new_sequence
+        if not info.activation_sequence:
+            new_sequence = self._calculate_activation_sequence(entity_id)
+            info.activation_sequence = new_sequence
 
         # Activate all dependencies.
         for dependency_id in info.activation_sequence:
