@@ -107,7 +107,7 @@ class Controller(object):
             if expected_param.default == inspect._empty:
                 if factory_service:
                     raise UndefinedDefaultValueException(
-                        '{factory_class_name}.{method_name}{signature} expects the parameter "{parameter_name}"'.format(
+                        '{factory_class_name}.{factory_method_name}{signature} expects the parameter "{parameter_name}"'.format(
                             factory_class_name  = type(factory_service).__name__,
                             factory_method_name = factory_method_name,
                             signature           = signature,
