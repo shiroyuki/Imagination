@@ -107,19 +107,21 @@ class Controller(object):
             if expected_param.default == inspect._empty:
                 if factory_service:
                     raise UndefinedDefaultValueException(
-                        '{factory_class_name}.{factory_method_name}{signature} expects the parameter "{parameter_name}"'.format(
+                        'Factorization: {factory_class_name}.{factory_method_name}{signature} expects the parameter "{parameter_name}" ({factory_service})'.format(
                             factory_class_name  = type(factory_service).__name__,
                             factory_method_name = factory_method_name,
                             signature           = signature,
-                            parameter_name      = param_name
+                            parameter_name      = param_name,
+                            factory_service     = str(factory_service),
                         )
                     )
 
                 raise UndefinedDefaultValueException(
-                    '{make_method_name}{signature} expects the parameter "{parameter_name}"'.format(
+                    'Lambda: {make_method_name}{signature} expects the parameter "{parameter_name}" ({make_method})'.format(
                         make_method_name  = make_method.__name__,
                         signature         = signature,
-                        parameter_name    = param_name
+                        parameter_name    = param_name,
+                        make_method       = make_method
                     )
                 )
 
