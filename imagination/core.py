@@ -69,10 +69,10 @@ class Imagination(object):
         """ Retrieve an entity by ID """
         global CORE_SELF_REFERENCE
 
-        info = self.get_info(entity_id)
-
         if entity_id == CORE_SELF_REFERENCE:
             return self
+
+        info = self.get_info(entity_id)
 
         # with exclusive_lock(self.__internal_lock):
         # On the first request, the core will be on lockdown.
@@ -86,6 +86,9 @@ class Imagination(object):
 
         # Activate all dependencies.
         for dependency_id in info.activation_sequence:
+            if dependency_id == CORE_SELF_REFERENCE:
+                continue
+
             self.get_info(dependency_id).activate()
 
         # Activate the requested container ID.
@@ -147,6 +150,11 @@ class Imagination(object):
         return sub_graph[event_type][method_to_intercept]
 
     def _calculate_activation_sequence(self, entity_id):
+        global CORE_SELF_REFERENCE
+
+        if entity_id == CORE_SELF_REFERENCE:
+            return []
+
         activation_sequence = []
         scoreboard          = {}  # id -> number of dependants
 
