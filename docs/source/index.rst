@@ -26,6 +26,16 @@ Why do you want to consider using this framework?
 * You want to implement the aspect-oriented programming (AOP), which allows
   you to write a simple, clean, testable, and maintainable code.
 
+Understand why you need this?
+=============================
+
+If you get confused, please check out the presentation `How to write maintainable code without tests <http://www.slideshare.net/jutinoppornpitak/how-to-write-maintainable-code-without-tests>`_ at PyCon Canada 2016 for more information.
+
+Please note that some terms are slightly different as this library is made before I got a little bit smarter.
+
+:Entity: A **service**
+:Core: An **injector**
+
 How to Install
 ==============
 
