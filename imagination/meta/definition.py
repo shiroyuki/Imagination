@@ -7,6 +7,13 @@ class DuplicateParameterDefinitionWarning(Warning):
 
 
 class DataDefinition(PrintableMixin):
+    """ Parameter/Data Definition
+
+        :param definition: the definition, actual data, or value
+        :param str name: the name of the parameter / data (optional means positional)
+        :param str kind: the data type
+        :param bool transformation_required: flag if data transformation required
+    """
     def __init__(self, definition, name : str = None, kind : str = None,
                  transformation_required : bool = True):
         self.__name       = name

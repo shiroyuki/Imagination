@@ -2,12 +2,27 @@
 import inspect
 
 from .debug           import get_logger, dump_meta_container
-from .exc             import UnexpectedParameterException, UndefinedDefaultValueException
+from .exc             import UnexpectedParameterException, UndefinedDefaultValueException, \
+                             UnexpectedDefinitionTypeException, MissingParameterException
 from .loader          import Loader
 from .meta.container  import Container, Entity, Factorization, Lambda
 from .meta.definition import ParameterCollection
 from .wrapper         import Wrapper
 
+
+def _assert_with_annotation(definition, expected_param):
+    param_name       = expected_param.name
+    param_annotation = expected_param.annotation
+
+    if param_annotation != inspect._empty and not isinstance(definition, param_annotation):
+        raise UnexpectedDefinitionTypeException(
+            'Given {}({}), expected {}, for {}'.format(
+                type(definition).__name__,
+                definition,
+                param_annotation.__name__,
+                param_name,
+            )
+        )
 
 class Controller(object):
     def __init__(self,
@@ -59,6 +74,7 @@ class Controller(object):
         params         = self.__cast_to_params(self.__metadata.params)
         container_type = type(metadata)
 
+        # Figure out the make method.
         factory_service     = None
         factory_method_name = None
         make_method         = None
@@ -76,32 +92,100 @@ class Controller(object):
         if not make_method:
             raise NotImplementedError('No make method for {}'.format(container_type.__name__))
 
-        using_parameters = {}
+        # Compile parameters.
+        known_parameters      = {}
+        keyword_parameters    = {}
+        positional_parameters = []
+
         signature        = inspect.signature(make_method)
         expected_params  = [signature.parameters[name] for name in signature.parameters]
         expected_count   = len(expected_params)
 
+        # Check whether the signature include dynamic parameters.
+        has_dynamic_positional_parameters = False
+        has_dynamic_known_parameters    = False
+
+        for param in expected_params:
+            if param.kind == param.VAR_POSITIONAL:
+                has_dynamic_positional_parameters = True
+
+            if param.kind == param.VAR_KEYWORD:
+                has_dynamic_known_parameters = True
+
+        # Gather POSITIONAL OR KEYWORD parameters (predefined).
+        next_fixed_index = 0
+
+        for expected_param in expected_params:
+            if expected_param.kind in (expected_param.VAR_POSITIONAL, expected_param.VAR_KEYWORD):
+                continue
+
+            if expected_param.name not in params['items']:
+                # Not NULL and no default value.
+                if expected_param.default and expected_param.default == inspect._empty:
+                    raise MissingParameterException(
+                        'Failed to initiate "{}" due to a missing parameter "{}"'.format(metadata.id, expected_param.name)
+                    )
+
+                continue
+
+            definition = params['items'][expected_param.name]
+
+            _assert_with_annotation(definition, expected_param)
+            positional_parameters.append(definition)
+
+            known_parameters[expected_param.name] = definition
+
+            next_fixed_index += 1
+
+        # Gather POSITIONAL parameters.
         for index in range(len(params['sequence'])):
+            definition = params['sequence'][index]
+
+            positional_parameters.append(definition)
+
             if index >= expected_count:
-                raise UnexpectedParameterException('#{}'.format(index))
+                if not has_dynamic_positional_parameters:
+                    raise UnexpectedParameterException('Out of range: #{}'.format(index))
 
-            definition     = params['sequence'][index]
-            expected_param = expected_params[index]
+                continue
 
-            using_parameters[expected_param.name] = definition
+            expected_param = expected_params[next_fixed_index + index]
 
+            _assert_with_annotation(definition, expected_param)
+
+            known_parameters[expected_param.name] = definition
+
+        # Gather KEYWORD parameters.
         for name, definition in params['items'].items():
-            if name not in signature.parameters:
-                raise UnexpectedParameterException('Failed to initiate "{}" due to an unexpected parameter "{}"'.format(metadata.id, name))
+            if name not in signature.parameters and not has_dynamic_known_parameters:
+                raise UnexpectedParameterException(
+                    'Failed to initiate "{}" due to an unexpected parameter "{}"'.format(metadata.id, name)
+                )
 
-            expected_param = signature.parameters[name]
+            if name in known_parameters:
+                # Already registered as positional parameters.
 
-            using_parameters[expected_param.name] = definition
+                continue
+
+            if name in signature.parameters:
+                expected_param = signature.parameters[name]
+
+                _assert_with_annotation(definition, expected_param)
+
+            known_parameters[name]   = definition
+            keyword_parameters[name] = definition
 
         for expected_param in expected_params:
             param_name = expected_param.name
+            param_kind = expected_param.kind
 
-            if param_name in using_parameters:
+            if param_kind == expected_param.VAR_POSITIONAL and has_dynamic_positional_parameters:
+                continue
+
+            if param_kind == expected_param.VAR_KEYWORD and has_dynamic_known_parameters:
+                continue
+
+            if param_name in known_parameters:
                 continue
 
             if expected_param.default == inspect._empty:
@@ -117,7 +201,7 @@ class Controller(object):
                     )
 
                 raise UndefinedDefaultValueException(
-                    'Lambda: {make_method_name}{signature} expects the parameter "{parameter_name}" ({make_method})'.format(
+                    'Entity: {make_method_name}{signature} expects the parameter "{parameter_name}" ({make_method})'.format(
                         make_method_name  = make_method.__name__,
                         signature         = signature,
                         parameter_name    = param_name,
@@ -125,7 +209,7 @@ class Controller(object):
                     )
                 )
 
-        return make_method(**using_parameters)
+        return make_method(*positional_parameters, **keyword_parameters)
 
     def __get_parameter_default_value(self, parameter):
         # TODO Use parameter.annotation to check for type.

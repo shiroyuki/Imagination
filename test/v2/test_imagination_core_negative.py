@@ -6,7 +6,8 @@ from dummy.lazy_action import Alpha, Beta
 if sys.version_info >= (3, 3):
     from imagination.assembler.core import Assembler
     from imagination.debug          import dump_meta_container
-    from imagination.exc            import UnexpectedParameterException, UndefinedContainerIDError, UndefinedDefaultValueException
+    from imagination.exc            import UnexpectedParameterException, UndefinedContainerIDError, \
+                                           UndefinedDefaultValueException, MissingParameterException
 
 
 class FunctionalTest(unittest.TestCase):
@@ -24,7 +25,7 @@ class FunctionalTest(unittest.TestCase):
         assembler = Assembler()
         assembler.load(*test_filepaths)
 
-        self.assertRaises(UndefinedDefaultValueException, assembler.core.get, 'poow-1')
+        self.assertRaises(MissingParameterException, assembler.core.get, 'poow-1')
 
     def test_call_entity_with_unexpected_parameters(self):
         """ The constructor receives unexpected parameters. """

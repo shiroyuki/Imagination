@@ -3,9 +3,17 @@ class UndefinedContainerIDError(RuntimeError):
     """ Error when an undefined container ID is requested. """
 
 
+class MissingParameterException(ValueError):
+    """ Exception when a parameter is missing """
+
+
 class UnexpectedParameterException(ValueError):
     """ Exception when the unexpected parameter is defined """
 
 
 class UndefinedDefaultValueException(ValueError):
     """ Exception when the default value is not defined """
+
+
+class UnexpectedDefinitionTypeException(ValueError):
+    """ Exception when the type of the definition is not the same as the annotated type. """
