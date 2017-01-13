@@ -35,7 +35,27 @@ class FunctionalTest(unittest.TestCase):
     def test_ok_2(self):
         core = Imagination()
 
-        positional_param_1 = DataDefinition('bangkok', None, 'str', False)
+        fixed_param_a      = DataDefinition(123, 'a', 'int', False)
+        positional_param_1 = DataDefinition('bangkok', None, 'str', False) # this replaces fixed param b
+        keyword_param_1    = DataDefinition('chiang mai', 'north', 'str', False)
+        keyword_param_2    = DataDefinition('songkla', 'south', 'str', False)
+
+        params = ParameterCollection()
+        params.add(fixed_param_a)
+        params.add(positional_param_1)
+        params.add(keyword_param_1)
+        params.add(keyword_param_2)
+
+        entity = Entity('dp', 'dummy.dynamic_param.FancyDynamicParamObject', params)
+
+        core.set_metadata('dp', entity)
+
+        core.get('dp')
+
+    def test_ok_3(self):
+        core = Imagination()
+
+        positional_param_1 = DataDefinition('bangkok', None, 'str', False) # this replaces fixed+optional param a
         keyword_param_1    = DataDefinition('chiang mai', 'north', 'str', False)
         keyword_param_2    = DataDefinition('songkla', 'south', 'str', False)
 

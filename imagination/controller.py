@@ -2,27 +2,34 @@
 import inspect
 
 from .debug           import get_logger, dump_meta_container
-from .exc             import UnexpectedParameterException, UndefinedDefaultValueException, \
-                             UnexpectedDefinitionTypeException, MissingParameterException
+from .exc             import UnexpectedParameterException, MissingParameterException, \
+                             UnexpectedDefinitionTypeException
 from .loader          import Loader
 from .meta.container  import Container, Entity, Factorization, Lambda
 from .meta.definition import ParameterCollection
 from .wrapper         import Wrapper
 
 
-def _assert_with_annotation(definition, expected_param):
+def _assert_with_annotation(entity_id, definition, expected_param):
     param_name       = expected_param.name
     param_annotation = expected_param.annotation
 
-    if param_annotation != inspect._empty and not isinstance(definition, param_annotation):
-        raise UnexpectedDefinitionTypeException(
-            'Given {}({}), expected {}, for {}'.format(
-                type(definition).__name__,
-                definition,
-                param_annotation.__name__,
-                param_name,
+    try:
+        if param_annotation != inspect._empty and not isinstance(definition, param_annotation):
+            raise UnexpectedDefinitionTypeException(
+                '{}: Given {}({}), expected {}, for {}'.format(
+                    entity_id,
+                    type(definition).__name__,
+                    definition,
+                    param_annotation.__name__,
+                    param_name,
+                )
             )
-        )
+    except TypeError:
+        # For now, bypass the error when `param_annotation` is `callable`.
+        # FIXME properly handle bad annotation
+
+        pass
 
 class Controller(object):
     def __init__(self,
@@ -103,14 +110,16 @@ class Controller(object):
 
         # Check whether the signature include dynamic parameters.
         has_dynamic_positional_parameters = False
-        has_dynamic_known_parameters    = False
+        has_dynamic_known_parameters      = False
 
         for param in expected_params:
             if param.kind == param.VAR_POSITIONAL:
                 has_dynamic_positional_parameters = True
+                expected_count -= 1
 
             if param.kind == param.VAR_KEYWORD:
                 has_dynamic_known_parameters = True
+                expected_count -= 1
 
         # Gather POSITIONAL OR KEYWORD parameters (predefined).
         next_fixed_index = 0
@@ -120,17 +129,11 @@ class Controller(object):
                 continue
 
             if expected_param.name not in params['items']:
-                # Not NULL and no default value.
-                if expected_param.default and expected_param.default == inspect._empty:
-                    raise MissingParameterException(
-                        'Failed to initiate "{}" due to a missing parameter "{}"'.format(metadata.id, expected_param.name)
-                    )
-
                 continue
 
             definition = params['items'][expected_param.name]
 
-            _assert_with_annotation(definition, expected_param)
+            _assert_with_annotation(self.__metadata.id, definition, expected_param)
             positional_parameters.append(definition)
 
             known_parameters[expected_param.name] = definition
@@ -151,7 +154,7 @@ class Controller(object):
 
             expected_param = expected_params[next_fixed_index + index]
 
-            _assert_with_annotation(definition, expected_param)
+            _assert_with_annotation(self.__metadata.id, definition, expected_param)
 
             known_parameters[expected_param.name] = definition
 
@@ -159,7 +162,7 @@ class Controller(object):
         for name, definition in params['items'].items():
             if name not in signature.parameters and not has_dynamic_known_parameters:
                 raise UnexpectedParameterException(
-                    'Failed to initiate "{}" due to an unexpected parameter "{}"'.format(metadata.id, name)
+                    '"{}": unexpectedly find parameter "{}"'.format(metadata.id, name)
                 )
 
             if name in known_parameters:
@@ -170,11 +173,12 @@ class Controller(object):
             if name in signature.parameters:
                 expected_param = signature.parameters[name]
 
-                _assert_with_annotation(definition, expected_param)
+                _assert_with_annotation(self.__metadata.id, definition, expected_param)
 
             known_parameters[name]   = definition
             keyword_parameters[name] = definition
 
+        # Find missing params.
         for expected_param in expected_params:
             param_name = expected_param.name
             param_kind = expected_param.kind
@@ -188,9 +192,9 @@ class Controller(object):
             if param_name in known_parameters:
                 continue
 
-            if expected_param.default == inspect._empty:
+            if expected_param.default and expected_param.default == inspect._empty:
                 if factory_service:
-                    raise UndefinedDefaultValueException(
+                    raise MissingParameterException(
                         'Factorization: {factory_class_name}.{factory_method_name}{signature} expects the parameter "{parameter_name}" ({factory_service})'.format(
                             factory_class_name  = type(factory_service).__name__,
                             factory_method_name = factory_method_name,
@@ -200,7 +204,7 @@ class Controller(object):
                         )
                     )
 
-                raise UndefinedDefaultValueException(
+                raise MissingParameterException(
                     'Entity: {make_method_name}{signature} expects the parameter "{parameter_name}" ({make_method})'.format(
                         make_method_name  = make_method.__name__,
                         signature         = signature,
@@ -210,13 +214,6 @@ class Controller(object):
                 )
 
         return make_method(*positional_parameters, **keyword_parameters)
-
-    def __get_parameter_default_value(self, parameter):
-        # TODO Use parameter.annotation to check for type.
-        if parameter.default == inspect._empty:
-            raise UndefinedDefaultValueException(parameter.name)
-
-        return parameter.default
 
     def __cast_to_params(self, params : ParameterCollection):
         return {

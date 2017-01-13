@@ -5,7 +5,7 @@ except:
 
 setup(
     name         = 'imagination',
-    version      = '2.3.4b2',
+    version      = '2.3.5',
     description  = 'Reusable Component Framework',
     author       = 'Juti Noppornpitak',
     author_email = 'juti_n@yahoo.co.jp',

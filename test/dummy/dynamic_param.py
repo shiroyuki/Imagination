@@ -9,3 +9,10 @@ class SuperDynamicParamObject(object):
         self.x = x
         self.a = a
         self.b = b
+
+class FancyDynamicParamObject(object):
+    def __init__(self, a : int, b, *c, **d):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
