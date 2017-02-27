@@ -3,7 +3,7 @@ Aspect-oriented Programming with Entities
 
 .. warning::
 
-    This is an testing/unstable feature. This documentation take precedence.
+    This is an testing feature. This documentation take precedence.
 
 Now, you know how to define all types of entities. As **Imagination** is also a
 framework to let you do the aspect-oriented programming with ease, this section
@@ -13,7 +13,6 @@ How can you do that?
 
 Suppose you have the following scenarios.
 
-
 .. code-block:: cucumber
 
     Given entity "bob" orders "Pad Thai"
@@ -22,13 +21,12 @@ Suppose you have the following scenarios.
 
     Given entity "chef" finishes cooking
       And entity "server" delivers the order to "bob"
-      And before entity "bob" can eat, the entity must wash hands.
+     Then before entity "bob" can eat, the entity must wash hands.
 
     Given entity "entity" makes unavailable order
      Then entity "server" apologizes
 
 From the following scenarios, you can translate into the XML configuration.
-
 
 .. code-block:: xml
 
@@ -75,6 +73,11 @@ From the following scenarios, you can translate into the XML configuration.
 At this point, when you execute ``assembler.core.get('bob').order()``, the
 execution chain will be executed as specified.
 
+No events/interceptions shall return anything.
+
+"Before" events
+===============
+
 From this example, to run code **before executing some code**, from "bob"
 
 .. code-block:: xml
@@ -84,6 +87,9 @@ From this example, to run code **before executing some code**, from "bob"
 means "before **bob** executes ``eat``, **bob** executes ``sanitize_hands`` with
 the parameters for executing ``eat``".
 
+"After" events
+==============
+
 Or from "server", to run code **after executing some code**, from "server",
 
 .. code-block:: xml
@@ -91,7 +97,10 @@ Or from "server", to run code **after executing some code**, from "server",
     <interception after="chef" do="cook" with="deliver"/>
 
 means "after **chef** executes ``cook``, **server** executes ``deliver`` with
-the result from executing ``cook``".
+the result from executing ``cook`` as the first parameter".
+
+"Error" events
+==============
 
 Or from "server", to run code **when an uncaught exception occurs while
 executing some code**, from "server",
@@ -101,7 +110,11 @@ executing some code**, from "server",
     <interception error="bob" do="order" with="apologize"/>
 
 means "while **bob** executes ``order``, if an error occurs, **server** executes
-``apologize`` with the parameters for executing ``order``".
+``apologize`` with the following parameters":
+
+1. ``error``: the error raised while executed the intercepted callback
+2. ``largs``: the positional parameters used for the execution
+3. ``kwargs``: the keyword parameters used for the execution
 
 .. tip::
 

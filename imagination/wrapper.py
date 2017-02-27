@@ -2,8 +2,7 @@
 class Wrapper(object):
     """ Relay Container
 
-        This is to allow interceptions on an object without modifying the
-        object attributes or instance methods.
+        This is to allow interceptions on an object without modifying the object attributes or instance methods.
 
         :param callable core_get: a callable reference to the associated :method:`Imagination.get`.
         :param object instance: a wrapped instance
@@ -50,7 +49,10 @@ class Wrapper(object):
         return returning_callable
 
 class InterceptableCallable(object):
-    """ Interceptable callable object """
+    """ Interceptable callable object
+
+        This class is to actually handle the call operation with the ability to intercept the activity.
+    """
     def __init__(self, core_get, callable_reference, interceptions):
         self._internal_core_get      = core_get
         self._internal_callable      = callable_reference
@@ -59,25 +61,26 @@ class InterceptableCallable(object):
     def _has_interceptions(self, event_type):
         return bool(self._internal_interceptions[event_type])
 
-    def _intercept(self, event_type, largs = None, kwargs = None, error = None, returning = False):
+    def _intercept(self, event_type, largs = None, kwargs = None, error = None):
         if not self._has_interceptions(event_type):
             return
 
         largs  = largs  or []
         kwargs = kwargs or {}
 
+        last_result = None
+
         for interception in self._internal_interceptions[event_type]:
             interceptor         = self._internal_core_get(interception.interceptor_id)
             intercepting_method = getattr(interceptor,
                                           interception.intercepting_method)
 
-            if error:
-                intercepting_method(error, *largs, **kwargs)
-            else:
-                intercepting_method(*largs, **kwargs)
+            last_result = intercepting_method(error, largs, kwargs) \
+                if error \
+                else intercepting_method(*largs, **kwargs)
 
     def __call__(self, *largs, **kwargs):
-        self._intercept('before', largs, kwargs, returning = False)
+        self._intercept('before', largs, kwargs)
 
         result = None
 
@@ -85,13 +88,11 @@ class InterceptableCallable(object):
             try:
                 result = self._internal_callable(*largs, **kwargs)
             except Exception as e:
-                self._intercept('error', largs, kwargs, error, returning = False)
-
-                return
+                self._intercept('error', largs, kwargs, error)
         else:
             result = self._internal_callable(*largs, **kwargs)
 
         if self._has_interceptions('after'):
-            return self._intercept('after', [result], returning = True)
+            self._intercept('after', [result])
 
         return result
