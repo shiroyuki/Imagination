@@ -48,3 +48,20 @@ class FunctionalTest(unittest.TestCase):
             self.assertEqual(keyword_parameters,    e.keyword_parameters)
         else:
             self.assertTrue(False, "This is supposed to be raised an exception.")
+
+    # Unsupported feature
+    # def test_with_contextmanager_after_yielding(self):
+    #     alpha = self.core.get('alpha')
+    #
+    #     positional_parameters = (1, 2, 3)
+    #     keyword_parameters    = {'d': 4, 'e': 5}
+    #
+    #     try:
+    #         with alpha.something(False, True):
+    #             pass
+    #     except DummyException as e:
+    #         self.assertIsInstance(e.previous_error, RuntimeError)
+    #         self.assertEqual(positional_parameters, e.positional_parameters)
+    #         self.assertEqual(keyword_parameters,    e.keyword_parameters)
+    #     else:
+    #         self.assertTrue(False, "This is supposed to be raised an exception.")
