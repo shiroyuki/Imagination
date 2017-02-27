@@ -1,11 +1,8 @@
-try:
-    from setuptools import setup
-except:
-    from distutils.core import setup
+from distutils.core import setup
 
 setup(
     name         = 'imagination',
-    version      = '2.3.6',
+    version      = '2.3.7',
     description  = 'Reusable Component Framework',
     author       = 'Juti Noppornpitak',
     author_email = 'juti_n@yahoo.co.jp',
