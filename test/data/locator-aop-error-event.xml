@@ -1,0 +1,7 @@
+<imagination>
+    <entity id="alpha" class="dummy.aop_error_event.Alpha"/>
+    <entity id="bravo" class="dummy.aop_error_event.Bravo">
+        <interception error="alpha" do="init_self_destruction_1" with="handle_error"/>
+        <interception error="alpha" do="init_self_destruction_2" with="handle_error"/>
+    </entity>
+</imagination>

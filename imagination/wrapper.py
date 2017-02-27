@@ -1,4 +1,8 @@
 # v2
+def is_wrapper(obj):
+    return hasattr(obj, '__imagination_wrapper__')
+
+
 class Wrapper(object):
     """ Relay Container
 
@@ -15,6 +19,18 @@ class Wrapper(object):
             '_internal_interceptions'   : interceptions,
             '_internal_cache_callables' : {},
         }
+
+    # This is just a special property to identify as __class__ is overridden to fakely representing the wrapped object.
+    # NOTE apparently, isinstance accepts both the actual class (Wrapper) and the hack method.
+    __imagination_wrapper__ = True
+
+    @property
+    def __class__(self):
+        return type(self.__dict__['_internal_instance'])
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        return cls in (self.__type__, type(self.__dict__['_internal_instance']))
 
     def __getattr__(self, name):
         if name in self.__dict__:
@@ -87,7 +103,7 @@ class InterceptableCallable(object):
         if self._has_interceptions('error'):
             try:
                 result = self._internal_callable(*largs, **kwargs)
-            except Exception as e:
+            except Exception as error:
                 self._intercept('error', largs, kwargs, error)
         else:
             result = self._internal_callable(*largs, **kwargs)
