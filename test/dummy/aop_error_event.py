@@ -11,7 +11,7 @@ class Alpha(object):
     def init_self_destruction_1(self):
         raise RuntimeError('panda one')
 
-    def init_self_destruction_2(self, a, b = None):
+    def init_self_destruction_2(self, a, b, c, d = None, e = None):
         raise RuntimeError('panda two')
 
 class Bravo(object):

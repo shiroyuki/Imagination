@@ -22,24 +22,29 @@ class FunctionalTest(unittest.TestCase):
 
         self.core = self.assembler.core
 
-    def test_simple(self):
+    def test_no_params(self):
         alpha = self.core.get('alpha')
-
-        # print(dir(alpha))
-        # for pn in dir(alpha):
-        #     pv = getattr(alpha, pn)
-        #
-        #     print('{} => {}'.format(pn, pv))
-        #     print('-' * 120)
-        #     print(pv.__doc__)
-        #     print()
-
-        self.assertIsInstance(alpha, Wrapper)
-        self.assertIsInstance(alpha, Alpha)
 
         try:
             alpha.init_self_destruction_1()
-
-            self.assertTrue(False, "This is supposed to be raised an exception.")
         except DummyException as e:
             self.assertIsInstance(e.previous_error, RuntimeError)
+            self.assertFalse(e.positional_parameters)
+            self.assertFalse(e.keyword_parameters)
+        else:
+            self.assertTrue(False, "This is supposed to be raised an exception.")
+
+    def test_with_params(self):
+        alpha = self.core.get('alpha')
+
+        positional_parameters = (1, 2, 3)
+        keyword_parameters    = {'d': 4, 'e': 5}
+
+        try:
+            alpha.init_self_destruction_2(*positional_parameters, **keyword_parameters)
+        except DummyException as e:
+            self.assertIsInstance(e.previous_error, RuntimeError)
+            self.assertEqual(positional_parameters, e.positional_parameters)
+            self.assertEqual(keyword_parameters,    e.keyword_parameters)
+        else:
+            self.assertTrue(False, "This is supposed to be raised an exception.")
