@@ -105,6 +105,8 @@ class InterceptableCallable(object):
                 result = self._internal_callable(*largs, **kwargs)
             except Exception as error:
                 self._intercept('error', largs, kwargs, error)
+
+                raise error
         else:
             result = self._internal_callable(*largs, **kwargs)
 
