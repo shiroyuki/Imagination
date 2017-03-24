@@ -11,9 +11,15 @@ from .meta.definition import ParameterCollection
 from .wrapper         import Wrapper
 
 
-def _assert_with_annotation(entity_id, definition, expected_param):
-    param_name       = expected_param.name
-    param_annotation = expected_param.annotation
+def _assert_with_annotation(entity_id, metadata):
+    definition       = metadata.value
+    param_name       = metadata.spec.name
+    param_annotation = metadata.spec.annotation
+
+    if isinstance(definition, Undefined):
+        # No assertion on undefined definition.
+
+        return
 
     try:
         if param_annotation != inspect._empty and not isinstance(definition, param_annotation):
@@ -205,20 +211,20 @@ class Controller(object):
         undefined_parameters = []
 
         for fixed_parameter in fixed_parameter_list:
-            _assert_with_annotation(self.__metadata.id, fixed_parameter.value, fixed_parameter.spec)
+            _assert_with_annotation(self.__metadata.id, fixed_parameter)
 
-            if fixed_parameter.defined:
+            if fixed_parameter.defined or not fixed_parameter.required:
                 continue
 
             undefined_parameters.append('{} (position {})'.format(fixed_parameter.name, fixed_parameter.index))
 
         if undefined_parameters:
             raise MissingParameterException(
-                'Entity {}: Missing Parameters: '.format(self.__metadata.id, ', '.join(undefined_parameters))
+                'Entity {}: Missing Parameters: {}'.format(self.__metadata.id, ', '.join(undefined_parameters))
             )
 
         # Re-assemble parameters
-        args = [fixed_parameter.value for fixed_parameter in fixed_parameter_list]
+        args = [parameter.value for parameter in fixed_parameter_list if parameter.defined]
         args.extend(positional_parameters)
 
         return {
@@ -247,13 +253,17 @@ class Controller(object):
         }
 
 
+class Undefined(object):
+    """ Undefined definition """
+
+
 class ParameterMetadata(object):
     def __init__(self, index, name, required, spec):
         self.index       = index
         self.name        = name
-        self.value       = None
+        self.required    = required
+        self.spec        = spec
+        self.value       = Undefined()
         self.defined     = False
         self.source_type = None # list or dict
         self.source_ref  = None # index (list) or key (dict)
-        self.required    = required
-        self.spec        = spec
