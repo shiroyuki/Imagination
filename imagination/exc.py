@@ -17,3 +17,7 @@ class UndefinedDefaultValueException(ValueError):
 
 class UnexpectedDefinitionTypeException(ValueError):
     """ Exception when the type of the definition is not the same as the annotated type. """
+
+
+class DuplicateKeyError(Exception):
+    ''' Error thrown when an internal dictionary detects an attempt of re-assignment to the direction by the existed key. '''

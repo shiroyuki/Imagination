@@ -1,9 +1,10 @@
 # v2
 import inspect
+import logging
 
 from .debug           import get_logger, dump_meta_container
 from .exc             import UnexpectedParameterException, MissingParameterException, \
-                             UnexpectedDefinitionTypeException
+                             UnexpectedDefinitionTypeException, DuplicateKeyError
 from .loader          import Loader
 from .meta.container  import Container, Entity, Factorization, Lambda
 from .meta.definition import ParameterCollection
@@ -45,6 +46,7 @@ class Controller(object):
         self.__logger                 = get_logger('controller/{}'.format(metadata.id))
         self.__container_instance     = None  # Cache
         self.__wrapper_instance       = None  # Wrapper Cache
+        self.__ignored_parameters     = []
         self.activation_sequence      = None  # Activation Sequence
 
     @property
@@ -100,120 +102,137 @@ class Controller(object):
             raise NotImplementedError('No make method for {}'.format(container_type.__name__))
 
         # Compile parameters.
-        known_parameters      = {}
-        keyword_parameters    = {}
-        positional_parameters = []
-
         signature        = inspect.signature(make_method)
         expected_params  = [signature.parameters[name] for name in signature.parameters]
-        expected_count   = len(expected_params)
 
         # Check whether the signature include dynamic parameters.
-        has_dynamic_positional_parameters = False
-        has_dynamic_known_parameters      = False
+        self.__scan_for_dynamic_parameters(expected_params)
+        parameters = self.__scan_for_usable_parameters(params, expected_params)
 
+        return make_method(*parameters['args'], **parameters['kwargs'])
+
+    def __scan_for_usable_parameters(self, given_params, expected_params):
+        fixed_parameter_list  = []
+        fixed_parameter_map   = {}
+        fixed_parameter_count = 0
+        positional_parameters = []
+        keywoard_parameters   = {}
+        iterating_index       = 0
+
+        for expected_param in expected_params:
+            if expected_param.name in self.__ignored_parameters:
+                continue
+
+            parameter_name     = expected_param.name
+            parameter_required = expected_param.default and expected_param.default == inspect._empty
+            parameter_metadata = ParameterMetadata(iterating_index, parameter_name, parameter_required, expected_param)
+
+            fixed_parameter_map[parameter_name] = parameter_metadata
+
+            fixed_parameter_list.append(parameter_metadata)
+
+            iterating_index += 1
+
+        fixed_parameter_count = iterating_index
+
+        # Gather definitions from the given parameters.
+        iterating_index = 0 # reset the index
+
+        # First, consider the keyword ones.
+        # FIXME This is for backward-compatibility and the whole loop will be removed in version 3.
+        for key, definition in given_params['items'].items():
+            # Handle a dynamic parameter.
+            if key not in fixed_parameter_map:
+                keywoard_parameters[key] = definition
+
+                continue
+
+            fixed_parameter = fixed_parameter_map[key]
+
+            fixed_parameter.defined     = True
+            fixed_parameter.value       = definition
+            fixed_parameter.source_type = dict
+            fixed_parameter.source_ref  = key
+
+        # Consider the positional ones.
+        # NOTE default start for version 3
+        for definition in given_params['sequence']:
+            # Handle a dynamic parameter.
+            if iterating_index >= fixed_parameter_count:
+                positional_parameters.append(definition)
+
+                continue
+
+            fixed_parameter = fixed_parameter_list[iterating_index]
+
+            # Handle a defined parameter.
+            # FIXME This is for backward-compatibility and this block will be removed in version 3.
+            if fixed_parameter.defined:
+                positional_parameters.append(definition)
+
+                continue
+
+            fixed_parameter.defined     = True
+            fixed_parameter.value       = definition
+            fixed_parameter.source_type = list
+            fixed_parameter.source_ref  = iterating_index
+
+            iterating_index += 1
+
+        # Finally, re-consider the keyword ones.
+        # FIXME Used in version 3
+        # for key, definition in given_params['items'].items():
+        #     # Handle a dynamic parameter.
+        #     if key not in fixed_parameter_map:
+        #         if key in keywoard_parameters:
+        #             raise DuplicateKeyError('Entity {}: Keyword Parameter {}: Already defined'.format(self.__metadata.id, key))
+        #
+        #         keywoard_parameters[key] = definition
+        #
+        #         continue
+        #
+        #     fixed_parameter = fixed_parameter_map[key]
+        #
+        #     if fixed_parameter.defined:
+        #         raise DuplicateKeyError('Entity {}: Fixed Parameter {}: Already defined'.format(self.__metadata.id, fixed_parameter.name))
+        #
+        #     fixed_parameter.defined     = True
+        #     fixed_parameter.value       = definition
+        #     fixed_parameter.source_type = dict
+        #     fixed_parameter.source_ref  = key
+
+        # Check for missing parameters or wrong parameter specification.
+        undefined_parameters = []
+
+        for fixed_parameter in fixed_parameter_list:
+            _assert_with_annotation(self.__metadata.id, fixed_parameter.value, fixed_parameter.spec)
+
+            if fixed_parameter.defined:
+                continue
+
+            undefined_parameters.append('{} (position {})'.format(fixed_parameter.name, fixed_parameter.index))
+
+        if undefined_parameters:
+            raise MissingParameterException(
+                'Entity {}: Missing Parameters: '.format(self.__metadata.id, ', '.join(undefined_parameters))
+            )
+
+        # Re-assemble parameters
+        args = [fixed_parameter.value for fixed_parameter in fixed_parameter_list]
+        args.extend(positional_parameters)
+
+        return {
+            'args'   : args,
+            'kwargs' : keywoard_parameters,
+        }
+
+    def __scan_for_dynamic_parameters(self, expected_params):
         for param in expected_params:
             if param.kind == param.VAR_POSITIONAL:
-                has_dynamic_positional_parameters = True
-                expected_count -= 1
+                self.__ignored_parameters.append(param.name)
 
             if param.kind == param.VAR_KEYWORD:
-                has_dynamic_known_parameters = True
-                expected_count -= 1
-
-        # Gather POSITIONAL OR KEYWORD parameters (predefined).
-        next_fixed_index = 0
-
-        for expected_param in expected_params:
-            if expected_param.kind in (expected_param.VAR_POSITIONAL, expected_param.VAR_KEYWORD):
-                continue
-
-            if expected_param.name not in params['items']:
-                continue
-
-            definition = params['items'][expected_param.name]
-
-            _assert_with_annotation(self.__metadata.id, definition, expected_param)
-            positional_parameters.append(definition)
-
-            known_parameters[expected_param.name] = definition
-
-            next_fixed_index += 1
-
-        # Gather POSITIONAL parameters.
-        for index in range(len(params['sequence'])):
-            definition = params['sequence'][index]
-
-            positional_parameters.append(definition)
-
-            if index >= expected_count:
-                if not has_dynamic_positional_parameters:
-                    raise UnexpectedParameterException('Out of range: #{}'.format(index))
-
-                continue
-
-            expected_param = expected_params[next_fixed_index + index]
-
-            _assert_with_annotation(self.__metadata.id, definition, expected_param)
-
-            known_parameters[expected_param.name] = definition
-
-        # Gather KEYWORD parameters.
-        for name, definition in params['items'].items():
-            if name not in signature.parameters and not has_dynamic_known_parameters:
-                raise UnexpectedParameterException(
-                    '"{}": unexpectedly find parameter "{}"'.format(metadata.id, name)
-                )
-
-            if name in known_parameters:
-                # Already registered as positional parameters.
-
-                continue
-
-            if name in signature.parameters:
-                expected_param = signature.parameters[name]
-
-                _assert_with_annotation(self.__metadata.id, definition, expected_param)
-
-            known_parameters[name]   = definition
-            keyword_parameters[name] = definition
-
-        # Find missing params.
-        for expected_param in expected_params:
-            param_name = expected_param.name
-            param_kind = expected_param.kind
-
-            if param_kind == expected_param.VAR_POSITIONAL and has_dynamic_positional_parameters:
-                continue
-
-            if param_kind == expected_param.VAR_KEYWORD and has_dynamic_known_parameters:
-                continue
-
-            if param_name in known_parameters:
-                continue
-
-            if expected_param.default and expected_param.default == inspect._empty:
-                if factory_service:
-                    raise MissingParameterException(
-                        'Factorization: {factory_class_name}.{factory_method_name}{signature} expects the parameter "{parameter_name}" ({factory_service})'.format(
-                            factory_class_name  = type(factory_service).__name__,
-                            factory_method_name = factory_method_name,
-                            signature           = signature,
-                            parameter_name      = param_name,
-                            factory_service     = str(factory_service),
-                        )
-                    )
-
-                raise MissingParameterException(
-                    'Entity: {make_method_name}{signature} expects the parameter "{parameter_name}" ({make_method})'.format(
-                        make_method_name  = make_method.__name__,
-                        signature         = signature,
-                        parameter_name    = param_name,
-                        make_method       = make_method
-                    )
-                )
-
-        return make_method(*positional_parameters, **keyword_parameters)
+                self.__ignored_parameters.append(param.name)
 
     def __cast_to_params(self, params : ParameterCollection):
         return {
@@ -226,3 +245,15 @@ class Controller(object):
                 for key, value in params.items()
             },
         }
+
+
+class ParameterMetadata(object):
+    def __init__(self, index, name, required, spec):
+        self.index       = index
+        self.name        = name
+        self.value       = None
+        self.defined     = False
+        self.source_type = None # list or dict
+        self.source_ref  = None # index (list) or key (dict)
+        self.required    = required
+        self.spec        = spec
