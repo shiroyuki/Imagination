@@ -208,12 +208,18 @@ class Controller(object):
         #     fixed_parameter.source_ref  = key
 
         # Check for missing parameters or wrong parameter specification.
-        undefined_parameters = []
+        undefined_fixed_parameter_count = len(fixed_parameter_list)
+        undefined_parameters            = []
 
         for fixed_parameter in fixed_parameter_list:
             _assert_with_annotation(self.__metadata.id, fixed_parameter)
 
-            if fixed_parameter.defined or not fixed_parameter.required:
+            if fixed_parameter.defined:
+                continue
+
+            if not fixed_parameter.required:
+                undefined_fixed_parameter_count -= 1
+
                 continue
 
             undefined_parameters.append('{} (position {})'.format(fixed_parameter.name, fixed_parameter.index))
@@ -223,7 +229,19 @@ class Controller(object):
                 'Entity {}: Missing Parameters: {}'.format(self.__metadata.id, ', '.join(undefined_parameters))
             )
 
-        # Re-assemble parameters
+        # When NOT all fixed parameters are defined, all additional positional parameters will be disregarded.
+        if undefined_fixed_parameter_count > 0:
+            kwargs = {key: metadata.value for key, metadata in fixed_parameter_map.items() if metadata.defined}
+            kwargs.update(keywoard_parameters)
+
+            logging.info('Not all fixed parameters defined. All positional parameters will be ignored.')
+
+            return {
+                'args'   : [],
+                'kwargs' : kwargs,
+            }
+
+        # When all fixed parameters are defined, they will be converted into positional parameters.
         args = [parameter.value for parameter in fixed_parameter_list if parameter.defined]
         args.extend(positional_parameters)
 
@@ -231,6 +249,8 @@ class Controller(object):
             'args'   : args,
             'kwargs' : keywoard_parameters,
         }
+
+
 
     def __scan_for_dynamic_parameters(self, expected_params):
         for param in expected_params:

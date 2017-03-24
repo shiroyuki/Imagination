@@ -1,5 +1,4 @@
 # v2
-import pprint
 import threading
 
 from .controller         import Controller
