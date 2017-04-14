@@ -31,7 +31,7 @@ class Imagination(object):
         self.__internal_lock  = threading.Lock()
         self.__controller_map = {}
         self.__on_lockdown    = False
-        self.__transformer    = Transformer(self.get)
+        self.__transformer    = transformer or Transformer(self.get)
 
         self.__interception_graph = {}
 

@@ -20,4 +20,8 @@ class UnexpectedDefinitionTypeException(ValueError):
 
 
 class DuplicateKeyError(Exception):
-    ''' Error thrown when an internal dictionary detects an attempt of re-assignment to the direction by the existed key. '''
+    """ Error thrown when an internal dictionary detects an attempt of re-assignment to the direction by the existed key. """
+
+
+class UnknownEnvironmentVariableError(Exception):
+    """ Unknown environment variable error """
