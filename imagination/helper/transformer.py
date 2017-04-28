@@ -53,6 +53,9 @@ class Transformer(object):
         return returnee
 
     def _pre_process(self, data):
+        if not isinstance(data, str):
+            return data
+
         returnee = data
 
         check_sequence = [

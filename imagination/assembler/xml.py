@@ -44,7 +44,7 @@ def convert_container_node_to_parameter_collection(node, key_property_name = Non
         if child_node.name() not in ('param', 'item'):
             continue
 
-        name = child_node.attribute(key_property_name or 'name') or None
+        name = child_node.attribute(key_property_name) or child_node.attribute('name') or None
         kind = child_node.attribute('type')
 
         definition = convert_container_node_to_parameter_collection(child_node, 'key') \

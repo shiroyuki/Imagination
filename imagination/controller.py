@@ -7,7 +7,7 @@ from .exc             import UnexpectedParameterException, MissingParameterExcep
                              UnexpectedDefinitionTypeException, DuplicateKeyError
 from .loader          import Loader
 from .meta.container  import Container, Entity, Factorization, Lambda
-from .meta.definition import ParameterCollection
+from .meta.definition import DataDefinition, ParameterCollection
 from .wrapper         import Wrapper
 
 
@@ -144,14 +144,20 @@ class Controller(object):
         # Gather definitions from the given parameters.
         iterating_index = 0 # reset the index
 
+        self.__logger.debug('{}: Given: {}'.format(self.__metadata.id, given_params))
+
         # First, consider the keyword ones.
         # FIXME This is for backward-compatibility and the whole loop will be removed in version 3.
         for key, definition in given_params['items'].items():
             # Handle a dynamic parameter.
             if key not in fixed_parameter_map:
+                self.__logger.debug('{}: Keyword Param ({} -> {}): Considered as extra'.format(self.__metadata.id, key, definition))
+
                 keywoard_parameters[key] = definition
 
                 continue
+
+            self.__logger.debug('{}: Keyword Param ({} -> {}): Considered as defined'.format(self.__metadata.id, key, definition))
 
             fixed_parameter = fixed_parameter_map[key]
 
@@ -165,6 +171,8 @@ class Controller(object):
         for definition in given_params['sequence']:
             # Handle a dynamic parameter.
             if iterating_index >= fixed_parameter_count:
+                self.__logger.debug('{}: Positional Param ({}): Considered as extra'.format(self.__metadata.id, definition))
+
                 positional_parameters.append(definition)
 
                 continue
@@ -174,9 +182,13 @@ class Controller(object):
             # Handle a defined parameter.
             # FIXME This is for backward-compatibility and this block will be removed in version 3.
             if fixed_parameter.defined:
+                self.__logger.debug('{}: Positional Param ({}): Backward compatible'.format(self.__metadata.id, definition))
+
                 positional_parameters.append(definition)
 
                 continue
+
+            self.__logger.debug('{}: Positional Param ({}): Considered as defined'.format(self.__metadata.id, definition))
 
             fixed_parameter.defined     = True
             fixed_parameter.value       = definition
@@ -184,28 +196,6 @@ class Controller(object):
             fixed_parameter.source_ref  = iterating_index
 
             iterating_index += 1
-
-        # Finally, re-consider the keyword ones.
-        # FIXME Used in version 3
-        # for key, definition in given_params['items'].items():
-        #     # Handle a dynamic parameter.
-        #     if key not in fixed_parameter_map:
-        #         if key in keywoard_parameters:
-        #             raise DuplicateKeyError('Entity {}: Keyword Parameter {}: Already defined'.format(self.__metadata.id, key))
-        #
-        #         keywoard_parameters[key] = definition
-        #
-        #         continue
-        #
-        #     fixed_parameter = fixed_parameter_map[key]
-        #
-        #     if fixed_parameter.defined:
-        #         raise DuplicateKeyError('Entity {}: Fixed Parameter {}: Already defined'.format(self.__metadata.id, fixed_parameter.name))
-        #
-        #     fixed_parameter.defined     = True
-        #     fixed_parameter.value       = definition
-        #     fixed_parameter.source_type = dict
-        #     fixed_parameter.source_ref  = key
 
         # Check for missing parameters or wrong parameter specification.
         undefined_fixed_parameter_count = len(fixed_parameter_list)
@@ -215,12 +205,18 @@ class Controller(object):
             _assert_with_annotation(self.__metadata.id, fixed_parameter)
 
             if fixed_parameter.defined:
+                self.__logger.debug('{}: Param {}: Already defined'.format(self.__metadata.id, fixed_parameter.name))
+
                 continue
 
             if not fixed_parameter.required:
+                self.__logger.debug('{}: Param {}: Delegated'.format(self.__metadata.id, fixed_parameter.name))
+
                 undefined_fixed_parameter_count -= 1
 
                 continue
+
+            self.__logger.debug('{}: Param {}: Not defined'.format(self.__metadata.id, fixed_parameter.name))
 
             undefined_parameters.append('{} (position {})'.format(fixed_parameter.name, fixed_parameter.index))
 
@@ -261,16 +257,56 @@ class Controller(object):
                 self.__ignored_parameters.append(param.name)
 
     def __cast_to_params(self, params : ParameterCollection):
+        sequence = []
+        items    = {}
+
+        for item in params.sequence():
+            try:
+                sequence.append(self.__transformer_cast(item))
+            except TypeError:
+                raise ValueInterpretationError('Entity "{}": Failed to interpret {} (positional)'.format(self.__metadata.id, item))
+
+        for key, value in params.items():
+            try:
+                items[key] = self.__transformer_cast(value)
+            except TypeError:
+                raise ValueInterpretationError('Entity "{}": Failed to interpret "{}" -> {} (keyword)'.format(self.__metadata.id, key, value))
+
         return {
-            'sequence': [
-                self.__transformer_cast(item)
-                for item in params.sequence()
-            ],
-            'items': {
-                key: self.__transformer_cast(value)
-                for key, value in params.items()
-            },
+            'sequence' : sequence,
+            'items'    : items,
         }
+    #
+    # def __transform_data_definition(self, data : DataDefinition):
+    #     definition = data.definition
+    #
+    #     if data.kind == 'list':
+    #         sequence = []
+    #
+    #         for item in definition.sequence():
+    #             try:
+    #                 sequence.append(self.__transformer_cast(item))
+    #             except TypeError:
+    #                 raise ValueInterpretationError('Entity "{}": Failed to interpret {} (positional)'.format(self.__metadata.id, item))
+    #
+    #         return sequence
+    #
+    #     if data.kind == 'dict':
+    #         items = {}
+    #
+    #         for key, value in definition.items():
+    #             try:
+    #                 items[key] = self.__transform_data_definition(value) if isinstance(value, DataDefinition) else self.__transformer_cast(value)
+    #             except TypeError:
+    #                 raise ValueInterpretationError('Entity "{}": Failed to interpret "{}" -> {} (keyword)'.format(self.__metadata.id, key, value))
+    #
+    #         return items
+    #
+    #     return self.__transformer_cast(definition)
+
+
+class ValueInterpretationError(RuntimeError):
+    """ Value interpretation error """
 
 
 class Undefined(object):
