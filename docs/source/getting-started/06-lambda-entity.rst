@@ -27,7 +27,7 @@ Then, register this class as a lambda/callable entity in ``containers.xml``:
 Now, you have an entity called **happy_panda.write_to_file**.
 We call this a lambda (or callable) entity (see more at :doc:`../definitions`).
 
-.. warn::
+.. warning::
 
     This type of entities does not allow parameters as the entity directly
     refers to a callable object.

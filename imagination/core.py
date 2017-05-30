@@ -20,12 +20,14 @@ class Imagination(object):
     """ Imagination Core
 
         In order to track the interceptions properly, the code will keep all
-        information in `self.__interception_graph`, which is a tree where::
+        information in ``self.__interception_graph``, which is a tree where::
 
             container-id
             (1) --> (0..n) method name
                             (1) --> (3) event-type
                                         (1) --> (0..n) interception
+
+        ``self.__initial_method_calls`` is the entity-id-to-method-call-instruction map.
     """
     def __init__(self, transformer : Transformer = None):
         self.__internal_lock  = threading.Lock()
@@ -33,7 +35,8 @@ class Imagination(object):
         self.__on_lockdown    = False
         self.__transformer    = transformer or Transformer(self.get)
 
-        self.__interception_graph = {}
+        self.__interception_graph   = {}
+        self.__initial_method_calls = {}
 
     def lock_down(self):
         """ Lock down the core.
@@ -147,6 +150,12 @@ class Imagination(object):
             raise ValueError('The event type must be defined.')
 
         return sub_graph[event_type][method_to_intercept]
+
+    def set_initial_method_call(self, method_call):
+        if method_call not in self.__initial_method_calls:
+            self.__initial_method_calls[method_call.actor_id] = []
+
+        self.__initial_method_calls[method_call.actor_id].append(method_call)
 
     def _calculate_activation_sequence(self, entity_id):
         global CORE_SELF_REFERENCE

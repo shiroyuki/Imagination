@@ -47,7 +47,7 @@ class Wrapper(object):
         instance = self.__dict__['_internal_instance']
 
         if not hasattr(instance, name):
-            raise AttributeError('{} has no attribute "{}".'.format(type(actual_object).__name__), name)
+            raise AttributeError('{} has no attribute "{}".'.format(type(instance).__name__, name))
 
         returning_callable = getattr(instance, name)
 

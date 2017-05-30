@@ -43,7 +43,7 @@ class Controller(object):
                  metadata               : Container,
                  core_get               : callable,
                  core_get_interceptions : callable,
-                 transformer_cast       : callable
+                 transformer_cast       : callable,
                  ):
         self.__metadata               = metadata
         self.__core_get               = core_get
@@ -53,7 +53,8 @@ class Controller(object):
         self.__container_instance     = None  # Cache
         self.__wrapper_instance       = None  # Wrapper Cache
         self.__ignored_parameters     = []
-        self.activation_sequence      = None  # Activation Sequence
+
+        self.activation_sequence = None  # Activation Sequence
 
     @property
     def metadata(self):
@@ -84,6 +85,14 @@ class Controller(object):
 
         return self.__wrapper_instance
 
+    def execute(self, method_name, params):
+        instance = self.activate()
+
+        if not hasattr(instance, method_name):
+            raise AttributeError('The entity {} has no method named {}.'.format(self.__metadata.id, method_name))
+
+        self.__execute(getattr(instance, method_name), params)
+
     def __instantiate_container(self):
         metadata       = self.__metadata
         params         = self.__cast_to_params(self.__metadata.params)
@@ -92,30 +101,33 @@ class Controller(object):
         # Figure out the make method.
         factory_service     = None
         factory_method_name = None
-        make_method         = None
+        target_callable     = None
 
         if container_type is Lambda:
             return Loader(metadata.fq_callable_name).package
 
         if container_type is Entity:
-            make_method = Loader(metadata.fqcn).package
+            target_callable = Loader(metadata.fqcn).package
         elif container_type is Factorization:
             factory_service     = self.__core_get(metadata.factory_id)
             factory_method_name = metadata.factory_method_name
-            make_method         = getattr(factory_service, factory_method_name)
+            target_callable     = getattr(factory_service, factory_method_name)
 
-        if not make_method:
+        if not target_callable:
             raise NotImplementedError('No make method for {}'.format(container_type.__name__))
 
+        return self.__execute(target_callable, params)
+
+    def __execute(self, target_callable, params):
         # Compile parameters.
-        signature        = inspect.signature(make_method)
+        signature        = inspect.signature(target_callable)
         expected_params  = [signature.parameters[name] for name in signature.parameters]
 
         # Check whether the signature include dynamic parameters.
         self.__scan_for_dynamic_parameters(expected_params)
         parameters = self.__scan_for_usable_parameters(params, expected_params)
 
-        return make_method(*parameters['args'], **parameters['kwargs'])
+        return target_callable(*parameters['args'], **parameters['kwargs'])
 
     def __scan_for_usable_parameters(self, given_params, expected_params):
         fixed_parameter_list  = []
@@ -247,7 +259,6 @@ class Controller(object):
         }
 
 
-
     def __scan_for_dynamic_parameters(self, expected_params):
         for param in expected_params:
             if param.kind == param.VAR_POSITIONAL:
@@ -276,33 +287,6 @@ class Controller(object):
             'sequence' : sequence,
             'items'    : items,
         }
-    #
-    # def __transform_data_definition(self, data : DataDefinition):
-    #     definition = data.definition
-    #
-    #     if data.kind == 'list':
-    #         sequence = []
-    #
-    #         for item in definition.sequence():
-    #             try:
-    #                 sequence.append(self.__transformer_cast(item))
-    #             except TypeError:
-    #                 raise ValueInterpretationError('Entity "{}": Failed to interpret {} (positional)'.format(self.__metadata.id, item))
-    #
-    #         return sequence
-    #
-    #     if data.kind == 'dict':
-    #         items = {}
-    #
-    #         for key, value in definition.items():
-    #             try:
-    #                 items[key] = self.__transform_data_definition(value) if isinstance(value, DataDefinition) else self.__transformer_cast(value)
-    #             except TypeError:
-    #                 raise ValueInterpretationError('Entity "{}": Failed to interpret "{}" -> {} (keyword)'.format(self.__metadata.id, key, value))
-    #
-    #         return items
-    #
-    #     return self.__transformer_cast(definition)
 
 
 class ValueInterpretationError(RuntimeError):

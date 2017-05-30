@@ -4,13 +4,18 @@ import re
 from kotoba import load_from_file
 
 from ..meta.container  import Container
-from ..meta.definition import ParameterCollection, DataDefinition, Interception
+from ..meta.definition import ParameterCollection, DataDefinition, Interception, MethodCall
 from .abstract         import ConfigParser
 from .handlers         import EntityCreator, FactorizationCreator, LambdaCreator
 
+SELF_REFERENCE = 'self'
 
 __re_factorization_element_name = re.compile('^factori(s|z)ation$')
 __container_creators            = [EntityCreator, FactorizationCreator, LambdaCreator]
+
+
+class UndefinedSelfIDError(RuntimeError):
+    """ Error when self-reference ID is undefined. """
 
 
 class UnsupportedContainerError(RuntimeError):
@@ -37,7 +42,7 @@ def convert_container_node_to_meta_container(container_node) -> Container:
     raise UnsupportedContainerError(container_type)
 
 
-def convert_container_node_to_parameter_collection(node, key_property_name = None) -> ParameterCollection:
+def convert_container_node_to_parameter_collection(node, key_property_name = None, self_id = None) -> ParameterCollection:
     collection = ParameterCollection()
 
     for child_node in node.children():
@@ -47,15 +52,38 @@ def convert_container_node_to_parameter_collection(node, key_property_name = Non
         name = child_node.attribute(key_property_name) or child_node.attribute('name') or None
         kind = child_node.attribute('type')
 
-        definition = convert_container_node_to_parameter_collection(child_node, 'key') \
+        definition = convert_container_node_to_parameter_collection(child_node, 'key', self_id) \
             if kind in ('tuple', 'list', 'dict') \
             else child_node.data().strip()
+
+        if kind == 'entity' and definition == SELF_REFERENCE:
+            if not self_id:
+                raise UndefinedSelfIDError('The self-reference ID is undefined.')
+
+            definition = self_id
 
         data = DataDefinition(definition, name, kind)
 
         collection.add(data, name)
 
     return collection
+
+
+def convert_blocks_to_initial_method_call(node):
+    method_calls = []
+    entity_id    = node.attribute('id')
+
+    for child_node in node.children('call'):
+        method_name = child_node.attribute('method')
+        actor_id    = child_node.attribute('from') or entity_id
+
+        definition = convert_container_node_to_parameter_collection(child_node, self_id = entity_id) \
+            if kind in ('tuple', 'list', 'dict') \
+            else child_node.data().strip()
+
+        initial_call = MethodCall(actor_id, method_name, definition)
+
+        initial_call
 
 
 def convert_blocks_to_interception_metadatas(node):
