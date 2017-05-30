@@ -1,11 +1,14 @@
 # v2
+import contextlib
 import threading
 
 from .controller         import Controller
 from .exc                import UndefinedContainerIDError
+from .helper.context     import DefinitionContext
 from .helper.general     import exclusive_lock
 from .helper.transformer import Transformer
-from .meta.container     import Container
+from .meta.container     import Container, Entity, Factorization, Lambda
+from .meta.definition    import MethodCall
 
 CORE_SELF_REFERENCE = 'container'
 
@@ -27,7 +30,6 @@ class Imagination(object):
                             (1) --> (3) event-type
                                         (1) --> (0..n) interception
 
-        ``self.__initial_method_calls`` is the entity-id-to-method-call-instruction map.
     """
     def __init__(self, transformer : Transformer = None):
         self.__internal_lock  = threading.Lock()
@@ -35,8 +37,8 @@ class Imagination(object):
         self.__on_lockdown    = False
         self.__transformer    = transformer or Transformer(self.get)
 
-        self.__interception_graph   = {}
-        self.__initial_method_calls = {}
+        self.__interception_graph = {}
+        self.__initial_calls      = {}
 
     def lock_down(self):
         """ Lock down the core.
@@ -80,6 +82,7 @@ class Imagination(object):
         # On the first request, the core will be on lockdown.
         if not self.is_on_lockdown():
             self.lock_down()
+            self._declare_initial_method_calls()
             self._generate_interception_graph()
 
         if not info.activation_sequence:
@@ -151,11 +154,50 @@ class Imagination(object):
 
         return sub_graph[event_type][method_to_intercept]
 
-    def set_initial_method_call(self, method_call):
-        if method_call not in self.__initial_method_calls:
-            self.__initial_method_calls[method_call.actor_id] = []
+    def set_initial_call(self, method_call : MethodCall):
+        target_id = method_call.actor_id
 
-        self.__initial_method_calls[method_call.actor_id].append(method_call)
+        if not isinstance(method_call, MethodCall):
+            raise ValueError('The definition for the initial method call is not properly defined.')
+
+        if not (method_call.actor_id and method_call.method_name):
+            raise ValueError('The definition for the initial method call is invalid.')
+
+        if target_id not in self.__initial_calls:
+            self.__initial_calls[target_id] = []
+
+        self.__initial_calls[target_id].append(method_call)
+
+    @contextlib.contextmanager
+    def define_entity(self, entity_id, fqcn):
+        """ Define a new entity. """
+        container = Entity(identifier = entity_id, fqcn = fqcn)
+
+        self.update_metadata({entity_id: container})
+
+        yield DefinitionContext(self, container)
+
+    @contextlib.contextmanager
+    def define_factorization(self, entity_id, factory_id, factory_method_name):
+        """ Define a new entity with factorization. """
+        container = Factorization(entity_id, factory_id, factory_method_name)
+
+        self.update_metadata({entity_id: container})
+
+        yield DefinitionContext(self, container)
+
+    @contextlib.contextmanager
+    def define_lambda(self, entity_id, import_path):
+        """ Define a new lambda definition. """
+        container = Lambda(entity_id, import_path)
+
+        self.update_metadata({entity_id: container})
+
+        yield DefinitionContext(self, container)
+
+    @contextlib.contextmanager
+    def update_definition(self, entity_id):
+        yield DefinitionContext(self, self.get_metadata(entity_id))
 
     def _calculate_activation_sequence(self, entity_id):
         global CORE_SELF_REFERENCE
@@ -225,3 +267,12 @@ class Imagination(object):
                 }
 
             method_to_event_map[intercepted_method][event_type].append(interception)
+
+    def _declare_initial_method_calls(self):
+        for entity_id, controller in self.__controller_map.items():
+            metadata = controller.metadata
+
+            if metadata.id not in self.__initial_calls:
+                continue
+
+            metadata.initial_calls.extend(self.__initial_calls[metadata.id])

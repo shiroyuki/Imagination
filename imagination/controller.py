@@ -85,14 +85,6 @@ class Controller(object):
 
         return self.__wrapper_instance
 
-    def execute(self, method_name, params):
-        instance = self.activate()
-
-        if not hasattr(instance, method_name):
-            raise AttributeError('The entity {} has no method named {}.'.format(self.__metadata.id, method_name))
-
-        self.__execute(getattr(instance, method_name), params)
-
     def __instantiate_container(self):
         metadata       = self.__metadata
         params         = self.__cast_to_params(self.__metadata.params)
@@ -116,7 +108,12 @@ class Controller(object):
         if not target_callable:
             raise NotImplementedError('No make method for {}'.format(container_type.__name__))
 
-        return self.__execute(target_callable, params)
+        internal_instance = self.__execute(target_callable, params)
+
+        for initial_call in self.__metadata.initial_calls:
+            self.__execute_after_instantiation(internal_instance, initial_call.method_name, initial_call.parameters)
+
+        return internal_instance
 
     def __execute(self, target_callable, params):
         # Compile parameters.
@@ -128,6 +125,12 @@ class Controller(object):
         parameters = self.__scan_for_usable_parameters(params, expected_params)
 
         return target_callable(*parameters['args'], **parameters['kwargs'])
+
+    def __execute_after_instantiation(self, instance, method_name, params):
+        if not hasattr(instance, method_name):
+            raise AttributeError('The entity {} has no method named {}.'.format(self.__metadata.id, method_name))
+
+        self.__execute(getattr(instance, method_name), self.__cast_to_params(params))
 
     def __scan_for_usable_parameters(self, given_params, expected_params):
         fixed_parameter_list  = []

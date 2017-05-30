@@ -14,8 +14,9 @@ class Container(PrintableMixin):
     def __init__(self,
                  identifier    : str,
                  params        : ParameterCollection = None,
-                 interceptions : list = [],
-                 cacheable     : bool = True
+                 interceptions : list = None,
+                 initial_calls : list = None,
+                 cacheable     : bool = True,
                  ):
         assert identifier, 'Container ID must be defined.'
 
@@ -23,7 +24,8 @@ class Container(PrintableMixin):
         self._cacheable     = cacheable
         self._identifier    = identifier.strip()
         self._params        = params or ParameterCollection()
-        self._interceptions = interceptions
+        self._interceptions = interceptions or []
+        self._initial_calls = initial_calls or []
         self._dependencies  = set()  # Container ID
 
         self._dependency_calculated = False
@@ -54,6 +56,10 @@ class Container(PrintableMixin):
         return self._interceptions
 
     @property
+    def initial_calls(self):
+        return self._initial_calls
+
+    @property
     def dependencies(self):
         if not self._dependency_calculated:
             self._dependencies.update(
@@ -71,10 +77,11 @@ class Entity(Container):
                  identifier    : str,
                  fqcn          : str,
                  params        : ParameterCollection = None,
-                 interceptions : list = [],
-                 cacheable     : bool = True
+                 interceptions : list = None,
+                 initial_calls : list = None,
+                 cacheable     : bool = True,
                  ):
-        Container.__init__(self, identifier, params, interceptions, cacheable)
+        Container.__init__(self, identifier, params, interceptions, initial_calls, cacheable)
 
         assert fqcn, 'Container\'s class must be defined.'
 
@@ -92,10 +99,11 @@ class Factorization(Container):
                  factory_id          : str,
                  factory_method_name : str,
                  params              : ParameterCollection = None,
-                 interceptions       : list = [],
+                 interceptions       : list = None,
+                 initial_calls       : list = None,
                  cacheable           : bool = True
                  ):
-        Container.__init__(self, identifier, params, interceptions, cacheable)
+        Container.__init__(self, identifier, params, interceptions, initial_calls, cacheable)
 
         assert factory_id,          'Undefined factory ID'
         assert factory_method_name, 'Undefined factory method'
