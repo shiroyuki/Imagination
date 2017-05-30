@@ -63,11 +63,16 @@ class Controller(object):
     def activated(self):
         return self.__wrapper_instance is not None or self.__container_instance is not None
 
-    def activate(self):
+    def activate(self, previously_activated : list):
         if self.activated():
             return self.__wrapper_instance or self.__container_instance
 
-        new_instance = self.__instantiate_container()
+        if self.metadata.id in previously_activated:
+            raise CircularDependencyError('{}: previous activation sequence: {}'.format(self.metadata.id, ', '.join(previously_activated)))
+
+        previously_activated.append(self.metadata.id)
+
+        new_instance = self.__instantiate_container(previously_activated)
 
         if self.__metadata.cacheable:
             self.__container_instance = new_instance
@@ -85,9 +90,9 @@ class Controller(object):
 
         return self.__wrapper_instance
 
-    def __instantiate_container(self):
+    def __instantiate_container(self, previously_activated : list):
         metadata       = self.__metadata
-        params         = self.__cast_to_params(self.__metadata.params)
+        params         = self.__cast_to_params(self.__metadata.params, previously_activated)
         container_type = type(metadata)
 
         # Figure out the make method.
@@ -110,10 +115,13 @@ class Controller(object):
 
         internal_instance = self.__execute(target_callable, params)
 
-        for initial_call in self.__metadata.initial_calls:
-            self.__execute_after_instantiation(internal_instance, initial_call.method_name, initial_call.parameters)
-
         return internal_instance
+
+    def run_initial_calls(self, previously_activated : list):
+        internal_instance = self.activate(previously_activated)
+
+        for initial_call in self.__metadata.initial_calls:
+            self.__execute_after_instantiation(internal_instance, initial_call.method_name, initial_call.parameters, previously_activated)
 
     def __execute(self, target_callable, params):
         # Compile parameters.
@@ -126,11 +134,11 @@ class Controller(object):
 
         return target_callable(*parameters['args'], **parameters['kwargs'])
 
-    def __execute_after_instantiation(self, instance, method_name, params):
+    def __execute_after_instantiation(self, instance, method_name, params, previously_activated):
         if not hasattr(instance, method_name):
             raise AttributeError('The entity {} has no method named {}.'.format(self.__metadata.id, method_name))
 
-        self.__execute(getattr(instance, method_name), self.__cast_to_params(params))
+        self.__execute(getattr(instance, method_name), self.__cast_to_params(params, previously_activated))
 
     def __scan_for_usable_parameters(self, given_params, expected_params):
         fixed_parameter_list  = []
@@ -270,19 +278,19 @@ class Controller(object):
             if param.kind == param.VAR_KEYWORD:
                 self.__ignored_parameters.append(param.name)
 
-    def __cast_to_params(self, params : ParameterCollection):
+    def __cast_to_params(self, params : ParameterCollection, previously_activated : list):
         sequence = []
         items    = {}
 
         for item in params.sequence():
             try:
-                sequence.append(self.__transformer_cast(item))
+                sequence.append(self.__transformer_cast(item, previously_activated))
             except TypeError:
                 raise ValueInterpretationError('Entity "{}": Failed to interpret {} (positional)'.format(self.__metadata.id, item))
 
         for key, value in params.items():
             try:
-                items[key] = self.__transformer_cast(value)
+                items[key] = self.__transformer_cast(value, previously_activated)
             except TypeError:
                 raise ValueInterpretationError('Entity "{}": Failed to interpret "{}" -> {} (keyword)'.format(self.__metadata.id, key, value))
 
@@ -290,6 +298,10 @@ class Controller(object):
             'sequence' : sequence,
             'items'    : items,
         }
+
+
+class CircularDependencyError(RuntimeError):
+    """ Circular Dependency Error """
 
 
 class ValueInterpretationError(RuntimeError):

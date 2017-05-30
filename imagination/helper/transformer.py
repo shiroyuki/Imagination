@@ -19,7 +19,7 @@ class Transformer(object):
         self.__re_env_with_default_value_as_float  = re.compile('\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or (?P<default>[0-9]*\.[0-9]*)\s*\}', re.IGNORECASE)
         self.__re_env_without_default_value        = re.compile('\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+)\s*\}', re.IGNORECASE)
 
-    def cast(self, data):
+    def cast(self, data, previously_activated : list = None):
         """ Transform the given data to the given kind.
 
             :param     data: the data to be transform
@@ -32,6 +32,8 @@ class Transformer(object):
                 Added support for environment variables.
 
         """
+        previously_activated = previously_activated or []
+
         logger = get_logger('transformer', logging.ERROR)
         logger.debug('Casting {}...'.format(data))
 
@@ -46,7 +48,7 @@ class Transformer(object):
         actual_data = data.definition
         actual_kind = data.kind
 
-        returnee = self._cast(actual_data, actual_kind)
+        returnee = self._cast(actual_data, actual_kind, previously_activated)
 
         logger.debug('Returning {}({})'.format(type(returnee).__name__, returnee))
 
@@ -91,11 +93,11 @@ class Transformer(object):
 
         return returnee
 
-    def _cast(self, actual_data, actual_kind):
+    def _cast(self, actual_data, actual_kind, previously_activated):
         actual_data = self._pre_process(actual_data)
 
         if actual_kind == 'entity':
-            return self.__core_getter(actual_data)
+            return self.__core_getter(actual_data, previously_activated)
 
         if actual_kind == 'class':
             return Loader(actual_data).package
@@ -140,5 +142,4 @@ class Transformer(object):
             return str(actual_data)
 
         error_message = 'Unknown type: {} (Given data type: {})'
-        raise ValueError(error_message.format(actual_kind,
-                                              type(actual_data).__name__))
+        raise ValueError(error_message.format(actual_kind, type(actual_data).__name__))

@@ -69,8 +69,12 @@ class Imagination(object):
         """ Check if the entity ID is registered. """
         return entity_id in self.__controller_map
 
-    def get(self, entity_id : str):
-        """ Retrieve an entity by ID """
+    def get(self, entity_id : str, previously_activated : list = None):
+        """ Retrieve an entity by ID
+
+            :param str entity_id: the identifier of the entity
+            :param list previously_activated: the list of identifiers of previously activated entities (for internal use only)
+        """
         global CORE_SELF_REFERENCE
 
         if entity_id == CORE_SELF_REFERENCE:
@@ -89,15 +93,25 @@ class Imagination(object):
             new_sequence = self._calculate_activation_sequence(entity_id)
             info.activation_sequence = new_sequence
 
+        previously_activated = previously_activated or []
+        activation_sequence  = []
+
         # Activate all dependencies.
         for dependency_id in info.activation_sequence:
             if dependency_id == CORE_SELF_REFERENCE:
                 continue
 
-            self.get_info(dependency_id).activate()
+            dependency = self.get_info(dependency_id).activate(previously_activated)
+
+            activation_sequence.append(dependency_id)
 
         # Activate the requested container ID.
-        instance = self.get_info(entity_id).activate()
+        instance = self.get_info(entity_id).activate(previously_activated)
+
+        activation_sequence.append(entity_id)
+
+        for entity_id in activation_sequence:
+            self.get_info(entity_id).run_initial_calls(previously_activated)
 
         return instance
 
