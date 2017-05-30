@@ -1,0 +1,25 @@
+<imagination>
+    <entity id="strategy.controller" class="dummy.strategy.StrategyController">
+        <param type="str" name="name">controller</param>
+        <param type="dict" name="strategy_mapping">
+            <item type="entity" name="foo">strategy:foo</item>
+            <item type="entity" name="bar">strategy:bar</item>
+        </param>
+        <param type="list" name="strategy_order">
+            <item type="entity">strategy:bar</item>
+            <item type="entity">strategy:foo</item>
+        </param>
+        <param type="dict" name="settings">
+            <item type="int" name="query_limit">987</item>
+            <item type="bool" name="debug">false</item>
+        </param>
+    </entity>
+
+    <entity id="strategy:foo" class="dummy.strategy.Strategy">
+        <param type="str" name="name">foo</param>
+    </entity>
+
+    <entity id="strategy:bar" class="dummy.strategy.Strategy">
+        <param type="str" name="name">bar</param>
+    </entity>
+</imagination>
