@@ -91,6 +91,7 @@ class Imagination(object):
 
         if not info.activation_sequence:
             new_sequence = self._calculate_activation_sequence(entity_id)
+
             info.activation_sequence = new_sequence
 
         previously_activated = previously_activated or []
@@ -106,12 +107,12 @@ class Imagination(object):
             activation_sequence.append(dependency_id)
 
         # Activate the requested container ID.
-        instance = self.get_info(entity_id).activate(previously_activated)
+        instance = self.get_info(entity_id).activate()
 
         activation_sequence.append(entity_id)
 
-        for entity_id in activation_sequence:
-            self.get_info(entity_id).run_initial_calls(previously_activated)
+        for activated_entity_id in activation_sequence:
+            self.get_info(activated_entity_id).run_initial_calls(previously_activated)
 
         return instance
 
@@ -213,24 +214,36 @@ class Imagination(object):
     def update_definition(self, entity_id):
         yield DefinitionContext(self, self.get_metadata(entity_id))
 
-    def _calculate_activation_sequence(self, entity_id):
+    def _calculate_activation_sequence(self, entity_id, known_activation_sequence = None):
         global CORE_SELF_REFERENCE
 
         if entity_id == CORE_SELF_REFERENCE:
             return []
 
+        known_activation_sequence = known_activation_sequence or []
+
+        # To prevent infinite loop
+        if entity_id in known_activation_sequence:
+            return []
+
         activation_sequence = []
         scoreboard          = {}  # id -> number of dependants
+
+        known_activation_sequence.append(entity_id)
 
         metadata = self.get_metadata(entity_id)
 
         for dependency_id in metadata.dependencies:
+            # To prevent infinite loop
+            if dependency_id in known_activation_sequence:
+                continue
+
             if dependency_id not in scoreboard:
                 scoreboard[dependency_id] = 0
 
             scoreboard[dependency_id] += 1
 
-            additionals = self._calculate_activation_sequence(dependency_id)
+            additionals = self._calculate_activation_sequence(dependency_id, known_activation_sequence)
 
             for additional_dependency_id in additionals:
                 if additional_dependency_id not in scoreboard:

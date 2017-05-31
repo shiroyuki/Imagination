@@ -63,7 +63,9 @@ class Controller(object):
     def activated(self):
         return self.__wrapper_instance is not None or self.__container_instance is not None
 
-    def activate(self, previously_activated : list):
+    def activate(self, previously_activated : list = None):
+        previously_activated = previously_activated or []
+
         if self.activated():
             return self.__wrapper_instance or self.__container_instance
 

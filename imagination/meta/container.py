@@ -66,6 +66,11 @@ class Container(PrintableMixin):
                 extract_dependency_ids_from_parameters(self._params)
             )
 
+            for initial_call in self._initial_calls:
+                self._dependencies.update(
+                    extract_dependency_ids_from_parameters(initial_call.parameters)
+                )
+
             self._dependency_calculated = True
 
         return self._dependencies
