@@ -60,6 +60,10 @@ class Controller(object):
     def metadata(self):
         return self.__metadata
 
+    @property
+    def instance(self):
+        return self.__wrapper_instance or self.__container_instance
+
     def activated(self):
         return self.__wrapper_instance is not None or self.__container_instance is not None
 

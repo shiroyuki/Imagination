@@ -82,6 +82,9 @@ class Imagination(object):
 
         info = self.get_info(entity_id)
 
+        if info.activated():
+            return info.instance
+
         # with exclusive_lock(self.__internal_lock):
         # On the first request, the core will be on lockdown.
         if not self.is_on_lockdown():
@@ -107,7 +110,7 @@ class Imagination(object):
             activation_sequence.append(dependency_id)
 
         # Activate the requested container ID.
-        instance = self.get_info(entity_id).activate()
+        instance = info.activate()
 
         activation_sequence.append(entity_id)
 
