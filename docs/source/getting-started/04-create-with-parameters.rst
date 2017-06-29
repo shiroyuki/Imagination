@@ -127,12 +127,12 @@ Here is an example. From:
         <entity class="foo.Bar" id="panda">
             <param type="bool" name="enabled">false</param>
             <param type="dict" name="data">
-                <item type="list" name="collection">
+                <item type="list" key="collection">
                     <item type="str">shiroyuki</item>
                     <item type="str">is</item>
                     <item type="str">happy</item>
                 </item>
-                <item type="str" name="code">1234</item>
+                <item type="str" key="code">1234</item>
             </param>
         </entity>
     </imagination>
