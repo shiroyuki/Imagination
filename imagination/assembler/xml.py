@@ -31,13 +31,14 @@ def convert_container_node_to_meta_container(container_node) -> Container:
     container_id     = container_node.attribute('id')
     container_params = convert_container_node_to_parameter_collection(container_node)
     interceptions    = convert_blocks_to_interception_metadatas(container_node)
+    initial_calls    = convert_blocks_to_initial_method_call(container_node)
 
     for creator in __container_creators:
         if not creator.can_handle(container_type):
             continue
 
-        return creator.create(container_id, container_params,
-                              interceptions, container_node)
+        return creator.create(container_id, container_params, interceptions, container_node,
+                              initial_calls)
 
     raise UnsupportedContainerError(container_type)
 
@@ -77,13 +78,13 @@ def convert_blocks_to_initial_method_call(node):
         method_name = child_node.attribute('method')
         actor_id    = child_node.attribute('from') or entity_id
 
-        definition = convert_container_node_to_parameter_collection(child_node, self_id = entity_id) \
-            if kind in ('tuple', 'list', 'dict') \
-            else child_node.data().strip()
+        definition = convert_container_node_to_parameter_collection(child_node, self_id = entity_id)
 
         initial_call = MethodCall(actor_id, method_name, definition)
 
-        initial_call
+        method_calls.append(initial_call)
+
+    return method_calls
 
 
 def convert_blocks_to_interception_metadatas(node):

@@ -12,7 +12,7 @@ class AbstractContainerCreator(object):
         raise NotImplementedError()
 
     @staticmethod
-    def create(container_id, container_params, interceptions, container_node):
+    def create(container_id, container_params, interceptions, container_node, initial_calls):
         raise NotImplementedError()
 
 
@@ -22,12 +22,13 @@ class EntityCreator(AbstractContainerCreator):
         return container_type == 'entity'
 
     @staticmethod
-    def create(container_id, container_params, interceptions, container_node):
+    def create(container_id, container_params, interceptions, container_node, initial_calls):
         return Entity(
             container_id,
             container_node.attribute('class') or None,
             container_params,
-            interceptions
+            interceptions,
+            initial_calls,
         )
 
 
@@ -37,13 +38,14 @@ class FactorizationCreator(AbstractContainerCreator):
         return _re_factorization_element_name.search(container_type)
 
     @staticmethod
-    def create(container_id, container_params, interceptions, container_node):
+    def create(container_id, container_params, interceptions, container_node, initial_calls):
         return Factorization(
             container_id,
             container_node.attribute('with'),
             container_node.attribute('call'),
             container_params,
-            interceptions
+            interceptions,
+            initial_calls,
         )
 
 
@@ -53,7 +55,7 @@ class LambdaCreator(AbstractContainerCreator):
         return container_type == 'callable'
 
     @staticmethod
-    def create(container_id, container_params, interceptions, container_node):
+    def create(container_id, container_params, interceptions, container_node, initial_calls):
         return Lambda(
             container_id,
             container_node.attribute('with'),

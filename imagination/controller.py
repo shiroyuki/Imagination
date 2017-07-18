@@ -144,7 +144,15 @@ class Controller(object):
         if not hasattr(instance, method_name):
             raise AttributeError('The entity {} has no method named {}.'.format(self.__metadata.id, method_name))
 
-        self.__execute(getattr(instance, method_name), self.__cast_to_params(params, previously_activated))
+        parameters = self.__cast_to_params(params, previously_activated)
+
+        logging.debug('[Imagination/Controller] {}.{}({})'.format(
+            instance,
+            method_name,
+            parameters,
+        ))
+
+        self.__execute(getattr(instance, method_name), parameters)
 
     def __scan_for_usable_parameters(self, given_params, expected_params):
         fixed_parameter_list  = []
