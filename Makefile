@@ -4,7 +4,6 @@ DOCPREFIX     = docs
 BUILDDIR      = $(DOCPREFIX)/build
 ALLSPHINXOPTS = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(DOCPREFIX)/source
 BUILD_PKG_OPT = sdist
-RELEASE_OPT   = sdist upload
 #RELEASE_OPT   = sdist bdist_wheel upload
 LXC_MOUNT_POINT=/opt/src-original
 LXC_WORKING_DIR=/opt/src
@@ -19,8 +18,11 @@ LXC_TEST_EXECUTE=bash -c "make test-lxc-run"
 package:
 	$(PY) setup.py $(BUILD_PKG_OPT)
 
-release:
-	$(PY) setup.py $(RELEASE_OPT)
+clean-dist:
+	@rm dist/*
+
+release: clean-dist package
+	@twine upload dist/*
 
 install:
 	$(PY) setup.py install

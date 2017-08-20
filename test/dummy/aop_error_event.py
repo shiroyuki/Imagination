@@ -28,5 +28,5 @@ class Alpha(object):
             raise RuntimeError('panda four')
 
 class Bravo(object):
-    def handle_error(self, previous_error, positional_parameters, keyword_parameters):
+    def handle_error(self, previous_error, *positional_parameters, **keyword_parameters):
         raise DummyException(previous_error, positional_parameters, keyword_parameters)
