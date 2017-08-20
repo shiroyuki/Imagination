@@ -19,7 +19,7 @@ from .assembler.core import Assembler
 from .debug          import get_logger
 
 def initialize_from(config_filepath):
-    logger = get_logger('standalone_container', logging.DEBUG)
+    logger = get_logger('standalone_container')
 
     lookup_paths = [
         os.path.join(os.getcwd(), 'imagination.xml'),
