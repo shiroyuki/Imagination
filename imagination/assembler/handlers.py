@@ -58,6 +58,6 @@ class LambdaCreator(AbstractContainerCreator):
     def create(container_id, container_params, interceptions, container_node, initial_calls):
         return Lambda(
             container_id,
-            container_node.attribute('with'),
+            container_node.attribute('method'),
             container_params
         )

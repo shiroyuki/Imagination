@@ -91,9 +91,22 @@ class InterceptableCallable(object):
             intercepting_method = getattr(interceptor,
                                           interception.intercepting_method)
 
-            last_result = intercepting_method(error, largs, kwargs) \
-                if error \
-                else intercepting_method(*largs, **kwargs)
+            try:
+                if error:
+                    intercepting_method(error, *largs, **kwargs)
+
+                    continue
+
+                intercepting_method(*largs, **kwargs)
+            except TypeError:
+                raise InterceptionError('Unable to execute the method "{}" from {} ({}.{}) with args = {} and kwargs = {}'.format(
+                    intercepting_method.__name__,
+                    interception.interceptor_id,
+                    type(interceptor).__module__,
+                    type(interceptor).__name__,
+                    largs,
+                    kwargs,
+                ))
 
     def __call__(self, *largs, **kwargs):
         self._intercept('before', largs, kwargs)
@@ -114,3 +127,7 @@ class InterceptableCallable(object):
             self._intercept('after', [result])
 
         return result
+
+
+class InterceptionError(TypeError):
+    """ Unable to intercept the method call """

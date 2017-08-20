@@ -18,6 +18,8 @@ _known_loggers      = {}
 
 
 def get_logger(namespace, level = None, handler = None):
+    global _run_locally, _in_testing_debug
+
     logger_name = '{}.{}'.format(imagination.__name__, namespace)
 
     if logger_name in _known_loggers:
