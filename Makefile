@@ -15,13 +15,13 @@ LXC_TEST_DOCKER_COMMAND=docker run \
 	python
 LXC_TEST_EXECUTE=bash -c "make test-lxc-run"
 
-package:
+package: clean-dist
 	$(PY) setup.py $(BUILD_PKG_OPT)
 
 clean-dist:
-	@rm dist/*
+	@rm dist/* 2> /dev/null || echo '(/dist is clean...)'
 
-release: clean-dist package
+release: package
 	@twine upload dist/*
 
 install:
