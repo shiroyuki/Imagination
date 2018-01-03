@@ -18,16 +18,16 @@ import os
 from .assembler.core import Assembler
 from .debug          import get_logger
 
-def initialize_from(config_filepath):
-    logger = get_logger('standalone_container')
+logger = get_logger('standalone_container')
 
+def initialize_from(config_filepath):
     lookup_paths = [
         os.path.join(os.getcwd(), 'imagination.xml'),
         os.path.join(os.getcwd(), 'services.xml'),
     ]
 
     if config_filepath:
-        logger.debug('[initialize_from] Non-default configuration file path has been defined.')
+        logger.debug('[standalone.initialize_from] Non-default configuration file path has been defined.')
         lookup_paths.insert(0, config_filepath)
 
     loading_targets = []
@@ -36,11 +36,11 @@ def initialize_from(config_filepath):
         if not os.path.exists(lookup_path):
 
             if config_filepath == lookup_path:
-                logger.warning('[initialize_from] {} was given but does not exist.'.format(os.path.abspath(lookup_path)))
+                logger.warning('[standalone.initialize_from] {} was given but does not exist.'.format(os.path.abspath(lookup_path)))
 
             continue
 
-        logger.debug('[initialize_from] Loading configuration from {}...'.format(os.path.abspath(lookup_path)))
+        logger.debug('[standalone.initialize_from] Loading configuration from {}...'.format(os.path.abspath(lookup_path)))
         loading_targets.append(lookup_path)
 
     assembler = Assembler()

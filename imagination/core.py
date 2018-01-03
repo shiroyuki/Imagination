@@ -1,6 +1,7 @@
 # v2
 import contextlib
 import threading
+import uuid
 
 from .controller         import Controller
 from .exc                import UndefinedContainerIDError
@@ -32,6 +33,8 @@ class Imagination(object):
 
     """
     def __init__(self, transformer : Transformer = None):
+        self.__guid = uuid.uuid4()
+
         self.__internal_lock  = threading.Lock()
         self.__controller_map = {}
         self.__on_lockdown    = False
@@ -39,6 +42,30 @@ class Imagination(object):
 
         self.__interception_graph = {}
         self.__initial_calls      = {}
+
+        # When this property is set, this container will only work as a proxy to
+        # the other container.
+        self.__original_container = None
+
+    @property
+    def guid(self):
+        return self.__guid
+
+    @property
+    def original_container(self):
+        return self.__original_container
+
+    def in_proxy_mode(self):
+        return bool(self.__original_container)
+
+    def act_as(self, other):
+        assert other.guid != self.guid, 'The other container must not be itself.'
+        assert not other.in_proxy_mode(), 'The other container must not be in the proxy mode.'
+
+        self.__original_container = other
+
+    def stop_proxy_mode(self):
+        self.__original_container = None
 
     def lock_down(self):
         """ Lock down the core.
@@ -66,7 +93,13 @@ class Imagination(object):
                 self.set_metadata(entity_id, meta_container)
 
     def contain(self, entity_id : str):
-        """ Check if the entity ID is registered. """
+        """ Check if the entity ID is registered.
+
+            This is compatible with the proxy mode.
+        """
+        if self.original_container:
+            return self.original_container.contain(entity_id)
+
         return entity_id in self.__controller_map
 
     def get(self, entity_id : str, previously_activated : list = None):
@@ -74,8 +107,13 @@ class Imagination(object):
 
             :param str entity_id: the identifier of the entity
             :param list previously_activated: the list of identifiers of previously activated entities (for internal use only)
+
+            This is compatible with the proxy mode.
         """
         global CORE_SELF_REFERENCE
+
+        if self.original_container:
+            return self.original_container.get(entity_id)
 
         if entity_id == CORE_SELF_REFERENCE:
             return self
@@ -123,17 +161,31 @@ class Imagination(object):
         """ Get all entity IDs.
 
             :rtype: tuple
+
+            This is compatible with the proxy mode.
         """
+        if self.original_container:
+            return self.original_container.all_ids(entity_id)
+
         return tuple(self.__controller_map.keys())
 
     def get_info(self, entity_id : str) -> Controller:
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         if not self.contain(entity_id):
             raise UndefinedContainerIDError(entity_id)
 
         return self.__controller_map[entity_id]
 
     def get_metadata(self, entity_id : str) -> Container:
-        """ Retrieve the metadata of the container. """
+        """ Retrieve the metadata of the container.
+
+            This is compatible with the proxy mode.
+        """
+        if self.original_container:
+            return self.original_container.get_metadata(entity_id)
+
         return self.get_info(entity_id).metadata
 
     def set_metadata(self, entity_id : str, new_meta_container : Container):
@@ -142,6 +194,9 @@ class Imagination(object):
             .. warning:: This method allows ID overriding.
             .. warning:: Use this with care.
         """
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         if self.__on_lockdown:
             raise CoreOnLockDownError()
 
@@ -156,6 +211,9 @@ class Imagination(object):
 
     def get_interceptions(self, intercepted_id, event_type = None,
                           method_to_intercept = None):
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         if intercepted_id not in self.__interception_graph:
             return None
 
@@ -173,6 +231,9 @@ class Imagination(object):
         return sub_graph[event_type][method_to_intercept]
 
     def set_initial_call(self, method_call : MethodCall):
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         target_id = method_call.actor_id
 
         if not isinstance(method_call, MethodCall):
@@ -189,6 +250,9 @@ class Imagination(object):
     @contextlib.contextmanager
     def define_entity(self, entity_id, fqcn):
         """ Define a new entity. """
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         container = Entity(identifier = entity_id, fqcn = fqcn)
 
         self.update_metadata({entity_id: container})
@@ -198,6 +262,9 @@ class Imagination(object):
     @contextlib.contextmanager
     def define_factorization(self, entity_id, factory_id, factory_method_name):
         """ Define a new entity with factorization. """
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         container = Factorization(entity_id, factory_id, factory_method_name)
 
         self.update_metadata({entity_id: container})
@@ -207,6 +274,9 @@ class Imagination(object):
     @contextlib.contextmanager
     def define_lambda(self, entity_id, import_path):
         """ Define a new lambda definition. """
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         container = Lambda(entity_id, import_path)
 
         self.update_metadata({entity_id: container})
@@ -215,6 +285,10 @@ class Imagination(object):
 
     @contextlib.contextmanager
     def update_definition(self, entity_id):
+        """ Update the existing definition. """
+        if self.original_container:
+            raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
+
         yield DefinitionContext(self, self.get_metadata(entity_id))
 
     def _calculate_activation_sequence(self, entity_id, known_activation_sequence = None):
@@ -306,3 +380,6 @@ class Imagination(object):
                 continue
 
             metadata.initial_calls.extend(self.__initial_calls[metadata.id])
+
+    def __eq__(self, other):
+        return self.guid == other.guid
