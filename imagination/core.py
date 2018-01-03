@@ -380,6 +380,3 @@ class Imagination(object):
                 continue
 
             metadata.initial_calls.extend(self.__initial_calls[metadata.id])
-
-    def __eq__(self, other):
-        return self.guid == other.guid
