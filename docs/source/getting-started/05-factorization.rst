@@ -42,7 +42,7 @@ Now, define an entity for the first-place report.
                        with="report.repo"
                        call="find_one_by_rank">
             <param type="int" name="rank">1</param>
-        </entity>
+        </factorization>
     </imagination>
 
 Now, you have an entity called **report.first**. We call this a factorized
