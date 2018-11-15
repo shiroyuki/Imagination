@@ -33,8 +33,13 @@ test-v2:
 test-v2-dev:
 	$(PY) -m unittest discover -f -v -s test/v2
 
-test: clean-cache
-	$(PY) -m unittest discover -s test/v2
+test-v3:
+	$(PY) -m unittest discover -s test/v3
+
+test-v3-dev:
+	$(PY) -m unittest discover -f -v -s test/v3
+
+test: clean-cache test-v2 test-v3
 
 test-lxc: clean-cache test-lxc-quick test-lxc-primary
 	@(make test-lxc-secondary || echo "\nWARNING: Failed tests on legacy support")
@@ -77,4 +82,4 @@ clean: clean-cache
 	rm -Rvf MANIFEST build dist docs/build/* imagination.egg-info; echo 'Cache cleared'
 
 clean-cache:
-	find . -name *.pyc -exec rm {} \;
+	@find . -name *.pyc -exec rm {} \;

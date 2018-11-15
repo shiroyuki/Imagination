@@ -1,5 +1,5 @@
 # v2
-import contextlib
+from contextlib import contextmanager
 import threading
 import uuid
 
@@ -165,7 +165,7 @@ class Imagination(object):
             This is compatible with the proxy mode.
         """
         if self.original_container:
-            return self.original_container.all_ids(entity_id)
+            return self.original_container.all_ids()
 
         return tuple(self.__controller_map.keys())
 
@@ -247,7 +247,7 @@ class Imagination(object):
 
         self.__initial_calls[target_id].append(method_call)
 
-    @contextlib.contextmanager
+    @contextmanager
     def define_entity(self, entity_id, fqcn):
         """ Define a new entity. """
         if self.original_container:
@@ -259,7 +259,7 @@ class Imagination(object):
 
         yield DefinitionContext(self, container)
 
-    @contextlib.contextmanager
+    @contextmanager
     def define_factorization(self, entity_id, factory_id, factory_method_name):
         """ Define a new entity with factorization. """
         if self.original_container:
@@ -271,7 +271,7 @@ class Imagination(object):
 
         yield DefinitionContext(self, container)
 
-    @contextlib.contextmanager
+    @contextmanager
     def define_lambda(self, entity_id, import_path):
         """ Define a new lambda definition. """
         if self.original_container:
@@ -283,7 +283,7 @@ class Imagination(object):
 
         yield DefinitionContext(self, container)
 
-    @contextlib.contextmanager
+    @contextmanager
     def update_definition(self, entity_id):
         """ Update the existing definition. """
         if self.original_container:
@@ -303,8 +303,7 @@ class Imagination(object):
         if entity_id in known_activation_sequence:
             return []
 
-        activation_sequence = []
-        scoreboard          = {}  # id -> number of dependants
+        scoreboard = {}  # id -> number of dependants
 
         known_activation_sequence.append(entity_id)
 
@@ -344,14 +343,14 @@ class Imagination(object):
         interception_graph   = self.__interception_graph
         unique_interceptions = list()
 
-        for entity_id, controller in self.__controller_map.items():
+        for controller in self.__controller_map.values():
             metadata = controller.metadata
 
-            for interception in metadata.interceptions:
-                if interception in unique_interceptions:
-                    continue
-
-                unique_interceptions.append(interception)
+            unique_interceptions.extend(
+                interception
+                for interception in metadata.interceptions
+                if interception not in unique_interceptions
+            )
 
         for interception in unique_interceptions:
             event_type         = interception.when_to_intercept
@@ -373,7 +372,7 @@ class Imagination(object):
             method_to_event_map[intercepted_method][event_type].append(interception)
 
     def _declare_initial_method_calls(self):
-        for entity_id, controller in self.__controller_map.items():
+        for controller in self.__controller_map.values():
             metadata = controller.metadata
 
             if metadata.id not in self.__initial_calls:
