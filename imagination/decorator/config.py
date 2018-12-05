@@ -3,16 +3,19 @@ from abc import ABC, abstractproperty
 from os import environ
 from typing import List, Any, Callable
 from imagination.standalone import container as c
+from imagination.helper.general import get_fully_qualified_class_name
+from imagination.helper.id_naming import fully_qualified_class_name as default_id_naming_strategy
 
-def service(id:str = None, params:List[Any] = None, is_primary:bool = False,
-            default_service_id_generator:Callable = None):
+def service(id:str = None, params:List[Any] = None, is_primary:bool = False, auto_wired:bool = True,
+            id_naming_strategy:Callable = None):
     """
     Define the class as a service.
 
     :param str id: Service ID. By default, it will turn the FQCN (module + class name) into the default service ID.
     :param list params: Parameters for the class constructor.
     :param bool is_primary: Flag to determine whether or not this is the primary service of this type
-    :param Callable default_service_id_generator: The default service ID generator (factory method)
+    :param bool auto_wired: Flag to tell Imagination to automatically wire all dependencies without explicitly specifying them in :param:`params`.
+    :param Callable id_naming_strategy: The default service ID generator (factory method)
     """
     cls_props = {}
 
@@ -23,11 +26,9 @@ def service(id:str = None, params:List[Any] = None, is_primary:bool = False,
             if prop_name == ('__module__', '__name__', '__qualname__', '__dir__', '__doc__')
         })
 
-        generate_default_id = default_service_id_generator or default_id_by_shorten_fully_qualify_class_name
+        service_id = id or (id_naming_strategy or default_id_naming_strategy)(cls)  # Figure out the service ID
 
-        service_id = id or generate_default_id(cls)  # Figure out the service ID
-
-        with c.define_entity(service_id, default_id_by_fully_qualify_class_name(cls)) as definition:
+        with c.define_entity(service_id, default_id_naming_strategy(cls)) as definition:
             for param in (params or []):
                 if isinstance(param, Parameter):
                     definition.set_param(param.kind, param.value, param.name)
@@ -42,20 +43,6 @@ def service(id:str = None, params:List[Any] = None, is_primary:bool = False,
         setattr(inner_decorator, n, v)
 
     return inner_decorator
-
-def default_id_by_fully_qualify_class_name(cls) -> str:
-    return f"{cls.__module__}.{cls.__qualname__}"
-
-def default_id_by_shorten_fully_qualify_class_name(cls) -> str:
-    fqcn = default_id_by_fully_qualify_class_name(cls)
-    fqcn_segments = fqcn.split('.')
-    return f"{'.'.join(s[0].lower() for s in fqcn_segments[:-1])}.{fqcn_segments[-1]}"
-
-def default_id_by_qualify_class_name(cls) -> str:
-    return cls.__qualname__
-
-def default_id_by_class_name(cls) -> str:
-    return cls.__name__
 
 
 class AbstractParameter(ABC):
@@ -122,9 +109,9 @@ class Service(AbstractParameter):
     :param service_cls_or_id: Service class (type) or ID (string). When a class (type) is provided, it will try to
                               figure out by the default ID or ``primary``.
     """
-    def __init__(self, service_cls_or_id, name=None, default_service_id_generator:Callable = None):
+    def __init__(self, service_cls_or_id, name=None, id_naming_strategy:Callable = None):
         self._service_cls_or_id = service_cls_or_id
-        self._default_service_id_generator = default_service_id_generator
+        self._id_naming_strategy = id_naming_strategy
         self._name = name
 
     @property
@@ -134,7 +121,7 @@ class Service(AbstractParameter):
     @property
     def value(self):
         if not isinstance(self._service_cls_or_id, str):
-            generate_default_id = self._default_service_id_generator or default_id_by_shorten_fully_qualify_class_name
+            generate_default_id = self._id_naming_strategy or default_id_naming_strategy
 
             return generate_default_id(self._service_cls_or_id)
 

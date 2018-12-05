@@ -1,12 +1,14 @@
 # v2
 from contextlib import contextmanager
 import threading
+from typing import Callable, Optional
 import uuid
 
 from .controller         import Controller
 from .exc                import UndefinedContainerIDError
 from .helper.context     import DefinitionContext
 from .helper.general     import exclusive_lock
+from .helper.id_naming   import fully_qualified_class_name as default_id_naming_strategy
 from .helper.transformer import Transformer
 from .meta.container     import Container, Entity, Factorization, Lambda
 from .meta.definition    import MethodCall
@@ -102,23 +104,31 @@ class Imagination(object):
 
         return entity_id in self.__controller_map
 
-    def get(self, entity_id : str, previously_activated : list = None):
+    def get(self, entity_id, previously_activated : list = None, id_naming_strategy : Optional[Callable] = None):
         """ Retrieve an entity by ID
 
-            :param str entity_id: the identifier of the entity
+            :param entity_id: the identifier of the entity or a class of the service.
             :param list previously_activated: the list of identifiers of previously activated entities (for internal use only)
+            :param Callable id_naming_strategy: an optional callable object for ID naming strategy
+
+            When :param:`entity_id` is a class of the service, it would use the default ID naming strategy to refer to the service of the same class.
 
             This is compatible with the proxy mode.
         """
         global CORE_SELF_REFERENCE
 
+        # NOTE: Assume non-string ``entity_id`` to be a class.
+        actual_entity_id = (entity_id
+                            if isinstance(entity_id, str)
+                            else (id_naming_strategy or default_id_naming_strategy)(entity_id))
+
         if self.original_container:
             return self.original_container.get(entity_id)
 
-        if entity_id == CORE_SELF_REFERENCE:
+        if actual_entity_id == CORE_SELF_REFERENCE:
             return self
 
-        info = self.get_info(entity_id)
+        info = self.get_info(actual_entity_id)
 
         if info.activated():
             return info.instance
@@ -131,7 +141,7 @@ class Imagination(object):
             self._generate_interception_graph()
 
         if not info.activation_sequence:
-            new_sequence = self._calculate_activation_sequence(entity_id)
+            new_sequence = self._calculate_activation_sequence(actual_entity_id)
 
             info.activation_sequence = new_sequence
 
@@ -143,14 +153,15 @@ class Imagination(object):
             if dependency_id == CORE_SELF_REFERENCE:
                 continue
 
-            dependency = self.get_info(dependency_id).activate(previously_activated)
+            # Trigger the service activation.
+            self.get_info(dependency_id).activate(previously_activated)
 
             activation_sequence.append(dependency_id)
 
         # Activate the requested container ID.
         instance = info.activate()
 
-        activation_sequence.append(entity_id)
+        activation_sequence.append(actual_entity_id)
 
         for activated_entity_id in activation_sequence:
             self.get_info(activated_entity_id).run_initial_calls(previously_activated)

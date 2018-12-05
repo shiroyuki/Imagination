@@ -17,6 +17,7 @@ class Container(PrintableMixin):
                  interceptions : list = None,
                  initial_calls : list = None,
                  cacheable     : bool = True,
+                 auto_wired    : bool = True,
                  ):
         assert identifier, 'Container ID must be defined.'
 
@@ -27,6 +28,7 @@ class Container(PrintableMixin):
         self._interceptions = interceptions or []
         self._initial_calls = initial_calls or []
         self._dependencies  = set()  # Container ID
+        self._auto_wired    = auto_wired
 
         self._dependency_calculated = False
 
@@ -73,6 +75,7 @@ class Container(PrintableMixin):
 
             self._dependency_calculated = True
 
+
         return self._dependencies
 
 
@@ -85,8 +88,9 @@ class Entity(Container):
                  interceptions : list = None,
                  initial_calls : list = None,
                  cacheable     : bool = True,
+                 auto_wired    : bool = True,
                  ):
-        Container.__init__(self, identifier, params, interceptions, initial_calls, cacheable)
+        Container.__init__(self, identifier, params, interceptions, initial_calls, cacheable, auto_wired = auto_wired)
 
         assert fqcn, 'Container\'s class must be defined.'
 
@@ -106,9 +110,10 @@ class Factorization(Container):
                  params              : ParameterCollection = None,
                  interceptions       : list = None,
                  initial_calls       : list = None,
-                 cacheable           : bool = True
+                 cacheable           : bool = True,
+                 auto_wired          : bool = True,
                  ):
-        Container.__init__(self, identifier, params, interceptions, initial_calls, cacheable)
+        Container.__init__(self, identifier, params, interceptions, initial_calls, cacheable, auto_wired = auto_wired)
 
         assert factory_id,          'Undefined factory ID'
         assert factory_method_name, 'Undefined factory method'
@@ -155,9 +160,10 @@ class Lambda(Container):
                  identifier       : str,
                  fq_callable_name : str,
                  params           : ParameterCollection = None,
-                 cacheable        : bool = True
+                 cacheable        : bool = True,
+                 auto_wired       : bool = True,
                  ):
-        Container.__init__(self, identifier, params, cacheable = cacheable)
+        Container.__init__(self, identifier, params, cacheable = cacheable, auto_wired = auto_wired)
 
         assert fq_callable_name, 'Undefined callable'
 

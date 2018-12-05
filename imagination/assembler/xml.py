@@ -125,7 +125,7 @@ def convert_blocks_to_interception_metadatas(node):
 
 class XMLParser(ConfigParser):
     def __init__(self):
-        self._re_acceptable_file_extension = re.compile('\.xml$', re.IGNORECASE)
+        self._re_acceptable_file_extension = re.compile(r'\.xml$', re.IGNORECASE)
 
     def can_handle(self, filepath : str):
         return bool(self._re_acceptable_file_extension.search(filepath))

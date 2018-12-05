@@ -22,8 +22,8 @@ class FunctionalTest(unittest.TestCase):
     def test_simple(self):
         meta_containers = self.assembler._load_config_files(*self.test_filepaths)
 
-        self.assertIn('poow-1', meta_containers['dioe'].dependencies)
-        self.assertIn('poo',    meta_containers['owlad'].dependencies)
+        self.assertIn('poow-1', meta_containers['dioe'].dependencies, meta_containers['dioe'].dependencies)
+        self.assertIn('poo',    meta_containers['owlad'].dependencies, meta_containers['owlad'].dependencies)
 
     def test_activation_order(self):
         pass
