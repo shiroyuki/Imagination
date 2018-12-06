@@ -7,14 +7,17 @@ from imagination.helper.general import get_fully_qualified_class_name
 from imagination.helper.id_naming import fully_qualified_class_name as default_id_naming_strategy
 
 def service(id:str = None, params:List[Any] = None, is_primary:bool = False, auto_wired:bool = True,
-            id_naming_strategy:Callable = None):
+            wiring_optional:bool = False, id_naming_strategy:Callable = None):
     """
     Define the class as a service.
 
     :param str id: Service ID. By default, it will turn the FQCN (module + class name) into the default service ID.
     :param list params: Parameters for the class constructor.
     :param bool is_primary: Flag to determine whether or not this is the primary service of this type
-    :param bool auto_wired: Flag to tell Imagination to automatically wire all dependencies without explicitly specifying them in :param:`params`.
+    :param bool auto_wired: Flag to tell Imagination to automatically wire all required dependencies without explicitly
+                            specifying them in :param:`params`.
+    :param bool wiring_optional: Flag to tell Imagination to also automatically wire optional dependencies if not
+                                 explicitly specified. This flag is only used if :param:`auto_wired` is ``True``.
     :param Callable id_naming_strategy: The default service ID generator (factory method)
     """
     cls_props = {}

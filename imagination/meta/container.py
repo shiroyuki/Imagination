@@ -78,6 +78,10 @@ class Container(PrintableMixin):
 
         return self._dependencies
 
+    @property
+    def auto_wired(self):
+        return self._auto_wired
+
 
 class Entity(Container):
     """ Metadata representing Entity """

@@ -1,6 +1,7 @@
 # v2
 import inspect
 import logging
+import typing
 
 from .debug           import get_logger, dump_meta_container
 from .exc             import UnexpectedParameterException, MissingParameterException, \
@@ -136,7 +137,7 @@ class Controller(object):
 
         # Check whether the signature include dynamic parameters.
         self.__scan_for_dynamic_parameters(expected_params)
-        parameters = self.__scan_for_usable_parameters(params, expected_params)
+        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire=self.metadata.auto_wired)
 
         return target_callable(*parameters['args'], **parameters['kwargs'])
 
@@ -154,7 +155,7 @@ class Controller(object):
 
         self.__execute(getattr(instance, method_name), parameters)
 
-    def __scan_for_usable_parameters(self, given_params, expected_params):
+    def __scan_for_usable_parameters(self, given_params, expected_params, auto_wire:bool):
         fixed_parameter_list  = []
         fixed_parameter_map   = {}
         fixed_parameter_count = 0
@@ -238,6 +239,8 @@ class Controller(object):
         undefined_fixed_parameter_count = len(fixed_parameter_list)
         undefined_parameters            = []
 
+        auto_wiring_count = 0
+
         for fixed_parameter in fixed_parameter_list:
             _assert_with_annotation(self.__metadata.id, fixed_parameter)
 
@@ -255,7 +258,26 @@ class Controller(object):
 
             self.__logger.debug('{}: Param {}: Not defined'.format(self.__metadata.id, fixed_parameter.name))
 
-            undefined_parameters.append('{} (position {})'.format(fixed_parameter.name, fixed_parameter.index))
+            feature_info_list = ['pos: {}'.format(fixed_parameter.index)]
+
+
+            if fixed_parameter.spec.annotation != inspect._empty:
+                annotation = fixed_parameter.spec.annotation
+
+                feature_info_list.append('spec: {}'.format(annotation))
+
+                if not issubclass(annotation, (int, float, bytes, bool, str, complex, set, dict, list, tuple)):
+                    if auto_wire:  # Attempt to automatically wire a missing dependency.
+                        auto_wiring_count += 1
+                        given_params['items'][fixed_parameter.name] = self.__core_get(annotation)
+                    else:
+                        feature_info_list.append('ignored: auto-wire')
+
+            undefined_parameters.append('{} ({})'.format(fixed_parameter.name, ', '.join(feature_info_list)))
+
+        # Double-check the parameters after rewiring dependencies.
+        if auto_wiring_count > 0:
+            return self.__scan_for_usable_parameters(given_params, expected_params, auto_wire=False)
 
         if undefined_parameters:
             raise MissingParameterException(
