@@ -131,8 +131,14 @@ class Interception(PrintableMixin):
     def is_self_interception(self):
         return self._interceptor_id in self.__self_references__
 
+
 class MethodCall(object):
     def __init__(self, actor_id, method_name, parameters):
         self.actor_id    = actor_id
         self.method_name = method_name
         self.parameters  = parameters
+
+
+class SubDependency(object):
+    def __init__(self, service_id):
+        self.service_id  = service_id

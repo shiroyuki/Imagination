@@ -302,6 +302,10 @@ class Imagination(object):
 
         yield DefinitionContext(self, self.get_metadata(entity_id))
 
+    def reset(self):
+        for ctrl in list(self.__controller_map.keys()):
+            del self.__controller_map[ctrl]
+
     def _calculate_activation_sequence(self, entity_id, known_activation_sequence = None):
         global CORE_SELF_REFERENCE
 

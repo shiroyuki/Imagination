@@ -15,7 +15,7 @@ class Assembler(object):
             XMLParser(),
         ]
 
-        self._core = Imagination()
+        self._core = core or Imagination()
 
     @property
     def core(self):

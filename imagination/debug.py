@@ -15,6 +15,9 @@ _normal_logging_lv  = logging.INFO  if _run_locally      else logging.ERROR
 _testing_logging_lv = logging.DEBUG if _in_testing_debug else logging.INFO
 _default_logging_lv = _testing_logging_lv if _in_testing else _normal_logging_lv
 _known_loggers      = {}
+_env_log_level      = (getattr(logging, os.getenv('IMAGINATION_LOG_LEVEL'))
+                       if os.getenv('IMAGINATION_LOG_LEVEL')
+                       else None)
 
 
 def get_logger(namespace, level = None, handler = None):
@@ -25,7 +28,7 @@ def get_logger(namespace, level = None, handler = None):
     if logger_name in _known_loggers:
         return _known_loggers[logger_name]
 
-    logging_lv  = level or _default_logging_lv
+    logging_lv  = level or (_env_log_level or _default_logging_lv)
     logger      = logging.getLogger(logger_name)
 
     logger.setLevel(logging_lv)

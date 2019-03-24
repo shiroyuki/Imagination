@@ -65,6 +65,23 @@ class Controller(object):
     def instance(self):
         return self.__wrapper_instance or self.__container_instance
 
+    @property
+    def instantiator(self):
+        metadata       = self.__metadata
+        container_type = type(metadata)
+
+        if container_type is Lambda:
+            return Loader(metadata.fq_callable_name).package
+
+        if container_type is Entity:
+            return Loader(metadata.fqcn).package
+        elif container_type is Factorization:
+            factory_service     = self.__core_get(metadata.factory_id)
+            factory_method_name = metadata.factory_method_name
+            return getattr(factory_service, factory_method_name)
+
+        raise NotImplementedError('No make method for {}'.format(container_type.__name__))
+
     def activated(self):
         return self.__wrapper_instance is not None or self.__container_instance is not None
 
@@ -98,31 +115,12 @@ class Controller(object):
         return self.__wrapper_instance
 
     def __instantiate_container(self, previously_activated : list):
-        metadata       = self.__metadata
-        params         = self.__cast_to_params(self.__metadata.params, previously_activated)
-        container_type = type(metadata)
+        if isinstance(self.__metadata, Lambda):
+            return self.instantiator
 
-        # Figure out the make method.
-        factory_service     = None
-        factory_method_name = None
-        target_callable     = None
-
-        if container_type is Lambda:
-            return Loader(metadata.fq_callable_name).package
-
-        if container_type is Entity:
-            target_callable = Loader(metadata.fqcn).package
-        elif container_type is Factorization:
-            factory_service     = self.__core_get(metadata.factory_id)
-            factory_method_name = metadata.factory_method_name
-            target_callable     = getattr(factory_service, factory_method_name)
-
-        if not target_callable:
-            raise NotImplementedError('No make method for {}'.format(container_type.__name__))
-
-        internal_instance = self.__execute(target_callable, params)
-
-        return internal_instance
+        return self.__execute(self.instantiator,
+                              self.__cast_to_params(self.__metadata.params,
+                                                    previously_activated))
 
     def run_initial_calls(self, previously_activated : list):
         internal_instance = self.activate(previously_activated)
@@ -132,12 +130,13 @@ class Controller(object):
 
     def __execute(self, target_callable, params):
         # Compile parameters.
-        signature        = inspect.signature(target_callable)
-        expected_params  = [signature.parameters[name] for name in signature.parameters]
+        signature          = inspect.signature(target_callable)
+        expected_params    = [signature.parameters[name] for name in signature.parameters]
+        enable_auto_wiring = self.metadata.auto_wired
 
         # Check whether the signature include dynamic parameters.
         self.__scan_for_dynamic_parameters(expected_params)
-        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire=self.metadata.auto_wired)
+        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire = enable_auto_wiring)
 
         return target_callable(*parameters['args'], **parameters['kwargs'])
 
@@ -260,7 +259,6 @@ class Controller(object):
 
             feature_info_list = ['pos: {}'.format(fixed_parameter.index)]
 
-
             if fixed_parameter.spec.annotation != inspect._empty:
                 annotation = fixed_parameter.spec.annotation
 
@@ -276,7 +274,7 @@ class Controller(object):
             undefined_parameters.append('{} ({})'.format(fixed_parameter.name, ', '.join(feature_info_list)))
 
         # Double-check the parameters after rewiring dependencies.
-        if auto_wiring_count > 0:
+        if auto_wire and auto_wiring_count > 0:
             return self.__scan_for_usable_parameters(given_params, expected_params, auto_wire=False)
 
         if undefined_parameters:
