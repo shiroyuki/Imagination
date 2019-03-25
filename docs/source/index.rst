@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Imagination 2
-#############
+Imagination
+###########
 
 :Copyright: Juti Noppornpitak
 :Author:    Juti Noppornpitak
@@ -14,6 +14,10 @@ Imagination 2
 framework which encapsulates an object into a single object, called
 **containers**, inspired by many frameworks, e.g., Symfony Framework in PHP and
 Spring Framework in Java.
+
+.. note::
+
+    This documentation is backward compatible from version 2.0 to 3.x. Version 1.x is no longer supported.
 
 Why do you want to consider using this framework?
 =================================================
