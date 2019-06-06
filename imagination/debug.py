@@ -3,6 +3,7 @@ import logging
 import os
 import pprint
 import sys
+import typing
 
 import imagination
 
@@ -11,40 +12,41 @@ _module_path        = imagination.__path__[0]
 _run_locally        = _module_path[:len(_working_dir)] == _working_dir
 _in_testing         = 'unittest' in sys.modules
 _in_testing_debug   = _in_testing and '-v' in sys.argv
-_normal_logging_lv  = logging.INFO  if _run_locally      else logging.ERROR
-_testing_logging_lv = logging.DEBUG if _in_testing_debug else logging.INFO
-_default_logging_lv = _testing_logging_lv if _in_testing else _normal_logging_lv
-_known_loggers      = {}
-_env_log_level      = (getattr(logging, os.getenv('IMAGINATION_LOG_LEVEL'))
-                       if os.getenv('IMAGINATION_LOG_LEVEL')
-                       else None)
 
 
-def get_logger(namespace, level = None, handler = None):
-    global _run_locally, _in_testing_debug
 
-    logger_name = '{}.{}'.format(imagination.__name__, namespace)
+def get_logger(namespace, level = None):
+    return LoggerFactory.get(namespace, level)
 
-    if logger_name in _known_loggers:
-        return _known_loggers[logger_name]
 
-    logging_lv  = level or (_env_log_level or _default_logging_lv)
-    logger      = logging.getLogger(logger_name)
+class LoggerFactory:
+    __known_logger__ = dict()
 
-    logger.setLevel(logging_lv)
+    @staticmethod
+    def get(name: str, level: typing.Optional[int] = None):
+        if name in LoggerFactory.__known_logger__:
+            return LoggerFactory.__known_logger__.get(name)
 
-    if _in_testing_debug:
-        handler = logging.StreamHandler(sys.stderr)
-        handler.setLevel(logging_lv)
-    elif not handler:
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(logging_lv)
+        level = level or getattr(logging, (os.getenv('IMAGINATION_LOG_LEVEL') or 'DEBUG').upper())
+        minimalistic_mode = not (os.getenv('IMAGINATION_VERBOSE_LOG') in ('1', 'true'))
 
-    logger.addHandler(handler)
+        formatter = logging.Formatter(
+            '%(name)s: %(message)s'
+            if minimalistic_mode
+            else '[%(asctime)s] %(levelname)s in %(name)s: %(message)s'
+        )
 
-    _known_loggers[logger_name] = logger
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        handler.setLevel(level)
 
-    return logger
+        logger = logging.Logger(name)
+        logger.setLevel(level)
+        logger.addHandler(handler)
+
+        LoggerFactory.__known_logger__[name] = logger
+
+        return logger
 
 
 class PrintableMixin(object):

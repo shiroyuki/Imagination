@@ -2,11 +2,23 @@ from typing import Optional
 from unittest import TestCase
 from imagination import container as c, service
 from imagination.decorator.config import (Parameter as PrimitiveParameter,
-                                          Service as ServiceParameter,
-                                          default_id_naming_strategy)
+                                          Service as ServiceParameter,)
+from imagination.debug import get_logger
+
+logger = get_logger(__name__)
 
 
 class UnitTest(TestCase):
+    def setUp(self):
+        # NOTE: Cannot reset as it is only scan once.
+        # c.reset()
+        pass
+
+    def tearDown(self):
+        # NOTE: Cannot reset as it is only scan once.
+        # c.reset()
+        pass
+
     def test_simple(self):
         obj = c.get(SimpleSampleService)
 

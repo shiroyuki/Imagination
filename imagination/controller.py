@@ -1,14 +1,13 @@
 # v2
 import inspect
 import logging
-import typing
 
-from .debug           import get_logger, dump_meta_container
-from .exc             import UnexpectedParameterException, MissingParameterException, \
-                             UnexpectedDefinitionTypeException, DuplicateKeyError
+from .debug           import get_logger
+from .exc             import MissingParameterException, \
+                             UnexpectedDefinitionTypeException
 from .loader          import Loader
 from .meta.container  import Container, Entity, Factorization, Lambda
-from .meta.definition import DataDefinition, ParameterCollection
+from .meta.definition import ParameterCollection
 from .wrapper         import Wrapper
 
 
@@ -181,20 +180,20 @@ class Controller(object):
         # Gather definitions from the given parameters.
         iterating_index = 0 # reset the index
 
-        self.__logger.debug('{}: Given: {}'.format(self.__metadata.id, given_params))
+        self.__logger.debug('ID {}: Given: {}'.format(self.__metadata.id, given_params))
 
         # First, consider the keyword ones.
         # FIXME This is for backward-compatibility and the whole loop will be removed in version 3.
         for key, definition in given_params['items'].items():
             # Handle a dynamic parameter.
             if key not in fixed_parameter_map:
-                self.__logger.debug('{}: Keyword Param ({} -> {}): Considered as extra'.format(self.__metadata.id, key, definition))
+                self.__logger.debug('ID {}: Keyword Param ({} -> {}): Considered as extra'.format(self.__metadata.id, key, definition))
 
                 keywoard_parameters[key] = definition
 
                 continue
 
-            self.__logger.debug('{}: Keyword Param ({} -> {}): Considered as defined'.format(self.__metadata.id, key, definition))
+            self.__logger.debug('ID {}: Keyword Param ({} -> {}): Considered as defined'.format(self.__metadata.id, key, definition))
 
             fixed_parameter = fixed_parameter_map[key]
 
@@ -208,7 +207,7 @@ class Controller(object):
         for definition in given_params['sequence']:
             # Handle a dynamic parameter.
             if iterating_index >= fixed_parameter_count:
-                self.__logger.debug('{}: Positional Param ({}): Considered as extra'.format(self.__metadata.id, definition))
+                self.__logger.debug('ID {}: Positional Param ({}): Considered as extra'.format(self.__metadata.id, definition))
 
                 positional_parameters.append(definition)
 
@@ -219,13 +218,13 @@ class Controller(object):
             # Handle a defined parameter.
             # FIXME This is for backward-compatibility and this block will be removed in version 3.
             if fixed_parameter.defined:
-                self.__logger.debug('{}: Positional Param ({}): Backward compatible'.format(self.__metadata.id, definition))
+                self.__logger.debug('ID {}: Positional Param ({}): Backward compatible'.format(self.__metadata.id, definition))
 
                 positional_parameters.append(definition)
 
                 continue
 
-            self.__logger.debug('{}: Positional Param ({}): Considered as defined'.format(self.__metadata.id, definition))
+            self.__logger.debug('ID {}: Positional Param ({}): Considered as defined'.format(self.__metadata.id, definition))
 
             fixed_parameter.defined     = True
             fixed_parameter.value       = definition
@@ -244,18 +243,18 @@ class Controller(object):
             _assert_with_annotation(self.__metadata.id, fixed_parameter)
 
             if fixed_parameter.defined:
-                self.__logger.debug('{}: Param {}: Already defined'.format(self.__metadata.id, fixed_parameter.name))
+                self.__logger.debug('ID {}: Param {}: Already defined'.format(self.__metadata.id, fixed_parameter.name))
 
                 continue
 
             if not fixed_parameter.required:
-                self.__logger.debug('{}: Param {}: Delegated'.format(self.__metadata.id, fixed_parameter.name))
+                self.__logger.debug('ID {}: Param {}: Delegated'.format(self.__metadata.id, fixed_parameter.name))
 
                 undefined_fixed_parameter_count -= 1
 
                 continue
 
-            self.__logger.debug('{}: Param {}: Not defined'.format(self.__metadata.id, fixed_parameter.name))
+            self.__logger.debug('ID {}: Param {}: Not defined'.format(self.__metadata.id, fixed_parameter.name))
 
             feature_info_list = ['pos: {}'.format(fixed_parameter.index)]
 

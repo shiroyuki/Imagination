@@ -12,16 +12,14 @@ any programming frameworks.
     up the container.
 
 """
-import logging
 from importlib import import_module
-from inspect import ismodule
 import os
 
 from .core           import Imagination
 from .assembler.core import Assembler
 from .debug          import get_logger
 
-logger = get_logger('standalone_container')
+logger = get_logger(__name__)
 
 
 def initialize_from(config_filepath) -> Imagination:
@@ -31,7 +29,7 @@ def initialize_from(config_filepath) -> Imagination:
     ]
 
     if config_filepath:
-        logger.debug('[standalone.initialize_from] Non-default configuration file path has been defined.')
+        logger.debug('Non-default configuration file path has been defined.')
         lookup_paths.insert(0, config_filepath)
 
     loading_targets = []
@@ -40,11 +38,11 @@ def initialize_from(config_filepath) -> Imagination:
         if not os.path.exists(lookup_path):
 
             if config_filepath == lookup_path:
-                logger.warning('[standalone.initialize_from] {} was given but does not exist.'.format(os.path.abspath(lookup_path)))
+                logger.warning('{} was given but does not exist.'.format(os.path.abspath(lookup_path)))
 
             continue
 
-        logger.debug('[standalone.initialize_from] Loading configuration from {}...'.format(os.path.abspath(lookup_path)))
+        logger.debug('Loading configuration from {}...'.format(os.path.abspath(lookup_path)))
         loading_targets.append(lookup_path)
 
     assembler = Assembler()
@@ -52,7 +50,7 @@ def initialize_from(config_filepath) -> Imagination:
     if loading_targets:
         assembler.load(*loading_targets)
     else:
-        logger.warning('[standalone.initialize_from] No configuration file has been loaded')
+        logger.info('No configuration file has been loaded')
 
     return assembler.core
 
@@ -96,7 +94,6 @@ def scan_recursively(code_path:str):
             continue
 
         next_code_path = f'{code_path}.{sub_path[:-3]}'
-        # print(next_code_path)
         scan_recursively(next_code_path)
 
 

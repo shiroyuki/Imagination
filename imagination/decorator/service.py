@@ -3,7 +3,6 @@ from typing import List, Any, Callable, Optional
 from imagination.standalone import container as c
 from imagination.helper.general import get_fully_qualified_class_name
 from imagination.helper.id_naming import fully_qualified_class_name as default_id_naming_strategy
-from .config import Parameter, Service, ClassInfo
 from .helper import set_parameter
 
 
