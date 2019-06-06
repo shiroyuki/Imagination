@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name         = 'imagination',
-    version      = '3.0.0a2',
+    version      = '3.0.0a3',
     description  = 'Reusable Component Framework',
     author       = 'Juti Noppornpitak',
     author_email = 'juti_n@yahoo.co.jp',

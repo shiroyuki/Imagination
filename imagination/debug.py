@@ -27,7 +27,7 @@ class LoggerFactory:
         if name in LoggerFactory.__known_logger__:
             return LoggerFactory.__known_logger__.get(name)
 
-        level = level or getattr(logging, (os.getenv('IMAGINATION_LOG_LEVEL') or 'DEBUG').upper())
+        level = level or getattr(logging, (os.getenv('IMAGINATION_LOG_LEVEL') or 'WARNING').upper())
         minimalistic_mode = not (os.getenv('IMAGINATION_VERBOSE_LOG') in ('1', 'true'))
 
         formatter = logging.Formatter(
