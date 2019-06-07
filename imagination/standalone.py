@@ -64,26 +64,12 @@ def load_config_file(config_filepath: str):
 
 def scan_recursively(code_path:str):
     # working with annotation
-    logger.debug(f'Inspect: {code_path}')
     m = import_module(code_path)
-    logger.debug(f'{m}')
-    for p in dir(m):
-        iterated_path = f'{code_path}.{p}'
-        iterated_obj = getattr(m, p)
-
-        if p[:2] == '__' and p[-2:] == '__':
-            logger.debug(f'Ignored: {iterated_path}, {iterated_obj if isinstance(iterated_obj, str) else "[...]"}')
-
-            continue
-
-        logger.debug(f'Inspect: {iterated_path}, {type(iterated_obj).__name__}, {iterated_obj}')
 
     module_file_path = m.__file__
     path_to_walk = os.path.dirname(module_file_path)
 
     if os.path.basename(module_file_path) != '__init__.py':
-        logger.debug(f'Stopped iterating after {module_file_path}')
-
         return
 
     for sub_path in os.listdir(path_to_walk):
@@ -93,7 +79,7 @@ def scan_recursively(code_path:str):
         if not sub_path.endswith('.py'):
             continue
 
-        next_code_path = f'{code_path}.{sub_path[:-3]}'
+        next_code_path = '{}.{}'.format(code_path, sub_path[:-3])
         scan_recursively(next_code_path)
 
 

@@ -41,25 +41,20 @@ test-v3-dev:
 
 test: clean-cache test-v2 test-v3
 
-test-lxc: clean-cache test-lxc-quick test-lxc-primary
+test-lxc: clean-cache test-lxc-primary
 	@(make test-lxc-secondary || echo "\nWARNING: Failed tests on legacy support")
 
 test-lxc-primary:
 	@echo "===================================================================="
 	@echo "Primary test runs"
 	@PY_VERSION=latest make test-lxc-on-version
+	@PY_VERSION=3.7 make test-lxc-on-version
 
 test-lxc-secondary:
 	@echo "===================================================================="
 	@echo "Secondary test runs"
-	@PY_VERSION=3.4 make test-lxc-on-version
+	@PY_VERSION=3.6 make test-lxc-on-version
 	@PY_VERSION=3.5 make test-lxc-on-version
-
-test-lxc-legacy:
-	@echo "===================================================================="
-	@echo "Legacy test runs"
-	@PY_VERSION=2.7 make test-lxc-on-version
-	@PY_VERSION=3.3 make test-lxc-on-version
 
 test-lxc-on-version:
 	@echo "--------------------------------------------------------------------"
@@ -71,8 +66,9 @@ test-lxc-on-version:
 test-lxc-run:
 	@rm -rfv $(LXC_WORKING_DIR)
 	@cp -r $(LXC_MOUNT_POINT) $(LXC_WORKING_DIR)
-	@pip install -q nose kotoba
-	@cd $(LXC_WORKING_DIR) && PYTHONPATH=`pwd`:$$PYTHONPATH nosetests -c nose.cfg
+	@pip install -q kotoba
+	@cd $(LXC_WORKING_DIR) \
+		&& USER=root PYTHONPATH=`pwd`:$$PYTHONPATH bash -c "python -m unittest discover -s test/v2 && python -m unittest discover -s test/v3"
 
 doc:
 	#cd docs && make clean && make html

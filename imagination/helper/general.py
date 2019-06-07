@@ -4,7 +4,7 @@ from ..meta.definition import ParameterCollection
 
 
 def get_fully_qualified_class_name(cls) -> str:
-    return f"{cls.__module__}.{cls.__qualname__}"
+    return '{}.{}'.format(cls.__module__, cls.__qualname__)
 
 
 @contextlib.contextmanager
