@@ -104,12 +104,14 @@ class Imagination(object):
 
         return entity_id in self.__controller_map
 
-    def get(self, entity_id, previously_activated : list = None, id_naming_strategy : Optional[Callable] = None):
+    def get(self, entity_id, previously_activated : list = None, id_naming_strategy : Optional[Callable] = None,
+            lock_down_enabled: bool = True):
         """ Retrieve an entity by ID
 
             :param entity_id: the identifier of the entity or a class of the service.
             :param list previously_activated: the list of identifiers of previously activated entities (for internal use only)
             :param Callable id_naming_strategy: an optional callable object for ID naming strategy
+            :param bool lock_down_enabled: the flag to enable the core lockdown
 
             When :param:`entity_id` is a class of the service, it would use the default ID naming strategy to refer to the service of the same class.
 
@@ -136,7 +138,8 @@ class Imagination(object):
         # with exclusive_lock(self.__internal_lock):
         # On the first request, the core will be on lockdown.
         if not self.is_on_lockdown():
-            self.lock_down()
+            if lock_down_enabled:
+                self.lock_down()
             self._declare_initial_method_calls()
             self._generate_interception_graph()
 
