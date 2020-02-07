@@ -1,8 +1,10 @@
 # v2
 from ..core  import Imagination
-from ..debug import dump_meta_container
+from ..debug import dump_meta_container, get_logger
 
 from .xml import XMLParser
+
+log = get_logger(__name__)
 
 
 class UnsupportedConfigFileError(RuntimeError):
@@ -14,6 +16,9 @@ class Assembler(object):
         self._parsers = [
             XMLParser(),
         ]
+
+        if core and core.in_standalone_mode():
+            log.info(f'The container in the standalone mode has been provided.')
 
         self._core = core or Imagination()
 

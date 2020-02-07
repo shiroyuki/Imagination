@@ -45,7 +45,8 @@ def initialize_from(config_filepath) -> Imagination:
         logger.debug('Loading configuration from {}...'.format(os.path.abspath(lookup_path)))
         loading_targets.append(lookup_path)
 
-    assembler = Assembler()
+    core = Imagination(standalone_mode=True)
+    assembler = Assembler(core)
 
     if loading_targets:
         assembler.load(*loading_targets)

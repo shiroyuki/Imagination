@@ -19,6 +19,7 @@ package: clean-dist
 	$(PY) setup.py $(BUILD_PKG_OPT)
 
 clean-dist:
+	@git clean -fdX
 	@rm dist/* 2> /dev/null || echo '(/dist is clean...)'
 
 release: package

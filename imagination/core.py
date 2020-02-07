@@ -5,6 +5,7 @@ from typing import Callable, Optional
 import uuid
 
 from .controller         import Controller
+from .debug              import get_logger
 from .exc                import UndefinedContainerIDError
 from .helper.context     import DefinitionContext
 from .helper.general     import exclusive_lock
@@ -14,6 +15,7 @@ from .meta.container     import Container, Entity, Factorization, Lambda
 from .meta.definition    import MethodCall
 
 CORE_SELF_REFERENCE = 'container'
+log = get_logger(__name__)
 
 
 class CoreOnLockDownError(RuntimeError):
@@ -34,8 +36,10 @@ class Imagination(object):
                                         (1) --> (0..n) interception
 
     """
-    def __init__(self, transformer : Transformer = None):
+    def __init__(self, transformer: Transformer = None, standalone_mode: bool = False):
         self.__guid = uuid.uuid4()
+
+        self.__standalone_mode = standalone_mode
 
         self.__internal_lock  = threading.Lock()
         self.__controller_map = {}
@@ -57,6 +61,9 @@ class Imagination(object):
     def original_container(self):
         return self.__original_container
 
+    def in_standalone_mode(self):
+        return self.__standalone_mode
+
     def in_proxy_mode(self):
         return bool(self.__original_container)
 
@@ -76,6 +83,7 @@ class Imagination(object):
 
             .. note:: This method will be invoked on the first ``get`` call.
         """
+        log.debug(f'Lock down the container.')
         self.__on_lockdown = True
 
     def is_on_lockdown(self) -> bool:
@@ -88,7 +96,12 @@ class Imagination(object):
             .. warning:: This method allows ID overriding.
         """
         if self.__on_lockdown:
-            raise CoreOnLockDownError()
+            if self.__standalone_mode:
+                log.info('Core appears to be on lockdown but the standalone'
+                         ' mode will allow the attempt to batch-update the'
+                         ' meta container map.')
+            else:
+                raise CoreOnLockDownError('Failed to batch-update the meta container map')
 
         with exclusive_lock(self.__internal_lock):
             for entity_id, meta_container in meta_container_map.items():
@@ -208,11 +221,22 @@ class Imagination(object):
             .. warning:: This method allows ID overriding.
             .. warning:: Use this with care.
         """
+        log.debug(f'Set metadata for {entity_id}')
+
         if self.original_container:
             raise RuntimeWarning('This method is disabled when the container is running in the proxy mode.')
 
         if self.__on_lockdown:
-            raise CoreOnLockDownError()
+            if self.__standalone_mode and entity_id not in self.__controller_map:
+                log.info('The container appears to be on lockdown but the standalone'
+                         f' mode will allow the container to define entity {entity_id}.')
+            else:
+                raise CoreOnLockDownError(
+                    f'Failed to set the metadata for an entity {entity_id}'
+                    if self.__standalone_mode
+                    else 'The container is already on lockdown and blocks any'
+                         f' update to the metadata of entity {entity_id}.'
+                )
 
         # Redefine the container ID.
         new_meta_container.id = entity_id
