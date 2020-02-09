@@ -6,9 +6,9 @@ from imagination.helper.id_naming import fully_qualified_class_name as default_i
 from .helper import set_parameter
 
 
-def registered(id:Optional[str] = None, params:Optional[List[Any]] = None, is_primary:Optional[bool] = False,
-               auto_wired:Optional[bool] = True, wiring_optional:Optional[bool] = False,
-               id_naming_strategy:Optional[Callable] = None):
+def registered(id: Optional[str] = None, params: Optional[List[Any]] = None, is_primary: Optional[bool] = False,
+               auto_wired: Optional[bool] = True, wiring_optional: Optional[bool] = False,
+               id_naming_strategy: Optional[Callable] = None):
     """
     Define the class as a service.
 
