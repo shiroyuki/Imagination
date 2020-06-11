@@ -6,14 +6,14 @@ from imagination.helper.id_naming import fully_qualified_class_name as default_i
 from .helper import set_parameter
 
 
-def registered(id: Optional[str] = None, params: Optional[List[Any]] = None, is_primary: Optional[bool] = False,
+def registered(params: Optional[List[Any]] = None, id: Optional[str] = None, is_primary: Optional[bool] = False,
                auto_wired: Optional[bool] = True, wiring_optional: Optional[bool] = False,
                id_naming_strategy: Optional[Callable] = None):
     """
     Define the class as a service.
 
-    :param str id: Service ID. By default, it will turn the FQCN (module + class name) into the default service ID.
     :param list params: Parameters for the class constructor.
+    :param str id: Service ID. By default, it will turn the FQCN (module + class name) into the default service ID.
     :param bool is_primary: Flag to determine whether or not this is the primary service of this type
     :param bool auto_wired: Flag to tell Imagination to automatically wire all required dependencies without explicitly
                             specifying them in :param:`params`.
@@ -45,6 +45,13 @@ def registered(id: Optional[str] = None, params: Optional[List[Any]] = None, is_
         setattr(inner_decorator, n, v)
 
     return inner_decorator
+
+
+Service = registered
+""" Service
+
+.. versionadded:: 3.3
+"""
 
 
 def __define_defintion(definition, params):
