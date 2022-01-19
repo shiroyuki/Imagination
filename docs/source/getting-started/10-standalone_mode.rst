@@ -40,11 +40,11 @@ The decorator API will use a different set of terminologies, but similar to Angu
 The decorator ``imagination.decorator.Component`` is to declare an entity-type service where the constructor's arguments
 (AKA parameters) can be defined with the following object of these classes.
 
-* ``imagination.decorator.Primitive`` is a primitive-type argument.
+* ``imagination.decorator.config.Parameter`` is a primitive-type argument.
     * It is equivalent to ``<param/>`` for primitive-type arguments but without ``type`` attribute as the type is inferred from the value.
-* ``imagination.decorator.Injectable`` is an injectable argument for components.
+* ``imagination.decorator.config.Service`` is an injectable argument for components.
     * If you have an argument with type hint to a class, which is declared as a component, you can leave this blank as the container will automatically figure out which component to use by type hint.
-* ``imagination.decorator.EnvironmentVariable`` is an argument whose value is derived from an environment variable.
+* ``imagination.decorator.config.EnvironmentVariable`` is an argument whose value is derived from an environment variable.
 
 
 Example
@@ -54,9 +54,9 @@ Suppose we have ``Service1`` with no parameters.
 
 .. code-block:: python
 
-    from imagination.decorator import Component
+    from imagination.decorator import service
 
-    @Component()
+    @service.registered()
     class Service1:
         ...
 
@@ -66,27 +66,23 @@ Let's say we also have ``Service2`` that requires ``Service1``.
 
 .. code-block:: python
 
-    from imagination.decorator import Component, Primitive, Injectable
+    from imagination.decorator.config import Parameter, Service
 
     from app.service import Service1
 
-    @Component([
-        Primitive('Panda'),
-        Injectable(Service1),
+    @service.registered([
+        Parameter('Panda'),
+        Service(Service1),
     ])
     class Service2:
         def __init__(self, name: str, s1: Service1):
             ...
 
-But this is still mouthful to declare a service. You can simplify this by leaving ``Injectable`` alone.
+But this is still mouthful to declare a service. You can simplify this by leaving ``Service`` alone.
 
 .. code-block:: python
 
-    from imagination.decorator import Component, Primitive
-
-    from app.service.s1 import Service1
-
-    @Component([Primitive('Panda')])
+    @service.registered([Parameter('Panda')])
     class Service2:
         def __init__(self, name: str, s1: Service1):
             ...
