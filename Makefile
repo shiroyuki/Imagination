@@ -16,7 +16,7 @@ LXC_TEST_DOCKER_COMMAND=docker run \
 LXC_TEST_EXECUTE=bash -c "make test-lxc-run"
 
 package: clean-dist
-	$(PY) setup.py $(BUILD_PKG_OPT)
+	python3 -m build
 
 clean-dist:
 	@git clean -fdX
