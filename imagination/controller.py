@@ -2,31 +2,33 @@
 import inspect
 import logging
 
-from .debug           import get_logger
-from .exc             import MissingParameterException, \
-                             UnexpectedDefinitionTypeException
-from .loader          import Loader
-from .meta.container  import Container, Entity, Factorization, Lambda
+from .debug import get_logger
+from .exc import MissingParameterException, UnexpectedDefinitionTypeException
+from .loader import Loader
+from .meta.container import Container, Entity, Factorization, Lambda
 from .meta.definition import ParameterCollection
-from .wrapper         import Wrapper
+from .wrapper import Wrapper
 
 
 def _assert_with_annotation(entity_id, metadata):
-    definition       = metadata.value
-    param_name       = metadata.spec.name
+    definition = metadata.value
+    param_name = metadata.spec.name
     param_annotation = metadata.spec.annotation
 
     if isinstance(definition, Undefined):
         # No assertion on undefined definition.
-
         return
 
+    definition_type = type(definition)
+
     try:
-        if param_annotation != inspect._empty and not isinstance(definition, param_annotation):
+        if param_annotation != inspect._empty \
+                and not isinstance(definition, param_annotation) \
+                and not issubclass(definition_type, param_annotation):
             raise UnexpectedDefinitionTypeException(
                 '{}: Given {}({}), expected {}, for {}'.format(
                     entity_id,
-                    type(definition).__name__,
+                    definition_type.__name__,
                     definition,
                     param_annotation.__name__,
                     param_name,
@@ -38,21 +40,22 @@ def _assert_with_annotation(entity_id, metadata):
 
         pass
 
+
 class Controller(object):
     def __init__(self,
-                 metadata               : Container,
-                 core_get               : callable,
-                 core_get_interceptions : callable,
-                 transformer_cast       : callable,
+                 metadata: Container,
+                 core_get: callable,
+                 core_get_interceptions: callable,
+                 transformer_cast: callable,
                  ):
-        self.__metadata               = metadata
-        self.__core_get               = core_get
+        self.__metadata = metadata
+        self.__core_get = core_get
         self.__core_get_interceptions = core_get_interceptions
-        self.__transformer_cast       = transformer_cast
-        self.__logger                 = get_logger('controller/{}'.format(metadata.id))
-        self.__container_instance     = None  # Cache
-        self.__wrapper_instance       = None  # Wrapper Cache
-        self.__ignored_parameters     = []
+        self.__transformer_cast = transformer_cast
+        self.__logger = get_logger('controller/{}'.format(metadata.id))
+        self.__container_instance = None  # Cache
+        self.__wrapper_instance = None  # Wrapper Cache
+        self.__ignored_parameters = []
 
         self.activation_sequence = None  # Activation Sequence
 
@@ -66,7 +69,7 @@ class Controller(object):
 
     @property
     def instantiator(self):
-        metadata       = self.__metadata
+        metadata = self.__metadata
         container_type = type(metadata)
 
         if container_type is Lambda:
@@ -75,7 +78,7 @@ class Controller(object):
         if container_type is Entity:
             return Loader(metadata.fqcn).package
         elif container_type is Factorization:
-            factory_service     = self.__core_get(metadata.factory_id)
+            factory_service = self.__core_get(metadata.factory_id)
             factory_method_name = metadata.factory_method_name
             return getattr(factory_service, factory_method_name)
 
@@ -84,14 +87,15 @@ class Controller(object):
     def activated(self):
         return self.__wrapper_instance is not None or self.__container_instance is not None
 
-    def activate(self, previously_activated : list = None):
+    def activate(self, previously_activated: list = None):
         previously_activated = previously_activated or []
 
         if self.activated():
             return self.__wrapper_instance or self.__container_instance
 
         if self.metadata.id in previously_activated:
-            raise CircularDependencyError('{}: previous activation sequence: {}'.format(self.metadata.id, ', '.join(previously_activated)))
+            raise CircularDependencyError(
+                '{}: previous activation sequence: {}'.format(self.metadata.id, ', '.join(previously_activated)))
 
         previously_activated.append(self.metadata.id)
 
@@ -113,7 +117,7 @@ class Controller(object):
 
         return self.__wrapper_instance
 
-    def __instantiate_container(self, previously_activated : list):
+    def __instantiate_container(self, previously_activated: list):
         if isinstance(self.__metadata, Lambda):
             return self.instantiator
 
@@ -121,21 +125,22 @@ class Controller(object):
                               self.__cast_to_params(self.__metadata.params,
                                                     previously_activated))
 
-    def run_initial_calls(self, previously_activated : list):
+    def run_initial_calls(self, previously_activated: list):
         internal_instance = self.activate(previously_activated)
 
         for initial_call in self.__metadata.initial_calls:
-            self.__execute_after_instantiation(internal_instance, initial_call.method_name, initial_call.parameters, previously_activated)
+            self.__execute_after_instantiation(internal_instance, initial_call.method_name, initial_call.parameters,
+                                               previously_activated)
 
     def __execute(self, target_callable, params):
         # Compile parameters.
-        signature          = inspect.signature(target_callable)
-        expected_params    = [signature.parameters[name] for name in signature.parameters]
+        signature = inspect.signature(target_callable)
+        expected_params = [signature.parameters[name] for name in signature.parameters]
         enable_auto_wiring = self.metadata.auto_wired
 
         # Check whether the signature include dynamic parameters.
         self.__scan_for_dynamic_parameters(expected_params)
-        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire = enable_auto_wiring)
+        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire=enable_auto_wiring)
 
         return target_callable(*parameters['args'], **parameters['kwargs'])
 
@@ -153,19 +158,19 @@ class Controller(object):
 
         self.__execute(getattr(instance, method_name), parameters)
 
-    def __scan_for_usable_parameters(self, given_params, expected_params, auto_wire:bool):
-        fixed_parameter_list  = []
-        fixed_parameter_map   = {}
+    def __scan_for_usable_parameters(self, given_params, expected_params, auto_wire: bool):
+        fixed_parameter_list = []
+        fixed_parameter_map = {}
         fixed_parameter_count = 0
         positional_parameters = []
-        keywoard_parameters   = {}
-        iterating_index       = 0
+        keywoard_parameters = {}
+        iterating_index = 0
 
         for expected_param in expected_params:
             if expected_param.name in self.__ignored_parameters:
                 continue
 
-            parameter_name     = expected_param.name
+            parameter_name = expected_param.name
             parameter_required = expected_param.default and expected_param.default == inspect._empty
             parameter_metadata = ParameterMetadata(iterating_index, parameter_name, parameter_required, expected_param)
 
@@ -178,7 +183,7 @@ class Controller(object):
         fixed_parameter_count = iterating_index
 
         # Gather definitions from the given parameters.
-        iterating_index = 0 # reset the index
+        iterating_index = 0  # reset the index
 
         self.__logger.debug('ID {}: Given: {}'.format(self.__metadata.id, given_params))
 
@@ -187,27 +192,30 @@ class Controller(object):
         for key, definition in given_params['items'].items():
             # Handle a dynamic parameter.
             if key not in fixed_parameter_map:
-                self.__logger.debug('ID {}: Keyword Param ({} -> {}): Considered as extra'.format(self.__metadata.id, key, definition))
+                self.__logger.debug(
+                    'ID {}: Keyword Param ({} -> {}): Considered as extra'.format(self.__metadata.id, key, definition))
 
                 keywoard_parameters[key] = definition
 
                 continue
 
-            self.__logger.debug('ID {}: Keyword Param ({} -> {}): Considered as defined'.format(self.__metadata.id, key, definition))
+            self.__logger.debug(
+                'ID {}: Keyword Param ({} -> {}): Considered as defined'.format(self.__metadata.id, key, definition))
 
             fixed_parameter = fixed_parameter_map[key]
 
-            fixed_parameter.defined     = True
-            fixed_parameter.value       = definition
+            fixed_parameter.defined = True
+            fixed_parameter.value = definition
             fixed_parameter.source_type = dict
-            fixed_parameter.source_ref  = key
+            fixed_parameter.source_ref = key
 
         # Consider the positional ones.
         # NOTE default start for version 3
         for definition in given_params['sequence']:
             # Handle a dynamic parameter.
             if iterating_index >= fixed_parameter_count:
-                self.__logger.debug('ID {}: Positional Param ({}): Considered as extra'.format(self.__metadata.id, definition))
+                self.__logger.debug(
+                    'ID {}: Positional Param ({}): Considered as extra'.format(self.__metadata.id, definition))
 
                 positional_parameters.append(definition)
 
@@ -218,24 +226,26 @@ class Controller(object):
             # Handle a defined parameter.
             # FIXME This is for backward-compatibility and this block will be removed in version 3.
             if fixed_parameter.defined:
-                self.__logger.debug('ID {}: Positional Param ({}): Backward compatible'.format(self.__metadata.id, definition))
+                self.__logger.debug(
+                    'ID {}: Positional Param ({}): Backward compatible'.format(self.__metadata.id, definition))
 
                 positional_parameters.append(definition)
 
                 continue
 
-            self.__logger.debug('ID {}: Positional Param ({}): Considered as defined'.format(self.__metadata.id, definition))
+            self.__logger.debug(
+                'ID {}: Positional Param ({}): Considered as defined'.format(self.__metadata.id, definition))
 
-            fixed_parameter.defined     = True
-            fixed_parameter.value       = definition
+            fixed_parameter.defined = True
+            fixed_parameter.value = definition
             fixed_parameter.source_type = list
-            fixed_parameter.source_ref  = iterating_index
+            fixed_parameter.source_ref = iterating_index
 
             iterating_index += 1
 
         # Check for missing parameters or wrong parameter specification.
         undefined_fixed_parameter_count = len(fixed_parameter_list)
-        undefined_parameters            = []
+        undefined_parameters = []
 
         auto_wiring_count = 0
 
@@ -289,8 +299,8 @@ class Controller(object):
             logging.info('Not all fixed parameters defined. All positional parameters will be ignored.')
 
             return {
-                'args'   : [],
-                'kwargs' : kwargs,
+                'args': [],
+                'kwargs': kwargs,
             }
 
         # When all fixed parameters are defined, they will be converted into positional parameters.
@@ -298,10 +308,9 @@ class Controller(object):
         args.extend(positional_parameters)
 
         return {
-            'args'   : args,
-            'kwargs' : keywoard_parameters,
+            'args': args,
+            'kwargs': keywoard_parameters,
         }
-
 
     def __scan_for_dynamic_parameters(self, expected_params):
         for param in expected_params:
@@ -311,25 +320,27 @@ class Controller(object):
             if param.kind == param.VAR_KEYWORD:
                 self.__ignored_parameters.append(param.name)
 
-    def __cast_to_params(self, params : ParameterCollection, previously_activated : list):
+    def __cast_to_params(self, params: ParameterCollection, previously_activated: list):
         sequence = []
-        items    = {}
+        items = {}
 
         for item in params.sequence():
             try:
                 sequence.append(self.__transformer_cast(item, previously_activated))
             except TypeError:
-                raise ValueInterpretationError('Entity "{}": Failed to interpret {} (positional)'.format(self.__metadata.id, item))
+                raise ValueInterpretationError(
+                    'Entity "{}": Failed to interpret {} (positional)'.format(self.__metadata.id, item))
 
         for key, value in params.items():
             try:
                 items[key] = self.__transformer_cast(value, previously_activated)
             except TypeError:
-                raise ValueInterpretationError('Entity "{}": Failed to interpret "{}" -> {} (keyword)'.format(self.__metadata.id, key, value))
+                raise ValueInterpretationError(
+                    'Entity "{}": Failed to interpret "{}" -> {} (keyword)'.format(self.__metadata.id, key, value))
 
         return {
-            'sequence' : sequence,
-            'items'    : items,
+            'sequence': sequence,
+            'items': items,
         }
 
 
@@ -347,11 +358,11 @@ class Undefined(object):
 
 class ParameterMetadata(object):
     def __init__(self, index, name, required, spec):
-        self.index       = index
-        self.name        = name
-        self.required    = required
-        self.spec        = spec
-        self.value       = Undefined()
-        self.defined     = False
-        self.source_type = None # list or dict
-        self.source_ref  = None # index (list) or key (dict)
+        self.index = index
+        self.name = name
+        self.required = required
+        self.spec = spec
+        self.value = Undefined()
+        self.defined = False
+        self.source_type = None  # list or dict
+        self.source_ref = None  # index (list) or key (dict)
