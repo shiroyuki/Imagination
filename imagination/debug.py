@@ -14,21 +14,29 @@ _in_testing         = 'unittest' in sys.modules
 _in_testing_debug   = _in_testing and '-v' in sys.argv
 
 
+def get_logger(namespace,
+               level: int = None,
+               minimal: typing.Optional[bool] = None):
+    return LoggerFactory.get(namespace, level, minimal)
 
-def get_logger(namespace, level = None):
-    return LoggerFactory.get(namespace, level)
+
+def get_logger_for(obj: object,
+                   level: int = None,
+                   minimal: typing.Optional[bool] = None):
+    t = type(obj)
+    return get_logger(f"{t.__module__}.{t.__name__}", level, minimal)
 
 
 class LoggerFactory:
     __known_logger__ = dict()
 
     @staticmethod
-    def get(name: str, level: typing.Optional[int] = None):
+    def get(name: str, level: typing.Optional[int] = None, minimal: typing.Optional[bool] = None):
         if name in LoggerFactory.__known_logger__:
             return LoggerFactory.__known_logger__.get(name)
 
         level = level or getattr(logging, (os.getenv('IMAGINATION_LOG_LEVEL') or 'WARNING').upper())
-        minimalistic_mode = not (os.getenv('IMAGINATION_VERBOSE_LOG') in ('1', 'true'))
+        minimalistic_mode = os.getenv('IMAGINATION_VERBOSE_LOG') == 'True' if minimal is None else minimal
 
         formatter = logging.Formatter(
             '%(name)s: %(message)s'
