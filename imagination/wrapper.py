@@ -28,6 +28,7 @@ class Wrapper(object):
     def __class__(self):
         return type(self.__dict__['_internal_instance'])
 
+    # FIXME ↓ This is a bug. No "self" reference available in this class method.
     @classmethod
     def __subclasshook__(cls, C):
         return cls in (self.__type__, type(self.__dict__['_internal_instance']))

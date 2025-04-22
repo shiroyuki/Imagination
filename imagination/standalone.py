@@ -14,10 +14,11 @@ any programming frameworks.
 """
 from importlib import import_module
 import os
+from typing import Type, TypeVar
 
-from .core           import Imagination
+from .core import Imagination
 from .assembler.core import Assembler
-from .debug          import get_logger
+from .debug import get_logger
 
 logger = get_logger(__name__)
 
@@ -63,7 +64,7 @@ def load_config_file(config_filepath: str):
     updated_assembler.load(config_filepath)
 
 
-def scan_recursively(code_path:str):
+def scan_recursively(code_path: str):
     # working with annotation
     m = import_module(code_path)
 
@@ -85,3 +86,13 @@ def scan_recursively(code_path:str):
 
 
 container = initialize_from(os.getenv('IMAGINATION_CONF_FILEPATH'))
+T = TypeVar('T')
+
+
+def of(t: Type[T]) -> T:
+    """
+    Get a reference to an instance of given type.
+
+    This is a simplified version of how to retrieve registered objects.
+    """
+    return container.get(t)

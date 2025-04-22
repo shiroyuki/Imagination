@@ -5,16 +5,20 @@ from imagination.helper.general import get_fully_qualified_class_name
 from imagination.helper.id_naming import fully_qualified_class_name as default_id_naming_strategy
 from .helper import set_parameter
 
+__all__ = ['registered', 'Service']
 
-def registered(params: Optional[List[Any]] = None, id: Optional[str] = None, is_primary: Optional[bool] = False,
-               auto_wired: Optional[bool] = True, wiring_optional: Optional[bool] = False,
+def registered(params: Optional[List[Any]] = None,
+               id: Optional[str] = None,
+               is_primary: Optional[bool] = False,  # TODO Implement this feature.
+               auto_wired: Optional[bool] = True,  # TODO Implement this feature.
+               wiring_optional: Optional[bool] = False,  # TODO Implement this feature.
                id_naming_strategy: Optional[Callable] = None):
     """
     Define the class as a service.
 
     :param list params: Parameters for the class constructor.
     :param str id: Service ID. By default, it will turn the FQCN (module + class name) into the default service ID.
-    :param bool is_primary: Flag to determine whether or not this is the primary service of this type
+    :param bool is_primary: Flag to determine whether this is the primary service of this type
     :param bool auto_wired: Flag to tell Imagination to automatically wire all required dependencies without explicitly
                             specifying them in :param:`params`.
     :param bool wiring_optional: Flag to tell Imagination to also automatically wire optional dependencies if not
@@ -34,10 +38,10 @@ def registered(params: Optional[List[Any]] = None, id: Optional[str] = None, is_
 
         if c.contain(service_id):
             with c.update_definition(service_id) as definition:
-                __define_defintion(definition, params)
+                __define_definition(definition, params)
         else:
             with c.define_entity(service_id, get_fully_qualified_class_name(cls)) as definition:
-                __define_defintion(definition, params)
+                __define_definition(definition, params)
 
         return cls
 
@@ -51,9 +55,10 @@ Service = registered
 """ Service
 
 .. versionadded:: 3.3
+.. deprecated:: 3.4
 """
 
 
-def __define_defintion(definition, params):
+def __define_definition(definition, params):
     for param in (params or []):
         set_parameter(definition, param)
