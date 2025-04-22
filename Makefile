@@ -29,13 +29,13 @@ install:
 	$(PY) setup.py install
 
 test-v2:
-	$(PY) -m unittest discover -s test/v2
+	$(PY) -m unittest discover -v -s test/v2
 
 test-v2-dev:
 	$(PY) -m unittest discover -f -v -s test/v2
 
 test-v3:
-	$(PY) -m unittest discover -s test/v3
+	$(PY) -m unittest discover -v -s test/v3
 
 test-v3-dev:
 	$(PY) -m unittest discover -f -v -s test/v3
@@ -49,13 +49,7 @@ test-lxc-primary:
 	@echo "===================================================================="
 	@echo "Primary test runs"
 	@PY_VERSION=latest make test-lxc-on-version
-	@PY_VERSION=3.7 make test-lxc-on-version
-
-test-lxc-secondary:
-	@echo "===================================================================="
-	@echo "Secondary test runs"
-	@PY_VERSION=3.6 make test-lxc-on-version
-	@PY_VERSION=3.5 make test-lxc-on-version
+	@PY_VERSION=3.9 make test-lxc-on-version
 
 test-lxc-on-version:
 	@echo "--------------------------------------------------------------------"
@@ -69,7 +63,7 @@ test-lxc-run:
 	@cp -r $(LXC_MOUNT_POINT) $(LXC_WORKING_DIR)
 	@pip install -q kotoba
 	@cd $(LXC_WORKING_DIR) \
-		&& USER=root PYTHONPATH=`pwd`:$$PYTHONPATH bash -c "python -m unittest discover -s test/v2 && python -m unittest discover -s test/v3"
+		&& USER=root PYTHONPATH=`pwd`:$$PYTHONPATH bash -e -c "python -m unittest discover -s test/v2 && python -m unittest discover -s test/v3"
 
 doc:
 	#cd docs && make clean && make html

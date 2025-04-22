@@ -1,6 +1,15 @@
+[tool.poetry]
+name = "Imagination"
+version = "3.4.0"
+description = ""
+authors = ["Juti Noppornpitak <jnopporn@shiroyuki.com>"]
+readme = "README.md"
+license = "Apache 2.0"
+
+[tool.poetry.dependencies]
+python = ">3.9"
+kotoba = "3.1.0"
+
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
