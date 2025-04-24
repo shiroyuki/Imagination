@@ -89,7 +89,7 @@ container = initialize_from(os.getenv('IMAGINATION_CONF_FILEPATH'))
 T = TypeVar('T')
 
 
-def of(t: Type[T]) -> T:
+def use(t: Type[T]) -> T:
     """
     Get a reference to an instance of given type.
 

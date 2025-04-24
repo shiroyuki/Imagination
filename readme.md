@@ -48,10 +48,15 @@ Here is what just happened.
 And then, you can fetch the reference `DataService` by running this.
 
 ```python
-from imagination.standalone import of
+from imagination.standalone import container, use
 
-of(DataService).do_something(...)
+container.get(DataService).do_something(...)  # since v3.3
+use(DataService).do_something(...)  # since v3.4
 ```
+
+Where the framework will instantiate `DataAdapter` first and then `DataService` as `DataService` requires `DataAdapter`.
+
+> While both `container.get` and `use` yield the same result, the `use` method is preferable if you are using an IDE.
 
 ## Detailed Documentation
 
