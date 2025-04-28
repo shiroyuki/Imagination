@@ -39,9 +39,9 @@ class LoggerFactory:
         minimalistic_mode = os.getenv('IMAGINATION_VERBOSE_LOG') == 'True' if minimal is None else minimal
 
         formatter = logging.Formatter(
-            '%(name)s: %(message)s'
+            '%(name)s: %(levelname)s: %(message)s'
             if minimalistic_mode
-            else '[%(asctime)s] %(levelname)s in %(name)s: %(message)s'
+            else '%(asctime)s: %(name)s: %(levelname)s: %(message)s'
         )
 
         handler = logging.StreamHandler()
