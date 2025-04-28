@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Imagination"
-version = "3.4.0"
+version = "3.4.0a"
 description = ""
 authors = ["Juti Noppornpitak <jnopporn@shiroyuki.com>"]
 readme = "README.md"
