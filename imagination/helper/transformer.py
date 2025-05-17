@@ -14,10 +14,10 @@ class Transformer(object):
     def __init__(self, core_getter : callable):
         self.__core_getter = core_getter
 
-        self.__re_env_with_default_value_as_string = re.compile('\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or "(?P<default>.+)"\s*\}', re.IGNORECASE)
-        self.__re_env_with_default_value_as_int    = re.compile('\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or (?P<default>[0-9]+)\s*\}', re.IGNORECASE)
-        self.__re_env_with_default_value_as_float  = re.compile('\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or (?P<default>[0-9]*\.[0-9]*)\s*\}', re.IGNORECASE)
-        self.__re_env_without_default_value        = re.compile('\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+)\s*\}', re.IGNORECASE)
+        self.__re_env_with_default_value_as_string = re.compile(r'\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or "(?P<default>.+)"\s*\}', re.IGNORECASE)
+        self.__re_env_with_default_value_as_int    = re.compile(r'\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or (?P<default>[0-9]+)\s*\}', re.IGNORECASE)
+        self.__re_env_with_default_value_as_float  = re.compile(r'\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+) or (?P<default>[0-9]*\.[0-9]*)\s*\}', re.IGNORECASE)
+        self.__re_env_without_default_value        = re.compile(r'\{\s*\$(?P<env_name>[A-Za-z0-9_\.]+)\s*\}', re.IGNORECASE)
 
     def cast(self, data, previously_activated : list = None):
         """ Transform the given data to the given kind.
