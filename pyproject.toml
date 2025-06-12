@@ -1,15 +1,23 @@
-[tool.poetry]
+[project]
 name = "Imagination"
-version = "3.4.2"
+version = "3.4.3"
 description = "Depedency Injection Framework"
-authors = ["Juti Noppornpitak <jnopporn@shiroyuki.com>"]
-readme = "README.md"
-license = "Apache 2.0"
+authors = [
+    {name = "Juti Noppornpitak", email = "juti_n@yahoo.co.jp"}
+]
+requires-python = ">=3.9"
+dependencies = []
+readme = 'README.md'
+license = 'Apache-2.0'
+license-files = ["LICEN[CS]E"]
 
-[tool.poetry.dependencies]
-python = ">3.9"
-kotoba = "3.1.0"
+[project.optional-dependencies]
+build = ["setuptools"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["imagination"]
+exclude = ["test", "docs"]
