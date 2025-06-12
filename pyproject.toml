@@ -19,5 +19,5 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["imagination"]
+include = ["imagination", "imagination.assembler", "imagination.decorator", "imagination.helper", "imagination.meta"]
 exclude = ["test", "docs"]
