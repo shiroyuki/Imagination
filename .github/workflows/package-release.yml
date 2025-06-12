@@ -3,6 +3,10 @@ name: Pakcage Release
 on:
   release:
     types: [created]
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -10,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.9" ]
+        python-version: [ "3.13" ]
     steps:
       - uses: actions/checkout@v4
         with:
