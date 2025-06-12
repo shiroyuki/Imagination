@@ -1,6 +1,6 @@
 [project]
 name = "Imagination"
-version = "3.4.3"
+version = "3.4.5"
 description = "Depedency Injection Framework"
 authors = [
     {name = "Juti Noppornpitak", email = "juti_n@yahoo.co.jp"}
