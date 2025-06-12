@@ -6,7 +6,7 @@ authors = [
     {name = "Juti Noppornpitak", email = "juti_n@yahoo.co.jp"}
 ]
 requires-python = ">=3.9"
-dependencies = []
+dependencies = ["kotoba"]
 readme = 'README.md'
 license = 'Apache-2.0'
 license-files = ["LICEN[CS]E"]
