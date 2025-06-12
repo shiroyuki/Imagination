@@ -1,17 +1,20 @@
+import os
 import sys
 import unittest
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# noinspection PyUnresolvedReferences
 from dummy.lazy_action import Alpha, Beta
 
-if sys.version_info >= (3, 3):
-    from imagination.assembler.core import Assembler
-    from imagination.debug          import dump_meta_container
-    from imagination.exc            import UnexpectedParameterException, UndefinedContainerIDError, \
-                                           UndefinedDefaultValueException, MissingParameterException
+from imagination.assembler.core import Assembler
+from imagination.exc import UnexpectedParameterException, UndefinedContainerIDError, \
+    MissingParameterException
 
 
 class FunctionalTest(unittest.TestCase):
     """ This test is done via the assembler core. """
+
     def setUp(self):
         if sys.version_info < (3, 3):
             self.skipTest('The tested feature is not supported in Python {}.'.format(sys.version))

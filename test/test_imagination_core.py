@@ -1,14 +1,16 @@
+import os
 import sys
 import unittest
 
-from imagination.wrapper import Wrapper
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from dummy.lazy_action   import Alpha, Beta
+# noinspection PyUnresolvedReferences
 from dummy.factorization import Manager, Worker
+# noinspection PyUnresolvedReferences
+from dummy.lazy_action import Alpha, Beta
 
-if sys.version_info >= (3, 3):
-    from imagination.debug          import dump_meta_container
-    from imagination.assembler.core import Assembler
+from imagination.wrapper import Wrapper
+from imagination.assembler.core import Assembler
 
 
 class FunctionalTest(unittest.TestCase):

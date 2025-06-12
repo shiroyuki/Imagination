@@ -1,11 +1,12 @@
 # v2
 import contextlib
 
+from ..meta.container import Container
 from ..meta.definition import DataDefinition, ParameterCollection, MethodCall
 
 
 class DefinitionContext(object):
-    def __init__(self, core, metadata):
+    def __init__(self, core: "imagination.core.Imagination", metadata: Container):
         self.__core     = core
         self.__metadata = metadata
 
@@ -43,6 +44,9 @@ class DefinitionContext(object):
         method_call = MethodCall(target_entity_id, method_name, context_reference.params)
 
         self.__core.set_initial_call(method_call)
+
+    def __repr__(self):
+        return f''
 
 
 class MethodCallContext(object):

@@ -1,12 +1,15 @@
+import os
 import sys
 import unittest
 
-if sys.version_info >= (3, 3):
-    from imagination.debug          import dump_meta_container
-    from imagination.assembler.core import Assembler
-    from imagination.wrapper        import Wrapper
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# noinspection PyUnresolvedReferences
 from dummy.aop_error_event import Alpha, DummyException
+
+from imagination.assembler.core import Assembler
+from imagination.wrapper import Wrapper
+
 
 class FunctionalTest(unittest.TestCase):
     def setUp(self):
