@@ -37,20 +37,19 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-  publish:
+  publish-to-pypi:
     name: Publish release to PyPI
+    needs:
+      - build
     runs-on: ubuntu-latest
+
     environment:
       name: pypi
-      url: https://pypi.org/p/Imagination
+
     permissions:
       id-token: write
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
       - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
