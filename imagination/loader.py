@@ -60,7 +60,7 @@ class Loader(object):
     """
     def __init__(self, path_to_package):
         self._path         = path_to_package
-        self._access_path  = re.split('\.', self._path)
+        self._access_path  = re.split(r'\.', self._path)
         self._module_path  = '.'.join(self._access_path[:-1])
         self._module       = None
         self._package_name = self._access_path[-1]
