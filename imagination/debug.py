@@ -78,6 +78,7 @@ class LoggerFactory:
             formatter: typing.Optional[logging.Formatter] = None,
             mode: typing.Optional[str] = None,
             cache_key: typing.Optional[str] = None,
+            cache_enabled: bool = True,
             ) -> logging.Logger:
         cache_key = cache_key or name
 
@@ -107,7 +108,8 @@ class LoggerFactory:
         logger.setLevel(level)
         logger.addHandler(handler)
 
-        cls.__known_loggers__[cache_key] = logger
+        if cache_enabled:
+            cls.__known_loggers__[cache_key] = logger
 
         return logger
 
@@ -118,6 +120,7 @@ class LoggerFactory:
                      handler: typing.Optional[logging.Handler] = None,
                      formatter: typing.Optional[logging.Formatter] = None,
                      mode: typing.Optional[str] = None,
+                     cache_enabled: bool = True,
                      ):
         cache_key = f'{t.__module__}.{t.__name__}'
         mode = mode or cls.get_logger_mode()
@@ -139,7 +142,8 @@ class LoggerFactory:
                        handler=handler,
                        formatter=formatter,
                        mode=mode,
-                       cache_key=cache_key)
+                       cache_key=cache_key,
+                       cache_enabled=cache_enabled)
 
     @classmethod
     def get_for_object(cls,
@@ -148,13 +152,24 @@ class LoggerFactory:
                        handler: typing.Optional[logging.Handler] = None,
                        formatter: typing.Optional[logging.Formatter] = None,
                        mode: typing.Optional[str] = None,
+                       cache_enabled: bool = True,
                        ):
         t = type(obj)
         return cls.get_for_type(t=t,
                                 level=level,
                                 handler=handler,
                                 formatter=formatter,
-                                mode=mode)
+                                mode=mode,
+                                cache_enabled=cache_enabled)
+
+    @classmethod
+    def forget(cls, name: str):
+        """
+        Remove the logger with the given name from the known logger map.
+        """
+        if name not in cls.__known_loggers__:
+            return
+        del cls.__known_loggers__[name]
 
     @classmethod
     def instance(cls):
