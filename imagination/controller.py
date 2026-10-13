@@ -1,6 +1,7 @@
 # v2
 import inspect
 import logging
+import typing
 
 from .debug import get_logger
 from .exc import MissingParameterException, UnexpectedDefinitionTypeException
@@ -10,10 +11,14 @@ from .meta.definition import ParameterCollection
 from .wrapper import Wrapper
 
 
-def _assert_with_annotation(entity_id, metadata):
+def _assert_with_annotation(entity_id, metadata, resolved_annotation=None):
     definition = metadata.value
     param_name = metadata.spec.name
-    param_annotation = metadata.spec.annotation
+    # Under PEP 563 (`from __future__ import annotations`) the raw annotation is a
+    # string; `resolved_annotation` (from `typing.get_type_hints`) is preferred.
+    param_annotation = resolved_annotation
+    if param_annotation is None:
+        param_annotation = metadata.spec.annotation
 
     if isinstance(definition, Undefined):
         # No assertion on undefined definition.
@@ -140,7 +145,13 @@ class Controller(object):
 
         # Check whether the signature include dynamic parameters.
         self.__scan_for_dynamic_parameters(expected_params)
-        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire=enable_auto_wiring)
+
+        # Resolve PEP 563 (`from __future__ import annotations`) string
+        # annotations into concrete types.
+        annotation_map = self.__resolve_annotations(target_callable)
+
+        parameters = self.__scan_for_usable_parameters(params, expected_params, auto_wire=enable_auto_wiring,
+                                                        annotation_map=annotation_map)
 
         return target_callable(*parameters['args'], **parameters['kwargs'])
 
@@ -158,7 +169,8 @@ class Controller(object):
 
         self.__execute(getattr(instance, method_name), parameters)
 
-    def __scan_for_usable_parameters(self, given_params, expected_params, auto_wire: bool):
+    def __scan_for_usable_parameters(self, given_params, expected_params, auto_wire: bool, annotation_map=None):
+        annotation_map = annotation_map or {}
         fixed_parameter_list = []
         fixed_parameter_map = {}
         fixed_parameter_count = 0
@@ -250,7 +262,7 @@ class Controller(object):
         auto_wiring_count = 0
 
         for fixed_parameter in fixed_parameter_list:
-            _assert_with_annotation(self.__metadata.id, fixed_parameter)
+            _assert_with_annotation(self.__metadata.id, fixed_parameter, annotation_map.get(fixed_parameter.name))
 
             if fixed_parameter.defined:
                 self.__logger.debug('ID {}: Param {}: Already defined'.format(self.__metadata.id, fixed_parameter.name))
@@ -269,14 +281,14 @@ class Controller(object):
             feature_info_list = ['pos: {}'.format(fixed_parameter.index)]
 
             if fixed_parameter.spec.annotation != inspect._empty:
-                annotation = fixed_parameter.spec.annotation
+                annotation = annotation_map.get(fixed_parameter.name, fixed_parameter.spec.annotation)
 
                 feature_info_list.append('spec: {}'.format(annotation))
 
-                if not issubclass(annotation, (int, float, bytes, bool, str, complex, set, dict, list, tuple)):
+                if not self.__is_primitive_type(annotation):
                     if auto_wire:  # Attempt to automatically wire a missing dependency.
                         auto_wiring_count += 1
-                        given_params['items'][fixed_parameter.name] = self.__core_get(annotation)
+                        given_params['items'][fixed_parameter.name] = self.__core_get(self.__unwrap_optional(annotation))
                     else:
                         feature_info_list.append('ignored: auto-wire')
 
@@ -284,7 +296,8 @@ class Controller(object):
 
         # Double-check the parameters after rewiring dependencies.
         if auto_wire and auto_wiring_count > 0:
-            return self.__scan_for_usable_parameters(given_params, expected_params, auto_wire=False)
+            return self.__scan_for_usable_parameters(given_params, expected_params, auto_wire=False,
+                                                     annotation_map=annotation_map)
 
         if undefined_parameters:
             raise MissingParameterException(
@@ -319,6 +332,63 @@ class Controller(object):
 
             if param.kind == param.VAR_KEYWORD:
                 self.__ignored_parameters.append(param.name)
+
+    def __resolve_annotations(self, target_callable):
+        """ Resolve PEP 563 (`from __future__ import annotations`) string
+            annotations into concrete types.
+
+            Under PEP 563 the parameter annotations are stored as strings, which
+            the annotation consumers (``isinstance``/``issubclass``/``__name__``
+            and the auto-wiring lookup) cannot handle. ``typing.get_type_hints``
+            resolves them back to real types. A name that cannot be resolved is
+            left out of the map so the raw value is used as a fallback.
+        """
+        hints = {}
+
+        # A class is instantiated through its constructor; ``get_type_hints`` on
+        # the class only reports class-level annotations, so also resolve the
+        # annotations of ``__init__`` where the constructor parameters live.
+        targets = [target_callable]
+
+        if inspect.isclass(target_callable) and '__init__' in target_callable.__dict__:
+            targets.append(target_callable.__init__)
+
+        for target in targets:
+            try:
+                hints.update(typing.get_type_hints(target))
+            except (NameError, AttributeError, TypeError, ValueError):
+                continue
+
+        return hints
+
+    def __is_primitive_type(self, annotation):
+        """ Whether the annotation is a primitive (non-wireable) type. """
+        if isinstance(annotation, str) or annotation is inspect._empty:
+            return True
+
+        try:
+            return issubclass(annotation, (int, float, bytes, bool, str, complex, set, dict, list, tuple))
+        except TypeError:
+            # ``Optional[...]`` (``Union``) is not a class; it is unwrapped for
+            # auto-wiring, so it is not considered a primitive here.
+            return False
+
+    def __unwrap_optional(self, annotation):
+        """ Unwrap ``Optional[X]`` (``Union[X, None]``) to its inner type ``X``.
+
+            ``Optional[X]`` is ``Union[X, None]`` (``X | None``); a single
+            non-``None`` member is the actual dependency type to wire.
+        """
+        args = typing.get_args(annotation)
+
+        non_none = [arg for arg in args if arg is not type(None)]
+
+        # A genuine multi-type union (more than one non-None member) cannot be
+        # resolved to a single type; leave it as-is.
+        if len(non_none) == 1:
+            return non_none[0]
+
+        return annotation
 
     def __cast_to_params(self, params: ParameterCollection, previously_activated: list):
         sequence = []
