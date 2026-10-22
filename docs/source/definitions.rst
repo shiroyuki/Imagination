@@ -15,7 +15,7 @@ DTD for the XML configuration
 
 :Source: https://github.com/shiroyuki/Imagination/blob/master/imagination.dtd
 
-.. code-block:: dtd
+.. code-block:: xml
 
     <?xml version="1.0" encoding="utf-8"?>
     <!DOCTYPE imagination [
