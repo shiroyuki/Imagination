@@ -1,0 +1,22 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+# Set the OS, Python version, and other tools you want to use
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.10"
+
+# Build documentation using Sphinx with your conf.py path
+sphinx:
+  configuration: docs/conf.py
+  fail_on_warning: true
+
+# Optionally install your package and its doc dependencies
+python:
+  install:
+    - method: pip
+      path: .
+    - requirements: docs/requirements.txt
