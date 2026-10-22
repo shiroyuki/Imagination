@@ -1,75 +1,89 @@
-from imagination.decorator.service import registered
-
 # Imagination
 
 ## Basic Usage
 
-Let's take a look at this example.
+Imagination is a dependency injection framework for Python. Its standalone container
+can register services with decorators and inject constructor dependencies without XML.
 
-Suppose we have two services, `DataService` and `DataAdapter`, where `DataService` requires `DataAdapter`.
-
-```python
-class DataAdapter:
-    ...
-
-
-class DataService:
-    def __init__(self, adapter: DataAdapter):
-        ...
-    ...
-```
-
-Traditionally, to instantiate `DataService`, you need to do this somewhere in your code.
+Suppose `DataService` requires a `DataAdapter`. Register both classes, then retrieve
+the service with `use()`:
 
 ```python
-adapter = DataAdapter()
-service = DataService(adapter)
-```
+from __future__ import annotations
 
-Now, with **Imagination**, first you will need to annotate/decorate the classes.
-
-```python
 from imagination.decorator.service import registered
-
-@registered()
-class DataAdapter:
-    ...
-
-@registered()
-class DataService:
-    ...
-```
-
-Here is what just happened.
-* **Imagination** understands how to instantiate an instance of both classes.
-* However, it **DOES NOT** instantiate any registered classes.
-  * By design, it instantiates when needed.
-
-And then, you can fetch the reference `DataService` by running this.
-
-```python
-##############
-# Since v3.3 #
-##############
-
-from imagination.standalone import container
-
-container.get(DataService).do_something(...)
-```
-```python
-##############
-# Since v3.4 #
-##############
-
 from imagination.standalone import use
 
-use(DataService).do_something(...)
+
+@registered()
+class DataAdapter:
+    def fetch(self) -> str:
+        return "Hello from Imagination"
+
+
+@registered()
+class DataService:
+    def __init__(self, adapter: DataAdapter):
+        self.adapter = adapter
+
+    def do_something(self) -> str:
+        return self.adapter.fetch()
+
+
+service = use(DataService)
+assert service.do_something() == "Hello from Imagination"
+assert use(DataService) is service
 ```
 
-Where the framework will instantiate `DataAdapter` first and then `DataService` as `DataService` requires `DataAdapter`.
+`@registered()` declares a singleton service without instantiating it. On the first
+request, Imagination creates `DataAdapter` and injects it into `DataService` using
+the constructor's type hint. Subsequent requests reuse the same instances. Import
+the modules containing decorated classes before requesting services.
 
-> While both `container.get` and `use` yield the same result, the `use` method is preferable if you are using an IDE.
+`use(ServiceClass)`, available since v3.4, returns the same instance as
+`container.get(ServiceClass)`. Its generic return type helps IDEs and type checkers
+infer the service type:
+
+```python
+from imagination.standalone import container
+
+assert container.get(DataService) is service
+```
+
+## Configuring Dependencies
+
+Required constructor arguments annotated with registered service classes are wired
+automatically. Supply primitive values through the decorator's `params` argument:
+
+```python
+from imagination.decorator.config import Parameter
+
+
+@registered(params=[Parameter("Panda", name="name")])
+class NamedDataService:
+    def __init__(self, name: str, adapter: DataAdapter):
+        self.name = name
+        self.adapter = adapter
+
+
+assert use(NamedDataService).name == "Panda"
+```
+
+Use `Service` from `imagination.decorator.config` for explicit service references
+by class or ID, including injecting a subclass into a parameter annotated with its
+base class. Parameters with default values keep their defaults unless explicitly
+configured.
+
+Postponed annotations (`from __future__ import annotations`) are supported for
+auto-wiring and runtime type checks. Referenced types must be resolvable in the
+module where the constructor is defined.
+
+The standalone container also loads existing XML configuration files from
+`IMAGINATION_CONF_FILEPATH`, `imagination.xml`, and `services.xml`, in that order.
+The latter two paths are relative to the current working directory.
 
 ## Detailed Documentation
 
-The documentation is available at http://readthedocs.org/docs/imagination/.
+See the [standalone mode and decorator guide](docs/source/getting-started/10-standalone_mode.rst)
+for parameter options and service IDs, or browse the
+[full documentation](https://imagination.readthedocs.io/).
