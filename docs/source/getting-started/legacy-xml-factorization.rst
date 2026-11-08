@@ -1,6 +1,13 @@
 Dynamically define an entity with a factory entity
 ##################################################
 
+.. warning::
+
+    **Legacy / deprecated.** The XML configuration approach is legacy support.
+    Prefer the standalone container and the ``@registered`` decorator
+    (:doc:`03-standalone-and-decorators`). This page is retained for backward
+    compatibility only.
+
 From the previous step, you probably have an idea how to define an entity with
 parameters. However, the "report" example from the previous step is not really
 accetptable if we have to dynamically define the report of the first place in
@@ -69,4 +76,4 @@ To refer the first-place report entity, for example, in ``main.py``, simply do:
     out `the DTD <https://github.com/shiroyuki/Imagination/blob/master/imagination.dtd>`_
     on GitHub.
 
-Next step? :doc:`06-lambda-entity`.
+Next step? :doc:`legacy-xml-lambda`.

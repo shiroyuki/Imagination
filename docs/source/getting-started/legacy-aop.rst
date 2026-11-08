@@ -3,6 +3,13 @@ Aspect-oriented Programming with Entities
 
 .. warning::
 
+    **Legacy / deprecated.** Aspect-oriented programming (AOP) interception is
+    legacy support. Prefer the standalone container and the ``@registered``
+    decorator (:doc:`03-standalone-and-decorators`). This page is retained for
+    backward compatibility only.
+
+.. warning::
+
     This is an testing feature. This documentation take precedence.
 
 Now, you know how to define all types of entities. As **Imagination** is also a

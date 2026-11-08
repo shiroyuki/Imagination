@@ -1,6 +1,13 @@
 Basic Setup
 ###########
 
+.. warning::
+
+    **Legacy / deprecated.** The XML configuration approach is legacy support.
+    Prefer the standalone container and the ``@registered`` decorator
+    (:doc:`03-standalone-and-decorators`). This page is retained for backward
+    compatibility only.
+
 Suppose your app looks like this.
 
 .. code-block:: text
@@ -47,4 +54,4 @@ Suppose your app looks like this.
 
 Before you go further into the rabbit hole, you might want to keep :doc:`../definitions` handly.
 
-Next step? :doc:`03-create-new-entity`.
+Next step? :doc:`legacy-xml-entity`.

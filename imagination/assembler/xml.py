@@ -124,6 +124,15 @@ def convert_blocks_to_interception_metadatas(node):
 
 
 class XMLParser(ConfigParser):
+    """ Parse an XML configuration file.
+
+        .. deprecated:: 4.0
+
+            The XML configuration approach is legacy support. Prefer the
+            standalone container and the ``@registered`` decorator, which
+            require no configuration file. This parser is retained for
+            backward compatibility only.
+    """
     def __init__(self):
         self._re_acceptable_file_extension = re.compile(r'\.xml$', re.IGNORECASE)
 

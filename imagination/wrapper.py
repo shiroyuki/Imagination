@@ -1,8 +1,13 @@
 # v2
+from .decorator.deprecated import deprecated
+
+
 def is_wrapper(obj):
     return hasattr(obj, '__imagination_wrapper__')
 
 
+@deprecated(reason='Aspect-oriented programming (AOP) interception is legacy support. ' 
+                  'Prefer the standalone container and the ``@registered`` decorator.')
 class Wrapper(object):
     """ Relay Container
 
@@ -65,6 +70,8 @@ class Wrapper(object):
 
         return returning_callable
 
+@deprecated(reason='Aspect-oriented programming (AOP) interception is legacy support. ' 
+                  'Prefer the standalone container and the ``@registered`` decorator.')
 class InterceptableCallable(object):
     """ Interceptable callable object
 

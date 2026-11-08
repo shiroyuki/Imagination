@@ -1,6 +1,13 @@
 Register a new entity without parameters
 ########################################
 
+.. warning::
+
+    **Legacy / deprecated.** The XML configuration approach is legacy support.
+    Prefer the standalone container and the ``@registered`` decorator
+    (:doc:`03-standalone-and-decorators`). This page is retained for backward
+    compatibility only.
+
 Assume that we start from scratch. Let's create ``app/util.py``:
 
 .. code-block:: python
@@ -56,4 +63,4 @@ Now, to actually use the entity, let's add something to the end of ``main.py``.
 So, as you can see, the entity works pretty much like a normal object, except
 **the key differences mentioned earlier**.
 
-Next step? :doc:`04-create-with-parameters`.
+Next step? :doc:`legacy-xml-parameters`.

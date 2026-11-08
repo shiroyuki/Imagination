@@ -1,6 +1,13 @@
 Method Calls on Initialization
 ##############################
 
+.. warning::
+
+    **Legacy / deprecated.** The XML configuration approach is legacy support.
+    Prefer the standalone container and the ``@registered`` decorator
+    (:doc:`03-standalone-and-decorators`). This page is retained for backward
+    compatibility only.
+
 .. versionadded:: 2.6
 
 .. warning::

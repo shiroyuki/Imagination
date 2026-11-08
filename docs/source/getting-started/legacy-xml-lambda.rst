@@ -1,6 +1,13 @@
 Define a lambda/callable entity
 ###############################
 
+.. warning::
+
+    **Legacy / deprecated.** The XML configuration approach is legacy support.
+    Prefer the standalone container and the ``@registered`` decorator
+    (:doc:`03-standalone-and-decorators`). This page is retained for backward
+    compatibility only.
+
 This step will help you define an entity referring to a callable object.
 
 First, we create a callable ``write_json`` at ``app/func.py``:
@@ -48,4 +55,4 @@ To refer the first-place report entity, for example, in ``main.py``, simply do:
     out `the DTD <https://github.com/shiroyuki/Imagination/blob/master/imagination.dtd>`_
     on GitHub.
 
-Next step? :doc:`07-aspect-oriented-programming`.
+Next step? :doc:`legacy-aop`.

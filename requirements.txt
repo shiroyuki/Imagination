@@ -1,4 +1,5 @@
 kotoba
 sphinx
+furo
 setuptools
 build

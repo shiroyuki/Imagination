@@ -1,6 +1,13 @@
 Register a new entity with parameters
 #####################################
 
+.. warning::
+
+    **Legacy / deprecated.** The XML configuration approach is legacy support.
+    Prefer the standalone container and the ``@registered`` decorator
+    (:doc:`03-standalone-and-decorators`). This page is retained for backward
+    compatibility only.
+
 Now, since we have one entity. Let's spice things up with more complicate
 entity by creating a ``Report`` class at ``app/report.py``:
 
@@ -165,4 +172,4 @@ The equivalence to the Python code used to instantiate this entity will be:
           e.g., `argparser.ArgumentParser`
 .. [#pt3] Any Imagination entity (see :doc:`../definitions`)
 
-Next step? :doc:`05-factorization`.
+Next step? :doc:`legacy-xml-factorization`.

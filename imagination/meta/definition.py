@@ -1,5 +1,6 @@
 # v2
 from ..debug import PrintableMixin
+from ..decorator.deprecated import deprecated
 
 
 class DuplicateParameterDefinitionWarning(Warning):
@@ -74,6 +75,8 @@ class ParameterCollection(PrintableMixin):
         return len(self.__list) + len(self.__map)
 
 
+@deprecated(reason='Aspect-oriented programming (AOP) interception is legacy support. ' 
+                  'Prefer the standalone container and the ``@registered`` decorator.')
 class Interception(PrintableMixin):
     """ Metadata for Interception
 

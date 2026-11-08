@@ -19,4 +19,4 @@ You mean install with ``pip install imagination`` or from the source directly
         # For Python 3.5
         pip-3.5 install -IU .
 
-Next step? :doc:`02-basic-setup`.
+Next step? :doc:`02-quick-start`.

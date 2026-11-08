@@ -4,7 +4,7 @@ Standalone Mode and Service Decorators
 Standalone mode provides a ready-to-use Imagination container for any Python
 application or framework. Instead of setting up an
 :class:`imagination.assembler.core.Assembler` as described in
-:doc:`02-basic-setup`, import the shared container:
+:doc:`legacy-xml-basic-setup`, import the shared container:
 
 .. code-block:: python
 
